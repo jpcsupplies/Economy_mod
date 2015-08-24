@@ -2,6 +2,7 @@ PhoenixX's Economy mod
 ======================
 A Steam Workshop script mod for Space Engineeers.
 ----------------------
+This mod is an attempt to add an economic system to Space Engineers.
 
 Space Engineers is a sandbox game about engineering, construction and maintenance 
 of space works. Players build space ships and space stations of various sizes and 
@@ -18,7 +19,7 @@ If you are a contributor there is some additional notes here:
 [Steam Econ Guide](http://steamcommunity.com/sharedfiles/filedetails/?id=481264606&preview=true)
 
 The offical github repository for this mod is available here:
-TBA.
+https://github.com/jpcsupplies/Economy_mod
 
 
 Visit the Keen Software House modding forums for more detail on modding Space Engineers:
