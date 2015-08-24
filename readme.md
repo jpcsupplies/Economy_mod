@@ -33,7 +33,7 @@ link from your Git repository directory to the Space Engineers mods folder.
 Run a command prompt as Administrator, and then run the following line.
 
 ```
-mklink /J "C:\Users\%USERNAME%\AppData\Roaming\SpaceEngineers\Mods\midspace admin helper" "C:\Users\%USERNAME%\Documents\GitHub\Space-Engineers-Admin-script-mod\midspace admin helper"
+mklink /J "C:\Users\%USERNAME%\AppData\Roaming\SpaceEngineers\Mods\Economy" "C:\Users\%USERNAME%\Documents\GitHub\Economy_mod\Economy"
 ```
 
 The Symbolic link directory can be simply deleted through Windows Explorer like a normal directory.
