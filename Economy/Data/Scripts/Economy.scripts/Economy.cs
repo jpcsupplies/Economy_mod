@@ -91,6 +91,7 @@ namespace Economy
         //this gives me just the save folder name alone Path.GetFileNameWithoutExtension(MyAPIGateway.Session.CurrentPath);
         //this gives me bank with save folder name appended string.Format("bank{0}.txt",Path.GetFileNameWithoutExtension(MyAPIGateway.Session.CurrentPath));
 
+
         protected override void UnloadData()
         {
             MyAPIGateway.Utilities.MessageEntered -= gotMessage;
@@ -109,8 +110,11 @@ namespace Economy
         {
             if (processMessage(messageText)) { sendToOthers = false; }
         }
-
-
+/*        private void Utilities_MessageEntered(string messageText, ref bool sendToOthers)
+        {
+            if (processMessage(messageText)) { sendToOthers = false; }
+        }
+*/
         private static bool processMessage(string messageText)
         {
             #region command list
@@ -133,8 +137,9 @@ namespace Economy
                 //then check the player has enough balance, check the name is in the bank database, then update it 
                 {
                     MyAPIGateway.Utilities.ShowMessage("PAY", "Had We made that part yet, we would be trying to pay someone here");
+                    return true;
                 }
-                return false;
+                //return false;
             }
 
 
@@ -154,8 +159,9 @@ namespace Economy
                     MyAPIGateway.Utilities.ShowMessage("BALANCE", "Had We made that part yet, we check you are admin then tell you another players balance");
                     // WriteLine("Had my trained monkey been better schooled this would be getting saved to a file");
                     MyAPIGateway.Utilities.ShowMessage("Trained Monkey says", split[1].ToLowerInvariant());
+                    return true;
                 }
-                return false;
+                //return false;
             }
 
             //help command
@@ -199,16 +205,16 @@ namespace Economy
                                         MyAPIGateway.Utilities.ShowMessage("/help buy list", "Example:");
                                         return true;
                                 }
-                                return false;
+                                //return false;
                             }
                             else { MyAPIGateway.Utilities.ShowMessage("/help test #", "Commands: list debug 2"); return true; }
                     }
                 }
-                return false;
+                //return false;
             }
             #endregion
 
-            return false;
+            //return false;
         }
 
         public void UpdateAfterSimulation100() { }
