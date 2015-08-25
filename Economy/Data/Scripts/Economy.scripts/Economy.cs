@@ -14,37 +14,22 @@ using VRageMath;
 using System.Text.RegularExpressions;
 
 /*
- * These can presumably be adapted to catch joins and steam uids
- * MyAPIGateway.Session.OnSessionReady += Session_OnSessionReady;
- * SteamId = selectedPlayer.SteamUserId
+ *  Economy Mod V(TBA) 
+ *  by PhoenixX (JPC Dev), Tangentspy, Screaming Angels
+ *  For use with Space Engineers Game
+ *  Refer to github issues or steam dev guide or the below progress report
+ *  for direction what needs to be worked on next
 */
+
 namespace Economy
 {
-
-    [Sandbox.Common.MySessionComponentDescriptor(Sandbox.Common.MyUpdateOrder.AfterSimulation)]
-    public class EconomyScript : MySessionComponentBase
-    {
-        bool initDone = false;
-        int counter = 0;
-
-
-        public void init()
-        {
-            //string progress;
-            MyAPIGateway.Utilities.MessageEntered += gotMessage;
-            initDone = true;
-            MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
-            MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/help' for more informations about available commands");
-
-            MyAPIGateway.Utilities.ShowMissionScreen("Economy Mod", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
-            #region Progress Report
-            /*Be nice if i could get this to display in my popup
+    #region Progress Report
+    /*Be nice if i could get this to display in my popup but it will be deleted later anyway so no point.
             Progress report: \n
              * Abstract First Stage Started\n
-             * Have script responding to /bal /help and /pay
-             * cant get file operations to work after trying different stuff all day
-             * like really how hard can it be to load a text file into an array or write it back..
-             * have some notes on pulling up a player UID, need to figure it out more later
+             * Have script responding to /bal /help and /pay\n
+             * cant get file operations to work after trying different stuff all day\n\n
+
                 Development target progress\n
                 Achieved\n
                     1: Create a placeholder script that loads off workshop, assign contributors\n
@@ -59,8 +44,22 @@ namespace Economy
                     8: Add a command to read the price of a particular resource from this data base\n
                     9: Configure script to create a file with the "server pool" balance of each resource type.\n
                     10: Configure some sort of file to record items particular players have for sale, what quantity, and what price - universal auction market?\n
-                       */
-            #endregion
+*/
+    #endregion
+    [Sandbox.Common.MySessionComponentDescriptor(Sandbox.Common.MyUpdateOrder.AfterSimulation)]
+    public class EconomyScript : MySessionComponentBase
+    {
+        bool initDone = false;
+        int counter = 0;
+
+        public void init()
+        {
+            MyAPIGateway.Utilities.MessageEntered += gotMessage;
+            initDone = true;
+            MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
+            MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/help' for more informations about available commands");
+
+            MyAPIGateway.Utilities.ShowMissionScreen("Economy Mod", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
         }
 
         /* Well this is not right have to try another method
@@ -107,21 +106,18 @@ namespace Economy
         }
 
         private static void gotMessage(string messageText, ref bool sendToOthers)
-        {
+        { 
+            // here is where we nail the echo back on commands "return" also exits us from processMessage
             if (processMessage(messageText)) { sendToOthers = false; }
         }
-/*        private void Utilities_MessageEntered(string messageText, ref bool sendToOthers)
-        {
-            if (processMessage(messageText)) { sendToOthers = false; }
-        }
-*/
+
         private static bool processMessage(string messageText)
         {
             #region command list
             decimal bal = 100;
             string reply;
             //this list is going to get messy since the help and commands themself tell user the same thing if they dont type parms right.
-            //!BUGS! doesnt supress what player types in chat 
+            
             string[] split = messageText.Split(new Char[] { ' ' });
             //pay command
             if (messageText.StartsWith("/pay", StringComparison.InvariantCultureIgnoreCase))
@@ -132,17 +128,26 @@ namespace Economy
                     MyAPIGateway.Utilities.ShowMessage("PAY", "refer help for using pay command");
                     return true;
                 }
-                else //we type more than 1 parm? must want to do stuff
-                //will need to drag out the contents of each element of the split eg /pay | bob | 10  and check it is valid
-                //then check the player has enough balance, check the name is in the bank database, then update it 
+                else //we type more than 1 parm? 
                 {
                     MyAPIGateway.Utilities.ShowMessage("PAY", "Had We made that part yet, we would be trying to pay someone here");
                     return true;
                 }
-                //return false;
-            }
 
+            } 
 
+            //buy command
+            if (messageText.StartsWith("/buy", StringComparison.InvariantCultureIgnoreCase))
+            {
+                    MyAPIGateway.Utilities.ShowMessage("BUY", "Not yet implemented in this release");
+                    return true;
+            } 
+            //sell command
+            if (messageText.StartsWith("/sell", StringComparison.InvariantCultureIgnoreCase))
+            {
+                    MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented in this release");
+                    return true;
+            } 
 
             //bal command
             if (messageText.StartsWith("/bal", StringComparison.InvariantCultureIgnoreCase))
@@ -161,8 +166,8 @@ namespace Economy
                     MyAPIGateway.Utilities.ShowMessage("Trained Monkey says", split[1].ToLowerInvariant());
                     return true;
                 }
-                //return false;
-            }
+               
+            } 
 
             //help command
             if (messageText.StartsWith("/help", StringComparison.InvariantCultureIgnoreCase))
@@ -173,14 +178,12 @@ namespace Economy
                     MyAPIGateway.Utilities.ShowMessage("help", "Commands: help, buy, sell, pay");
                     MyAPIGateway.Utilities.ShowMessage("help", "Try '/help command' for more informations about specific command debug 0");
                     return true;
-                }
-                else
-                {
+                } else  {
                     switch (split[1].ToLowerInvariant())
-                    {
-                        // did we type /help help ?
+                    {   // did we type /help help ?
                         case "help":
-                            MyAPIGateway.Utilities.ShowMessage("/help #", "Displays help on the specified command [#]. debug 1"); return true;
+                            MyAPIGateway.Utilities.ShowMessage("/help #", "Displays help on the specified command [#]. debug 1"); 
+                            return true;
                         // did we type /help buy etc
                         case "pay":
                             MyAPIGateway.Utilities.ShowMessage("Help", "/pay X Y Z Pays player [x] amount [Y] [for reason Z]");
@@ -194,27 +197,13 @@ namespace Economy
                             MyAPIGateway.Utilities.ShowMessage("Help", "/sell W X Y Z - Sells a quantity [W] of item [X] [at price Y] [to player Z]");
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /sell 20 Ice ");
                             return true;
-
-                            if (split.Length > 2)
-                            {
-                                //if we asked for help 3 levels deep eg /help buy list dont need atm
-                                switch (split[2].ToLowerInvariant())
-                                {
-                                    case "list":
-                                        MyAPIGateway.Utilities.ShowMessage("/help buy list", "test");
-                                        MyAPIGateway.Utilities.ShowMessage("/help buy list", "Example:");
-                                        return true;
-                                }
-                                //return false;
-                            }
-                            else { MyAPIGateway.Utilities.ShowMessage("/help test #", "Commands: list debug 2"); return true; }
-                    }
+                    } 
                 }
-                //return false;
-            }
-            #endregion
-
-            //return false;
+                
+            } 
+            //it didnt start with help or anything else that matters so return false and get us out of here;
+            return false;
+            #endregion     
         }
 
         public void UpdateAfterSimulation100() { }
