@@ -23,74 +23,60 @@ using System.Text.RegularExpressions;
 
 namespace Economy
 {
-    #region Progress Report
-    /*Be nice if i could get this to display in my popup but it will be deleted later anyway so no point.
-            Progress report: \n
-             * Abstract First Stage Started\n
-             * Have script responding to /bal /help and /pay\n
-             * cant get file operations to work after trying different stuff all day\n\n
-
-                Development target progress\n
-                Achieved\n
-                    1: Create a placeholder script that loads off workshop, assign contributors\n
-                Pending\n
-                    2: Configure script to read a config file containing things like starting balance, server bank balance, currency name, server trading company name, delivery method, delivery speed etc - although they will be placeholders at this stage they should read into memory\n
-                    3: Configure script to log players into a file with a starting balance\n -[nothing works so far, its either f'kin not allowed, or doesnt work]
-                    4: Add a command to permit players to examine their balance\n -[Command added but not functional]
-                Future\n
-                    5: Add a command for admins to set players balances\n
-                    6: Add a command to allow players to transfer their balance to other players\n
-                    7: Add a database of all ores and resources (and blocks?) and assign an arbitrary default value for each ore\n
-                    8: Add a command to read the price of a particular resource from this data base\n
-                    9: Configure script to create a file with the "server pool" balance of each resource type.\n
-                    10: Configure some sort of file to record items particular players have for sale, what quantity, and what price - universal auction market?\n
-*/
-    #endregion
     [Sandbox.Common.MySessionComponentDescriptor(Sandbox.Common.MyUpdateOrder.AfterSimulation)]
     public class EconomyScript : MySessionComponentBase
     {
         bool initDone = false;
         int counter = 0;
-
+        
         public void init()
         {
             MyAPIGateway.Utilities.MessageEntered += gotMessage;
             initDone = true;
             MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
             MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/help' for more informations about available commands");
-
-            MyAPIGateway.Utilities.ShowMissionScreen("Economy Mod", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
+            MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
+        }
+        public class load
+        {
+            //this is where we would normally read our file etc  simulated file read contents below
+            public string bankdata = "1234567890,101,alias,timestamp\n9999999999,100,alias2,timestamp\n";
+            // Ideally this data should be persistent until someone buys/sells/pays/joins but
+            //lacking other options it will triggers read on these events instead. bal/buy/sell/pay/join
         }
 
-        /* Well this is not right have to try another method
-         public MyWriter(string logFile)
-         {
-             m_writer = MyAPIGateway.Utilities.WriteFileInLocalStorage(logFile, typeof(MyWriter));
-         }
-        */
-        // this didnt work either. i seem to be missing something here
-        // public void WriteLine(string writethis)
-        // {
-        //     MyAPIGateway.Utilities.ShowMessage("Trained Monkey:", writethis);
-        /* m_writer = MyAPIGateway.Utilities.WriteFileInLocalStorage("bank.txt", typeof(writethis));
-        if (text.Length > 0)
-            m_writer.WriteLine(writethis);
-        text.Clear();
-       // m_writer.WriteLine(m_cache.Append(writethis));
-        m_writer.Flush();
-        m_writer.Close();
-        //return; */
+        /*
+        public class Bank 
+         //not sure if this should be static in a multiplayer context - looks to be double handling anyway - disabled 
+         //in a perfect world this is how we maintain the bank ledger - but the values dont appear persistent
+         //what a waste 
+        {
+            #region  bal table
+            // This class is mutable. Its data can be modified from
+            // outside the class.
 
-        // }
+                // Auto-Impl Properties for trivial get and set
+                public double funds { get; set; }
+                public string Name { get; set; }
+                public string PlayerID { get; set; }
+                public string timedate { get; set; }
 
+                // Constructor
+                public Bank(string UID, double balance, string name, string timestamp)
+                {
+                    funds = balance;
+                    Name = name;
+                    PlayerID = UID;
+                    timedate = timestamp;
+                }
+                // Methods
+                //public string GetContactInfo() { return "ContactInfo"; }
+                //public string GetTransactionHistory() { return "History"; }
+ 
+           #endregion 
+        } */
 
-        //togame = string.Format(Bank,Path.GetFileNameWithoutExtension(MyAPIGateway.Session.CurrentPath));
-        //MyAPIGateway.Utilities.ShowMessage("path", togame);
-        //ok this gives me the full game save folder MyAPIGateway.Session.CurrentPath
-        //this gives me just the save folder name alone Path.GetFileNameWithoutExtension(MyAPIGateway.Session.CurrentPath);
-        //this gives me bank with save folder name appended string.Format("bank{0}.txt",Path.GetFileNameWithoutExtension(MyAPIGateway.Session.CurrentPath));
-
-
+  
         protected override void UnloadData()
         {
             MyAPIGateway.Utilities.MessageEntered -= gotMessage;
@@ -113,10 +99,17 @@ namespace Economy
 
         private static bool processMessage(string messageText)
         {
+            string reply; //used when i need to assemble bits for output to screen
+            string steamid; 
+            double bankbalance; //probably redundant but i still use it for human readable reasons
+            //string alias; //represents players current in game nickname
+            //string timestamp; //will be used for seen command later maybe
+            int records; //number of record lines in bank file
+            int count; //counter for iterating over records
+
             #region command list
-            decimal bal = 100;
-            string reply;
-            //this list is going to get messy since the help and commands themself tell user the same thing if they dont type parms right.
+
+            //this list is going to get messy since the help and commands themself tell user the same thing 
             
             string[] split = messageText.Split(new Char[] { ' ' });
             //pay command
@@ -152,18 +145,80 @@ namespace Economy
             //bal command
             if (messageText.StartsWith("/bal", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (split.Length <= 1)
+                load bank = new load(); //lets grab the current data from our bankfile ready for next step
+                //ideally the entire "lines array" should already exist under bank too, to cut down
+                //double handling, but had trouble - need an expert to redo that section
+                string[] lines = bank.bankdata.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+                /*
+                 * Now we have
+                 * lines[0] = 234567890,101,alias,timestamp
+                 * lines[1] = 9999999999,100,alias2,timestamp
+                 * <blank>
+                 */
+                records = lines.Length;  //how many balance records?
+                MyAPIGateway.Utilities.ShowMessage("debug ", records.ToString() );
+
+                //will need to do this anywhere we need to check iterating on [0] and splitting every time
+                // now we have ledger[0]=234567890 ledger[1]=101 ledger[2]=alias ledger[3]=timestamp
+                string[] ledger = lines[0].Split(new Char[] { ',' });
+
+                if (split.Length <= 1)//did we just type bal? show our balance  
                 {
-                    //did we just type bal? show balance
-                    reply = "Had We made that part yet you would see your bank balance now " + bal.ToString();
+                                  
+                    //for sake of testing let us assume we just looked up our steam ID
+                    steamid = "9999999999"; //this should be replaced with a Steam UID lookup for current user
+
+                    //steamid = ledger[0]; bankbalance = Convert.ToDouble(ledger[1]); alias = ledger[2]; timestamp = ledger[3];
+
+                    //OCD could use a "while" here instead; but this seems to work fine
+                    //really need to move this to its own sub since it will be called from several places
+                    for (count = 0; count < records; count++) //search for our id
+                    {
+                        MyAPIGateway.Utilities.ShowMessage("debug ", count.ToString());
+                        if (ledger[0] == steamid) { break; }
+                        ledger = lines[count].Split(new Char[] { ',' });
+                    }
+                    if (ledger[0] != steamid) //check if we actually found it, add default if not
+                    {
+                        ledger[0] = steamid; ledger[1] = "100"; ledger[2] = "your current nickname"; ledger[3] = "timestamp";
+                        Array.Resize(ref lines, records + 1);
+                        lines[records + 1] = ledger[0]+","+ledger[1]+","+ledger[2]+","+ledger[3]+"\n";
+                        // Trigger a save here to record our new record!!!
+                    }
+                    bankbalance = Convert.ToDouble(ledger[1]);
+
+                    /* I just realized unless I can make Bank class persistent this bit is totally unnecessary
+                    // Intialize a new object.
+                    Bank client = new Bank(steamid, bankbalance, alias, timestamp);
+                    MyAPIGateway.Utilities.ShowMessage("debug", client.funds.ToString("0.######"));
+                    //Modify a property
+                    client.funds += 499.99;
+                    MyAPIGateway.Utilities.ShowMessage("debug", client.funds.ToString("0.######"));
+                    */
+                    
+                    reply = "Your bank balance is " + bankbalance;
                     MyAPIGateway.Utilities.ShowMessage("BALANCE", reply);
                     return true;
                 }
                 else //we type more than 1 parm? must want to know someone elses balance
                 {
-                    MyAPIGateway.Utilities.ShowMessage("BALANCE", "Had We made that part yet, we check you are admin then tell you another players balance");
-                    // WriteLine("Had my trained monkey been better schooled this would be getting saved to a file");
-                    MyAPIGateway.Utilities.ShowMessage("Trained Monkey says", split[1].ToLowerInvariant());
+                    count = 0; //not sure if this fixed out of array bound error
+                    // need to do more analysis, may need a failsafe undef check
+                    for (count = 0; count < records; count++) //search for nickname
+                    {
+                        MyAPIGateway.Utilities.ShowMessage("debug ", count.ToString());
+                        if (ledger[2].ToLower() == split[1].ToLower()) { break; }
+                        ledger = lines[count].Split(new Char[] { ',' });
+                    }
+                    if (ledger[2].ToLower() != split[1].ToLower()) //check if we actually found it
+                    {
+                         ledger[1] = "0"; ledger[2] = split[1]+ " not found"; 
+                    }
+                    bankbalance = Convert.ToDouble(ledger[1]);
+                    reply = "Player " + ledger[2] + " Balance: " + bankbalance;
+                    MyAPIGateway.Utilities.ShowMessage("BALANCE", reply);
+                    MyAPIGateway.Utilities.ShowMessage("param:", split[1]);
+
                     return true;
                 }
                
