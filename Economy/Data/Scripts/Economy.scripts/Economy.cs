@@ -88,7 +88,7 @@ namespace Economy
 
             //this list is going to get messy since the help and commands themself tell user the same thing 
             
-            string[] split = messageText.Split(new Char[] { ' ' });
+            string[] split = messageText.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             //pay command
             if (messageText.StartsWith("/pay", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -187,7 +187,24 @@ namespace Economy
                     return true;
                 }
                
-            } 
+            }
+
+            // test stub to list all accounts.
+            if (messageText.StartsWith("/accounts", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (MyAPIGateway.Session.Player.IsAdmin())
+                {
+                    var description = new StringBuilder();
+                    var prefix = string.Format("Count: {0}", BankConfigData.Accounts.Count);
+                    var index = 1;
+                    foreach (var account in BankConfigData.Accounts.OrderBy(s => s.NickName))
+                    {
+                        description.AppendFormat("#{0}: {1} : {2}\r\n", index++, account.NickName, account.BankBalance);
+                    }
+
+                    MyAPIGateway.Utilities.ShowMissionScreen("List Accounts", prefix, " ", description.ToString());
+                }
+            }
 
             //help command
             if (messageText.StartsWith("/help", StringComparison.InvariantCultureIgnoreCase))
