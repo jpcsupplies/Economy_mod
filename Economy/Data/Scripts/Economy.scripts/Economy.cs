@@ -17,7 +17,7 @@ using System.Text.RegularExpressions;
  *  Economy Mod V(TBA) 
  *  by PhoenixX (JPC Dev), Tangentspy, Screaming Angels
  *  For use with Space Engineers Game
- *  Refer to github issues or steam dev guide or the below progress report
+ *  Refer to github issues or steam/git dev guide/wiki or the team notes
  *  for direction what needs to be worked on next
 */
 
@@ -44,38 +44,7 @@ namespace Economy
             MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
         }
 
-        /*
-        public class Bank 
-         //not sure if this should be static in a multiplayer context - looks to be double handling anyway - disabled 
-         //in a perfect world this is how we maintain the bank ledger - but the values dont appear persistent
-         //what a waste 
-        {
-            #region  bal table
-            // This class is mutable. Its data can be modified from
-            // outside the class.
-
-                // Auto-Impl Properties for trivial get and set
-                public double funds { get; set; }
-                public string Name { get; set; }
-                public string PlayerID { get; set; }
-                public string timedate { get; set; }
-
-                // Constructor
-                public Bank(string UID, double balance, string name, string timestamp)
-                {
-                    funds = balance;
-                    Name = name;
-                    PlayerID = UID;
-                    timedate = timestamp;
-                }
-                // Methods
-                //public string GetContactInfo() { return "ContactInfo"; }
-                //public string GetTransactionHistory() { return "History"; }
  
-           #endregion 
-        } */
-
-  
         protected override void UnloadData()
         {
             MyAPIGateway.Utilities.MessageEntered -= gotMessage;
@@ -109,11 +78,11 @@ namespace Economy
         {
             string reply; //used when i need to assemble bits for output to screen
             
-            //double bankbalance; //probably redundant but i still use it for human readable reasons
+            //double bankbalance; //probably redundant may still use it for human readable reasons later
             //string alias; //represents players current in game nickname
             //string timestamp; //will be used for seen command later maybe
-            int records; //number of record lines in bank file
-            int count; //counter for iterating over records
+            //int records; //number of record lines in bank file replaced by "BankConfigData.Accounts.Count.ToString()"
+            //int count; //counter for iterating over records no longer used
 
             #region command list
 
@@ -131,6 +100,33 @@ namespace Economy
                 }
                 else //we type more than 1 parm? 
                 {
+                    /*client.funds += 499.99; or -=  depending which side of transaction we are..
+                    will need repeat of the "create default bal if doesnt exist" here.. or trigger the existing bal
+                    command to save double handling
+                     * Logic:                     
+                     * Get player steam ID
+                     * Load the relevant bank balance data
+                     * It needs to first check the player has enough to cover his payment, 
+                     *      if true, 
+                     *          it needs to check the person being paid has an account record, 
+                     *               if true, { flag bool true }
+                     *               if false, 
+                     *                  it needs to check if the player is even online
+                     *                     if true
+                     *                         create one with default balance.
+                     *                         flag bool true
+                     *                     if false
+                     *                         display an error message player not online
+                     *                         flag bool false
+                     *          if bool true      
+                     *               add payment amount to person being paid's balance
+                     *               deduct payment amount from person making payment
+                     *               force a save so we dont loose money on server crash (if possible)
+                     *               notify receiving player that they were paid and/or any message the sending player wrote
+                     *          else { throw error Unable to complete transaction }
+                     *      if false/otherwise throw error you dont have enough money
+                     *      eg /pay bob 50 here is your payment
+                     */
                     MyAPIGateway.Utilities.ShowMessage("PAY", "Had We made that part yet, we would be trying to pay someone here");
                     return true;
                 }
@@ -170,14 +166,6 @@ namespace Economy
                         BankConfigData.Accounts.Add(account);
                     }
 
-                    /* I just realized unless I can make Bank class persistent this bit is totally unnecessary
-                    // Intialize a new object.
-                    Bank client = new Bank(steamid, bankbalance, alias, timestamp);
-                    MyAPIGateway.Utilities.ShowMessage("debug", client.funds.ToString("0.######"));
-                    //Modify a property
-                    client.funds += 499.99;
-                    MyAPIGateway.Utilities.ShowMessage("debug", client.funds.ToString("0.######"));
-                    */
 
                     reply = "Your bank balance is " + account.BankBalance.ToString("0.######");
                     MyAPIGateway.Utilities.ShowMessage("BALANCE", reply);
@@ -220,6 +208,10 @@ namespace Economy
                         case "pay":
                             MyAPIGateway.Utilities.ShowMessage("Help", "/pay X Y Z Pays player [x] amount [Y] [for reason Z]");
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /pay bob 100 being awesome");
+                            return true;
+                        case "bal":
+                            MyAPIGateway.Utilities.ShowMessage("Help", "/bal Displays bank balance");
+                            MyAPIGateway.Utilities.ShowMessage("Help", "Example: /bal");
                             return true;
                         case "buy":
                             MyAPIGateway.Utilities.ShowMessage("Help", "/buy W X Y Z - Purchases a quantity [W] of item [X] [at price Y] [from player Z]");
