@@ -65,7 +65,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BankConfig.cs" />
+    <Compile Include="BankManagement.cs" />
     <Compile Include="Economy.cs" />
+    <Compile Include="BankAccountStruct.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

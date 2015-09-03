@@ -28,21 +28,20 @@ namespace Economy
     {
         bool initDone = false;
         int counter = 0;
+
+        /// Ideally this data should be persistent until someone buys/sells/pays/joins but
+        /// lacking other options it will triggers read on these events instead. bal/buy/sell/pay/join
+        public static BankConfig BankConfigData;
         
         public void init()
         {
             MyAPIGateway.Utilities.MessageEntered += gotMessage;
             initDone = true;
+            BankConfigData = BankManagement.LoadContent();
+
             MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
             MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/help' for more informations about available commands");
             MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
-        }
-        public class load
-        {
-            //this is where we would normally read our file etc  simulated file read contents below
-            public string bankdata = "1234567890,101,alias,timestamp\n9999999999,100,alias2,timestamp\n";
-            // Ideally this data should be persistent until someone buys/sells/pays/joins but
-            //lacking other options it will triggers read on these events instead. bal/buy/sell/pay/join
         }
 
         /*
@@ -81,14 +80,23 @@ namespace Economy
         {
             MyAPIGateway.Utilities.MessageEntered -= gotMessage;
             base.UnloadData();
+
+            if (BankConfigData != null)
+            {
+                BankManagement.SaveContent(BankConfigData);
+                BankConfigData = null;
+            }
         }
 
         public override void UpdateAfterSimulation()
         {
             //presumably we are sleeping 100 so we are on the screen after the player sees the screen or as an interval?
             //if I cannot find an on join event might have to maintain a player list this way
-            if (!initDone && MyAPIGateway.Session != null) init(); if (counter >= 100) { counter = 0; UpdateAfterSimulation100(); }
-            counter++; base.UpdateAfterSimulation();
+            if (!initDone && MyAPIGateway.Session != null && MyAPIGateway.Session.Player != null)
+                init();
+            if (counter >= 100) { counter = 0; UpdateAfterSimulation100(); }
+            counter++;
+            base.UpdateAfterSimulation();
         }
 
         private static void gotMessage(string messageText, ref bool sendToOthers)
@@ -100,8 +108,8 @@ namespace Economy
         private static bool processMessage(string messageText)
         {
             string reply; //used when i need to assemble bits for output to screen
-            string steamid; 
-            double bankbalance; //probably redundant but i still use it for human readable reasons
+            
+            //double bankbalance; //probably redundant but i still use it for human readable reasons
             //string alias; //represents players current in game nickname
             //string timestamp; //will be used for seen command later maybe
             int records; //number of record lines in bank file
@@ -145,47 +153,22 @@ namespace Economy
             //bal command
             if (messageText.StartsWith("/bal", StringComparison.InvariantCultureIgnoreCase))
             {
-                load bank = new load(); //lets grab the current data from our bankfile ready for next step
-                //ideally the entire "lines array" should already exist under bank too, to cut down
-                //double handling, but had trouble - need an expert to redo that section
-                string[] lines = bank.bankdata.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
-                /*
-                 * Now we have
-                 * lines[0] = 234567890,101,alias,timestamp
-                 * lines[1] = 9999999999,100,alias2,timestamp
-                 * <blank>
-                 */
-                records = lines.Length;  //how many balance records?
-                MyAPIGateway.Utilities.ShowMessage("debug ", records.ToString() );
-
-                //will need to do this anywhere we need to check iterating on [0] and splitting every time
-                // now we have ledger[0]=234567890 ledger[1]=101 ledger[2]=alias ledger[3]=timestamp
-                string[] ledger = lines[0].Split(new Char[] { ',' });
+                //how many balance records?
+                MyAPIGateway.Utilities.ShowMessage("debug ", BankConfigData.Accounts.Count.ToString());
 
                 if (split.Length <= 1)//did we just type bal? show our balance  
                 {
-                                  
-                    //for sake of testing let us assume we just looked up our steam ID
-                    steamid = "9999999999"; //this should be replaced with a Steam UID lookup for current user
+                    // lets grab the current player data from our bankfile ready for next step
+                    // we look up our Steam Id/
+                    var account = BankConfigData.Accounts.FirstOrDefault(
+                        a => a.SteamId == MyAPIGateway.Session.Player.SteamUserId);
 
-                    //steamid = ledger[0]; bankbalance = Convert.ToDouble(ledger[1]); alias = ledger[2]; timestamp = ledger[3];
-
-                    //OCD could use a "while" here instead; but this seems to work fine
-                    //really need to move this to its own sub since it will be called from several places
-                    for (count = 0; count < records; count++) //search for our id
+                    // check if we actually found it, add default if not
+                    if (account == null)
                     {
-                        MyAPIGateway.Utilities.ShowMessage("debug ", count.ToString());
-                        if (ledger[0] == steamid) { break; }
-                        ledger = lines[count].Split(new Char[] { ',' });
+                        account = new BankAccountStruct() { BankBalance = 100, Date = DateTime.Now, NickName = MyAPIGateway.Session.Player.DisplayName, SteamId = MyAPIGateway.Session.Player.SteamUserId };
+                        BankConfigData.Accounts.Add(account);
                     }
-                    if (ledger[0] != steamid) //check if we actually found it, add default if not
-                    {
-                        ledger[0] = steamid; ledger[1] = "100"; ledger[2] = "your current nickname"; ledger[3] = "timestamp";
-                        Array.Resize(ref lines, records + 1);
-                        lines[records + 1] = ledger[0]+","+ledger[1]+","+ledger[2]+","+ledger[3]+"\n";
-                        // Trigger a save here to record our new record!!!
-                    }
-                    bankbalance = Convert.ToDouble(ledger[1]);
 
                     /* I just realized unless I can make Bank class persistent this bit is totally unnecessary
                     // Intialize a new object.
@@ -195,27 +178,21 @@ namespace Economy
                     client.funds += 499.99;
                     MyAPIGateway.Utilities.ShowMessage("debug", client.funds.ToString("0.######"));
                     */
-                    
-                    reply = "Your bank balance is " + bankbalance;
+
+                    reply = "Your bank balance is " + account.BankBalance.ToString("0.######");
                     MyAPIGateway.Utilities.ShowMessage("BALANCE", reply);
                     return true;
                 }
                 else //we type more than 1 parm? must want to know someone elses balance
                 {
-                    count = 0; //not sure if this fixed out of array bound error
-                    // need to do more analysis, may need a failsafe undef check
-                    for (count = 0; count < records; count++) //search for nickname
-                    {
-                        MyAPIGateway.Utilities.ShowMessage("debug ", count.ToString());
-                        if (ledger[2].ToLower() == split[1].ToLower()) { break; }
-                        ledger = lines[count].Split(new Char[] { ',' });
-                    }
-                    if (ledger[2].ToLower() != split[1].ToLower()) //check if we actually found it
-                    {
-                         ledger[1] = "0"; ledger[2] = split[1]+ " not found"; 
-                    }
-                    bankbalance = Convert.ToDouble(ledger[1]);
-                    reply = "Player " + ledger[2] + " Balance: " + bankbalance;
+                    var account = BankConfigData.Accounts.FirstOrDefault(
+                        a => a.NickName.Equals(split[1], StringComparison.InvariantCultureIgnoreCase));
+
+                    if (account == null)
+                        reply = "Player not found Balance: 0";
+                    else
+                        reply = "Player " + account.NickName + " Balance: " + account.BankBalance;
+
                     MyAPIGateway.Utilities.ShowMessage("BALANCE", reply);
                     MyAPIGateway.Utilities.ShowMessage("param:", split[1]);
 
