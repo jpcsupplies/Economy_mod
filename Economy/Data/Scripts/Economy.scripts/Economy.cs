@@ -77,8 +77,10 @@ namespace Economy
         private static bool processMessage(string messageText)
         {
             string reply; //used when i need to assemble bits for output to screen
+            bool hasaccount; //flag used when transferring funds eg /pay bob 10 - indicates if bob even has an account record yet
             
-            //double bankbalance; //probably redundant may still use it for human readable reasons later
+            double bankbalance; //probably redundant may still use it for human readable reasons later
+            double tran_amount; //how much are we trying to work with here?
             //string alias; //represents players current in game nickname
             //string timestamp; //will be used for seen command later maybe
             //int records; //number of record lines in bank file replaced by "BankConfigData.Accounts.Count.ToString()"
@@ -100,35 +102,65 @@ namespace Economy
                 }
                 else //we type more than 1 parm? 
                 {
-                    /*client.funds += 499.99; or -=  depending which side of transaction we are..
-                    will need repeat of the "create default bal if doesnt exist" here.. or trigger the existing bal
-                    command to save double handling
-                     * Logic:                     
-                     * Get player steam ID
-                     * Load the relevant bank balance data
-                     * It needs to first check the player has enough to cover his payment, 
-                     *      if true, 
-                     *          it needs to check the person being paid has an account record, 
-                     *               if true, { flag bool true }
-                     *               if false, 
-                     *                  it needs to check if the player is even online
-                     *                     if true
-                     *                         create one with default balance.
-                     *                         flag bool true
-                     *                     if false
-                     *                         display an error message player not online
-                     *                         flag bool false
-                     *          if bool true      
-                     *               add payment amount to person being paid's balance
-                     *               deduct payment amount from person making payment
-                     *               force a save so we dont loose money on server crash (if possible)
-                     *               notify receiving player that they were paid and/or any message the sending player wrote
-                     *          else { throw error Unable to complete transaction }
-                     *      if false/otherwise throw error you dont have enough money
-                     *      eg /pay bob 50 here is your payment
-                     */
-                    MyAPIGateway.Utilities.ShowMessage("PAY", "Had We made that part yet, we would be trying to pay someone here");
-                    return true;
+                    if (split.Length >= 2)
+                    { // did we at least type /pay someone something . . .
+                        /*client.funds += 499.99; or -=  depending which side of transaction we are..
+                        will need repeat of the "create default bal if doesnt exist" here.. or trigger the existing bal
+                        command to save double handling - probably do that once we know it works first*/
+                        //* Logic:                     
+                        //* Get player steam ID
+                        var accounttospend = BankConfigData.Accounts.FirstOrDefault(
+                             a => a.SteamId == MyAPIGateway.Session.Player.SteamUserId);
+
+                        //* Load the relevant bank balance data - check player even has an account yet; make one if not
+                        if (accounttospend == null)
+                        {
+                            accounttospend = new BankAccountStruct() { BankBalance = 100, Date = DateTime.Now, NickName = MyAPIGateway.Session.Player.DisplayName, SteamId = MyAPIGateway.Session.Player.SteamUserId };
+                            BankConfigData.Accounts.Add(accounttospend);
+                        }
+                        //* It needs to first check the player has enough to cover his payment
+                        tran_amount = Convert.ToDouble(split[2]);
+                        bankbalance = Convert.ToDouble(accounttospend.BankBalance);
+                        if (tran_amount <= bankbalance)
+                        //*      if true, 
+                        {
+                            //*          it needs to check the person being paid has an account record, 
+                            var account = BankConfigData.Accounts.FirstOrDefault(
+                                a => a.NickName.Equals(split[1], StringComparison.InvariantCultureIgnoreCase));
+                            //*               if false, 
+                            //*                  it needs to check if the other player is even online
+                            //*                     if true
+                            //*                         create one with default balance.
+                            //*                         flag hasaccount bool true
+                            //*                     if false
+                            //*                         display an error message player not found
+                            //*                         flag hasaccount bool false
+                            if (account == null)
+                            { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry player not found!"); hasaccount = false; }
+                            //*               if true, { flag hasaccount bool true }
+                            else
+                            { hasaccount = true; }
+                            //*          if hasaccount bool true   
+                            if (hasaccount)
+                            {
+                                MyAPIGateway.Utilities.ShowMessage("PAY", "Yes we could pay them here debug");
+                                //*               add payment amount to person being paid's balance
+                                //*               deduct payment amount from person making payment
+                                //*               force a save so we dont loose money on server crash (if possible)
+                                //*               notify receiving player that they were paid and/or any message the sending player wrote
+                            }
+                            //*          else { throw error Unable to complete transaction }         
+                            else { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry  can't find them in bank file!"); }
+
+                            //*      if false/otherwise throw error you dont have enough money
+                        }
+                        else { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry you can't afford that much!"); }
+                        //*      eg /pay bob 50 here is your payment
+                        reply = "I HAVE " + bankbalance + ". Pay " + split[1] + " " + tran_amount;
+                        MyAPIGateway.Utilities.ShowMessage("PAY", reply);
+                        return true;
+                    }  // i guess we didnt type enough params
+                    else { MyAPIGateway.Utilities.ShowMessage("PAY", "Not enough parameters");  return true; }
                 }
 
             } 
@@ -173,18 +205,22 @@ namespace Economy
                 }
                 else //we type more than 1 parm? must want to know someone elses balance
                 {
-                    var account = BankConfigData.Accounts.FirstOrDefault(
-                        a => a.NickName.Equals(split[1], StringComparison.InvariantCultureIgnoreCase));
+                    if (MyAPIGateway.Session.Player.IsAdmin()) // hold on there, are we an admin first?
+                    {
+                        var account = BankConfigData.Accounts.FirstOrDefault(
+                            a => a.NickName.Equals(split[1], StringComparison.InvariantCultureIgnoreCase));
 
-                    if (account == null)
-                        reply = "Player not found Balance: 0";
-                    else
-                        reply = "Player " + account.NickName + " Balance: " + account.BankBalance;
+                        if (account == null)
+                            reply = "Player not found Balance: 0";
+                        else
+                            reply = "Player " + account.NickName + " Balance: " + account.BankBalance;
 
-                    MyAPIGateway.Utilities.ShowMessage("BALANCE", reply);
-                    MyAPIGateway.Utilities.ShowMessage("param:", split[1]);
+                        MyAPIGateway.Utilities.ShowMessage("BALANCE", reply);
+                        MyAPIGateway.Utilities.ShowMessage("param:", split[1]);
 
-                    return true;
+                        return true;
+                    }
+                    else { return true; } // not an admin? lets pretend this never happened
                 }
                
             }
