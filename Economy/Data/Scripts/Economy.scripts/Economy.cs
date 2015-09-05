@@ -78,9 +78,9 @@ namespace Economy
         {
             string reply; //used when i need to assemble bits for output to screen
             bool hasaccount; //flag used when transferring funds eg /pay bob 10 - indicates if bob even has an account record yet
-            
-            double bankbalance; //probably redundant may still use it for human readable reasons later
-            double tran_amount; //how much are we trying to work with here?
+
+            decimal bankbalance; //probably redundant may still use it for human readable reasons later
+            decimal tran_amount; //how much are we trying to work with here?
             //string alias; //represents players current in game nickname
             //string timestamp; //will be used for seen command later maybe
             //int records; //number of record lines in bank file replaced by "BankConfigData.Accounts.Count.ToString()"
@@ -119,8 +119,8 @@ namespace Economy
                             BankConfigData.Accounts.Add(accounttospend);
                         }
                         //* It needs to first check the player has enough to cover his payment
-                        tran_amount = Convert.ToDouble(split[2]);
-                        bankbalance = Convert.ToDouble(accounttospend.BankBalance);
+                        tran_amount = Convert.ToDecimal(split[2]);
+                        bankbalance = Convert.ToDecimal(accounttospend.BankBalance);
                         if (tran_amount <= bankbalance)
                         //*      if true, 
                         {
