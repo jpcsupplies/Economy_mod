@@ -132,6 +132,7 @@ namespace Economy
                             //*                     if true
                             //*                         create one with default balance.
                             //*                         flag hasaccount bool true
+
                             //*                     if false
                             //*                         display an error message player not found
                             //*                         flag hasaccount bool false
@@ -143,14 +144,32 @@ namespace Economy
                             //*          if hasaccount bool true   
                             if (hasaccount)
                             {
-                                reply = MyAPIGateway.Session.Player.DisplayName + " has " + bankbalance + " we are paying " + tran_amount + " to " + split[1] + ". Account= " + account + ". uid will have to be retreived ";
+                                //reply = MyAPIGateway.Session.Player.DisplayName + " has " + bankbalance + " we are paying " + tran_amount + " to " + split[1] + ". Account= " + account + ". uid will have to be retreived ";
+                                //MyAPIGateway.Utilities.ShowMessage("PAY", reply); 
+                                //is there a modify property?  here we remove this bank record
+                                BankConfigData.Accounts.Remove(accounttospend);
+                                //here we add the players bank record again with the updated balance minus what they spent
+                                accounttospend = new BankAccountStruct() { BankBalance = (bankbalance-tran_amount), Date = DateTime.Now, NickName = MyAPIGateway.Session.Player.DisplayName, SteamId = MyAPIGateway.Session.Player.SteamUserId };
+                                BankConfigData.Accounts.Add(accounttospend);
+
+                                //here we retrive the target player steam id and balance
+                                ulong theirID=account.SteamId;  decimal theirbank=(account.BankBalance+=tran_amount); string theirnick=account.NickName;
+                                //here we clean out the old data
+                                BankConfigData.Accounts.Remove(account);
+                                //here we build a new record with the correct data
+                                account = new BankAccountStruct() { BankBalance = theirbank, Date = DateTime.Now, NickName = theirnick, SteamId = theirID };
+                                //here we write it back to our bank ledger file
+                                BankConfigData.Accounts.Add(account);
+
+                                //if this works this is a very sexy way to work with our file
+                                //testing: it does indeed work, if i was a teenager id probably need to change my underwear at this point
+
+                                // now need to work out how to notify receiving player that they were paid and/or any message the sending player wrote
+                                // which needs to not send if the player isnt online - pity ive no idea how to write to the faction chat system
+                                // be a good place to send the player a faction message as it would work even if they were offline..
+                                reply = theirnick + ", " + MyAPIGateway.Session.Player.DisplayName + " just paid you " + tran_amount + " for ";
+                                //need to check the split[3] and upwards and display up to split.length here in reply
                                 MyAPIGateway.Utilities.ShowMessage("PAY", reply);
-                                // ok so here i need to figure out what array elements to update presumably, ie the player and the person we pay then 
-                                // player to pay += tran_amount and bankbalance -= tran_amount
-                                //*               add payment amount to person being paid's balance
-                                //*               deduct payment amount from person making payment
-                                //*               force a save so we dont loose money on server crash (if possible)
-                                //*               notify receiving player that they were paid and/or any message the sending player wrote
                             }
                             //*          else { throw error Unable to complete transaction }         
                             else { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry  can't find them in bank file!"); }
@@ -159,8 +178,7 @@ namespace Economy
                         }
                         else { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry you can't afford that much!"); }
                         //*      eg /pay bob 50 here is your payment
-                        reply = "I HAVE " + bankbalance + ". Pay " + split[1] + " " + tran_amount;
-                        MyAPIGateway.Utilities.ShowMessage("PAY", reply);
+
                         return true;
                     }  // i guess we didnt type enough params
                     else { MyAPIGateway.Utilities.ShowMessage("PAY", "Not enough parameters");  return true; }
