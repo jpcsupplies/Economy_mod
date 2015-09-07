@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-16"?>
+<BankConfig xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Accounts>
+    <BankAccountStruct>
+      <SteamId>76561197968837138</SteamId>
+      <BankBalance>97.1</BankBalance>
+      <NickName>PhoenixX</NickName>
+      <Date>2015-09-07T23:00:14.0303122+10:00</Date>
+    </BankAccountStruct>
+    <BankAccountStruct>
+      <SteamId>76561197968837137</SteamId>
+      <BankBalance>7.95</BankBalance>
+      <NickName>bob</NickName>
+      <Date>2015-09-07T23:00:14.0303122+10:00</Date>
+    </BankAccountStruct>
+  </Accounts>
+</BankConfig>
