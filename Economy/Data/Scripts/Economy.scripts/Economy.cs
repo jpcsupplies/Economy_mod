@@ -143,7 +143,10 @@ namespace Economy
                             //*          if hasaccount bool true   
                             if (hasaccount)
                             {
-                                MyAPIGateway.Utilities.ShowMessage("PAY", "Yes we could pay them here debug");
+                                reply = MyAPIGateway.Session.Player.DisplayName + " has " + Bankbalance + " we are paying " + tran_amount + " to " + split[1] + " account " + account + " uid will have to be retreived ";
+                                MyAPIGateway.Utilities.ShowMessage("PAY", reply);
+                                // ok so here i need to figure out what array elements to update presumably, ie the player and the person we pay then 
+                                // player to pay += tran_amount and bankbalance -= tran_amount
                                 //*               add payment amount to person being paid's balance
                                 //*               deduct payment amount from person making payment
                                 //*               force a save so we dont loose money on server crash (if possible)
