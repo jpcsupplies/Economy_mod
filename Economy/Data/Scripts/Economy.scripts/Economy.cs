@@ -143,7 +143,7 @@ namespace Economy
                             //*          if hasaccount bool true   
                             if (hasaccount)
                             {
-                                reply = MyAPIGateway.Session.Player.DisplayName + " has " + Bankbalance + " we are paying " + tran_amount + " to " + split[1] + " account " + account + " uid will have to be retreived ";
+                                reply = MyAPIGateway.Session.Player.DisplayName + " has " + bankbalance + " we are paying " + tran_amount + " to " + split[1] + ". Account= " + account + ". uid will have to be retreived ";
                                 MyAPIGateway.Utilities.ShowMessage("PAY", reply);
                                 // ok so here i need to figure out what array elements to update presumably, ie the player and the person we pay then 
                                 // player to pay += tran_amount and bankbalance -= tran_amount
