@@ -102,7 +102,7 @@ namespace Economy
                 }
                 else //we type more than 1 parm? 
                 {
-                    if (split.Length >= 2)
+                    if (split.Length >= 3)
                     { // did we at least type /pay someone something . . .
                         /*client.funds += 499.99; or -=  depending which side of transaction we are..
                         will need repeat of the "create default bal if doesnt exist" here.. or trigger the existing bal
