@@ -104,9 +104,6 @@ namespace Economy
                 {
                     if (split.Length >= 3)
                     { // did we at least type /pay someone something . . .
-                        /*client.funds += 499.99; or -=  depending which side of transaction we are..
-                        will need repeat of the "create default bal if doesnt exist" here.. or trigger the existing bal
-                        command to save double handling - probably do that once we know it works first*/
                         //* Logic:                     
                         //* Get player steam ID
                         var accounttospend = BankConfigData.Accounts.FirstOrDefault(
@@ -121,7 +118,7 @@ namespace Economy
                         //* It needs to first check the player has enough to cover his payment
                         tran_amount = Convert.ToDecimal(split[2]);
                         bankbalance = Convert.ToDecimal(accounttospend.BankBalance);
-                        if (tran_amount <= bankbalance)
+                        if (tran_amount <= bankbalance || MyAPIGateway.Session.Player.IsAdmin()) // do we have enough or are we admin so it doesnt matter
                         //*      if true, 
                         {
                             //*          it needs to check the person being paid has an account record, 
@@ -144,12 +141,12 @@ namespace Economy
                             //*          if hasaccount bool true   
                             if (hasaccount)
                             {
-                                //reply = MyAPIGateway.Session.Player.DisplayName + " has " + bankbalance + " we are paying " + tran_amount + " to " + split[1] + ". Account= " + account + ". uid will have to be retreived ";
-                                //MyAPIGateway.Utilities.ShowMessage("PAY", reply); 
-                                //is there a modify property?  here we remove this bank record
+                                //is there a modify property to save the need to remove then re-add? 
+                                //here we remove this players bank record
                                 BankConfigData.Accounts.Remove(accounttospend);
+                                if (!MyAPIGateway.Session.Player.IsAdmin()) { tran_amount = Math.Abs(tran_amount); } //admins can give or take money, normal players can only give money so convert negative to positive
                                 //here we add the players bank record again with the updated balance minus what they spent
-                                accounttospend = new BankAccountStruct() { BankBalance = (bankbalance-tran_amount), Date = DateTime.Now, NickName = MyAPIGateway.Session.Player.DisplayName, SteamId = MyAPIGateway.Session.Player.SteamUserId };
+                                accounttospend = new BankAccountStruct() { BankBalance = (bankbalance - tran_amount), Date = DateTime.Now, NickName = MyAPIGateway.Session.Player.DisplayName, SteamId = MyAPIGateway.Session.Player.SteamUserId }; 
                                 BankConfigData.Accounts.Add(accounttospend);
 
                                 //here we retrive the target player steam id and balance
@@ -167,8 +164,8 @@ namespace Economy
                                 // now need to work out how to notify receiving player that they were paid and/or any message the sending player wrote
                                 // which needs to not send if the player isnt online - pity ive no idea how to write to the faction chat system
                                 // be a good place to send the player a faction message as it would work even if they were offline..
-                                reply = theirnick + ", " + MyAPIGateway.Session.Player.DisplayName + " just paid you " + tran_amount + " for ";
-                                //need to check the split[3] and upwards and display up to split.length here in reply
+                                reply = theirnick + ", " + MyAPIGateway.Session.Player.DisplayName + " just paid you " + tran_amount + " for ";                           
+                                //need to check the split[4] and upwards and display up to split.length here in reply
                                 MyAPIGateway.Utilities.ShowMessage("PAY", reply);
                             }
                             //*          else { throw error Unable to complete transaction }         
