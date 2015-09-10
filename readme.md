@@ -22,6 +22,9 @@ The offical github repository for this mod is available here:
 https://github.com/jpcsupplies/Economy_mod
 
 
+For more information about this mod features and roadmap check the wiki [here:](
+https://github.com/jpcsupplies/Economy_mod/wiki)
+
 Visit the Keen Software House modding forums for more detail on modding Space Engineers:
 http://forums.keenswh.com/?forum=325599
 
