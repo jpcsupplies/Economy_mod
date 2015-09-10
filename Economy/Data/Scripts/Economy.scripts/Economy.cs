@@ -194,11 +194,35 @@ namespace Economy
             {
                     MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented in this release");
                     return true;
+            }
+
+            //seen command
+            if (messageText.StartsWith("/seen", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (split.Length <= 1)//did we just type seen? show error  
+                {
+                    MyAPIGateway.Utilities.ShowMessage("SEEN", "Who are we looking for? ");
+                }
+                else //look up that player and display time stamp
+                {
+                    var account = BankConfigData.Accounts.FirstOrDefault(
+                            a => a.NickName.Equals(split[1], StringComparison.InvariantCultureIgnoreCase));
+
+                    if (account == null)
+                        reply = "Player not found";
+                    else
+                        reply = "Player " + account.NickName + " Last seen: " + account.Date;
+
+                    MyAPIGateway.Utilities.ShowMessage("SEEN", reply);
+                }
+                //need to update our own timestamp here too!
+                return true;
             } 
 
             //bal command
             if (messageText.StartsWith("/bal", StringComparison.InvariantCultureIgnoreCase))
             {
+                //must update our own timestamp here too!
                 //how many balance records?
                 MyAPIGateway.Utilities.ShowMessage("debug ", BankConfigData.Accounts.Count.ToString());
 
@@ -257,6 +281,7 @@ namespace Economy
                     }
 
                     MyAPIGateway.Utilities.ShowMissionScreen("List Accounts", prefix, " ", description.ToString());
+                    //update our own timestamp here too!
                 }
             }
 
