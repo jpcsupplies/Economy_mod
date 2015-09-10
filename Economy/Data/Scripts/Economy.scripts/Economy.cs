@@ -291,23 +291,34 @@ namespace Economy
                 if (split.Length <= 1)
                 {
                     //did we just type help? show what else they can get help on
-                    MyAPIGateway.Utilities.ShowMessage("help", "Commands: help, buy, sell, pay");
+                    MyAPIGateway.Utilities.ShowMessage("help", "Commands: help, buy, sell, bal, pay, seen");
+                    if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("admin", "Commands: accounts, bal player, pay player +/-any_amount"); }
                     MyAPIGateway.Utilities.ShowMessage("help", "Try '/help command' for more informations about specific command debug 0");
                     return true;
                 } else  {
                     switch (split[1].ToLowerInvariant())
                     {   // did we type /help help ?
                         case "help":
-                            MyAPIGateway.Utilities.ShowMessage("/help #", "Displays help on the specified command [#]. debug 1"); 
+                            MyAPIGateway.Utilities.ShowMessage("/help #", "Displays help on the specified command [#]."); 
                             return true;
                         // did we type /help buy etc
                         case "pay":
                             MyAPIGateway.Utilities.ShowMessage("Help", "/pay X Y Z Pays player [x] amount [Y] [for reason Z]");
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /pay bob 100 being awesome");
+                            if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin", "Admins can add or remove any amount from a player"); }
+                            return true;
+                        case "seen":
+                            MyAPIGateway.Utilities.ShowMessage("Help", "/seen X Displays time and date that economy plugin last saw player X");
+                            MyAPIGateway.Utilities.ShowMessage("Help", "Example: /seen bob");
+                            return true;
+                        case "accounts":
+                            MyAPIGateway.Utilities.ShowMessage("Help", "/accounts Displays all player bank balances");
+                            MyAPIGateway.Utilities.ShowMessage("Help", "Example: /accounts");
                             return true;
                         case "bal":
                             MyAPIGateway.Utilities.ShowMessage("Help", "/bal Displays bank balance");
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /bal");
+                            if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin", "Admins can also view another player. eg. /bal bob"); }
                             return true;
                         case "buy":
                             MyAPIGateway.Utilities.ShowMessage("Help", "/buy W X Y Z - Purchases a quantity [W] of item [X] [at price Y] [from player Z]");
