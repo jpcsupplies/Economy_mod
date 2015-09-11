@@ -78,6 +78,7 @@ namespace Economy
         {
             string reply; //used when i need to assemble bits for output to screen
             bool hasaccount; //flag used when transferring funds eg /pay bob 10 - indicates if bob even has an account record yet
+            string debug; //used if i need a random string for testing etc
 
             decimal bankbalance; //probably redundant may still use it for human readable reasons later
             decimal tran_amount; //how much are we trying to work with here?
@@ -115,7 +116,16 @@ namespace Economy
                             accounttospend = new BankAccountStruct() { BankBalance = 100, Date = DateTime.Now, NickName = MyAPIGateway.Session.Player.DisplayName, SteamId = MyAPIGateway.Session.Player.SteamUserId };
                             BankConfigData.Accounts.Add(accounttospend);
                         }
+                        
+                     
+                       if(  split[2].GetType() == typeof(int)) { reply = "we got an integer"; }
+                       else if (split[2].GetType() == typeof(string)) { reply = "we got a string"; }
+                       else { reply = "we got something else"; }
+
+                        MyAPIGateway.Utilities.ShowMessage("debug", reply);
                         //* It needs to first check the player has enough to cover his payment
+                        //disabled until i can catch strings where we want decimals!
+                        /*
                         tran_amount = Convert.ToDecimal(split[2]);
                         bankbalance = Convert.ToDecimal(accounttospend.BankBalance);
                         if (tran_amount <= bankbalance || MyAPIGateway.Session.Player.IsAdmin()) // do we have enough or are we admin so it doesnt matter
@@ -175,7 +185,7 @@ namespace Economy
                         }
                         else { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry you can't afford that much!"); }
                         //*      eg /pay bob 50 here is your payment
-
+                        */
                         return true;
                     }  // i guess we didnt type enough params
                     else { MyAPIGateway.Utilities.ShowMessage("PAY", "Not enough parameters");  return true; }
@@ -219,6 +229,28 @@ namespace Economy
                 return true;
             } 
 
+            //reset command - used by admins to reset their balance in the event they have overused
+            //their /pay command on other players and now have a significantly wrong balance
+            if (messageText.StartsWith("/reset", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (MyAPIGateway.Session.Player.IsAdmin()) // hold on there, are we an admin first?
+                {   // we look up our bank record based on our Steam Id/
+                    var myaccount = BankConfigData.Accounts.FirstOrDefault(
+                        a => a.SteamId == MyAPIGateway.Session.Player.SteamUserId);
+                    // wait do we even have an account yet? Cant remove whats not there!
+                    if (myaccount != null) { BankConfigData.Accounts.Remove(myaccount); }
+                    
+                    //ok cause i am an admin and everything else checks out, lets construct our bank record with a new balance
+                    myaccount = new BankAccountStruct() { BankBalance = 100, Date = DateTime.Now, NickName = MyAPIGateway.Session.Player.DisplayName, SteamId = MyAPIGateway.Session.Player.SteamUserId };
+                    //ok lets apply it
+                    BankConfigData.Accounts.Add(myaccount);
+                    reply = " Done";
+                    MyAPIGateway.Utilities.ShowMessage("Debug", reply);
+
+                }
+                return true;
+            }
+
             //bal command
             if (messageText.StartsWith("/bal", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -258,7 +290,7 @@ namespace Economy
                             reply = "Player " + account.NickName + " Balance: " + account.BankBalance;
 
                         MyAPIGateway.Utilities.ShowMessage("BALANCE", reply);
-                        MyAPIGateway.Utilities.ShowMessage("param:", split[1]);
+                        //MyAPIGateway.Utilities.ShowMessage("param:", split[1]);
 
                         return true;
                     }
