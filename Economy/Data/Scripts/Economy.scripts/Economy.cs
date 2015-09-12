@@ -81,7 +81,7 @@ namespace Economy
             string debug; //used if i need a random string for testing etc
 
             decimal bankbalance; //probably redundant may still use it for human readable reasons later
-            decimal tran_amount; //how much are we trying to work with here?
+            decimal tran_amount=0; //how much are we trying to work with here?
             //string alias; //represents players current in game nickname
             //string timestamp; //will be used for seen command later maybe
             //int records; //number of record lines in bank file replaced by "BankConfigData.Accounts.Count.ToString()"
@@ -116,95 +116,82 @@ namespace Economy
                             accounttospend = new BankAccountStruct() { BankBalance = 100, Date = DateTime.Now, NickName = MyAPIGateway.Session.Player.DisplayName, SteamId = MyAPIGateway.Session.Player.SteamUserId };
                             BankConfigData.Accounts.Add(accounttospend);
                         }
-                        
-                     
-                       if(  split[2].GetType() == typeof(int)) { reply = "we got an integer"; }
-                       else if (split[2].GetType() == typeof(string)) { reply = "we got a string"; }
-                       else { reply = "we got something else"; }
-
-                        MyAPIGateway.Utilities.ShowMessage("debug", reply);
-                        //* It needs to first check the player has enough to cover his payment
-                        //disabled until i can catch strings where we want decimals!
-                        /*
-                        tran_amount = Convert.ToDecimal(split[2]);
-                        bankbalance = Convert.ToDecimal(accounttospend.BankBalance);
-                        if (tran_amount <= bankbalance || MyAPIGateway.Session.Player.IsAdmin()) // do we have enough or are we admin so it doesnt matter
-                        //*      if true, 
-                        {
-                            //*          it needs to check the person being paid has an account record, 
-                            var account = BankConfigData.Accounts.FirstOrDefault(
-                                a => a.NickName.Equals(split[1], StringComparison.InvariantCultureIgnoreCase));
-                            //*               if false, 
-                            //*                  it needs to check if the other player is even online
-                            //*                     if true
-                            //*                         create one with default balance.
-                            //*                         flag hasaccount bool true
-
-                            //*                     if false
-                            //*                         display an error message player not found
-                            //*                         flag hasaccount bool false
-                            if (account == null)
-                            { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry player not found!"); hasaccount = false; }
-                            //*               if true, { flag hasaccount bool true }
-                            else
-                            { hasaccount = true; }
-                            //*          if hasaccount bool true   
-                            if (hasaccount)
+                        //wait was parameter 3 a number or garbage?
+                        if (decimal.TryParse(split[2], out tran_amount)) {                    
+                            //its a number
+                            //* It needs to first check the player has enough to cover his payment
+                            tran_amount = Convert.ToDecimal(split[2]);
+                            bankbalance = Convert.ToDecimal(accounttospend.BankBalance);
+                            if (tran_amount <= bankbalance || MyAPIGateway.Session.Player.IsAdmin()) // do we have enough or are we admin so it doesnt matter
+                            //*      if true, 
                             {
-                                //is there a modify property to save the need to remove then re-add? 
-                                //here we remove this players bank record
-                                BankConfigData.Accounts.Remove(accounttospend);
-                                if (!MyAPIGateway.Session.Player.IsAdmin()) { tran_amount = Math.Abs(tran_amount); } //admins can give or take money, normal players can only give money so convert negative to positive
-                                //here we add the players bank record again with the updated balance minus what they spent
-                                accounttospend = new BankAccountStruct() { BankBalance = (bankbalance - tran_amount), Date = DateTime.Now, NickName = MyAPIGateway.Session.Player.DisplayName, SteamId = MyAPIGateway.Session.Player.SteamUserId }; 
-                                BankConfigData.Accounts.Add(accounttospend);
+                                //*          it needs to check the person being paid has an account record, 
+                                var account = BankConfigData.Accounts.FirstOrDefault(
+                                   a => a.NickName.Equals(split[1], StringComparison.InvariantCultureIgnoreCase));
+                                //*               if false, 
+                                //*                  it needs to check if the other player is even online
+                                //*                     if true
+                                //*                         create one with default balance.
+                                //*                         flag hasaccount bool true
 
-                                //here we retrive the target player steam id and balance
-                                ulong theirID=account.SteamId;  decimal theirbank=(account.BankBalance+=tran_amount); string theirnick=account.NickName;
-                                //here we clean out the old data
-                                BankConfigData.Accounts.Remove(account);
-                                //here we build a new record with the correct data
-                                account = new BankAccountStruct() { BankBalance = theirbank, Date = DateTime.Now, NickName = theirnick, SteamId = theirID };
-                                //here we write it back to our bank ledger file
-                                BankConfigData.Accounts.Add(account);
+                                //*                     if false
+                                //*                         display an error message player not found
+                                //*                         flag hasaccount bool false
+                                if (account == null)
+                                    { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry player not found!"); hasaccount = false; }
+                                //*               if true, { flag hasaccount bool true }
+                                else
+                                    { hasaccount = true; }
+                                //*          if hasaccount bool true   
+                                if (hasaccount)
+                                {
+                                    //is there a modify property to save the need to remove then re-add? 
+                                    //here we remove this players bank record
+                                    BankConfigData.Accounts.Remove(accounttospend);
+                                    if (!MyAPIGateway.Session.Player.IsAdmin()) { tran_amount = Math.Abs(tran_amount); } //admins can give or take money, normal players can only give money so convert negative to positive
+                                    //here we add the players bank record again with the updated balance minus what they spent
+                                    accounttospend = new BankAccountStruct() { BankBalance = (bankbalance - tran_amount), Date = DateTime.Now, NickName = MyAPIGateway.Session.Player.DisplayName, SteamId = MyAPIGateway.Session.Player.SteamUserId }; 
+                                    BankConfigData.Accounts.Add(accounttospend);
 
-                                //if this works this is a very sexy way to work with our file
-                                //testing: it does indeed work, if i was a teenager id probably need to change my underwear at this point
+                                    //here we retrive the target player steam id and balance
+                                    ulong theirID=account.SteamId;  decimal theirbank=(account.BankBalance+=tran_amount); string theirnick=account.NickName;
+                                    //here we clean out the old data
+                                    BankConfigData.Accounts.Remove(account);
+                                    //here we build a new record with the correct data
+                                    account = new BankAccountStruct() { BankBalance = theirbank, Date = DateTime.Now, NickName = theirnick, SteamId = theirID };
+                                    //here we write it back to our bank ledger file
+                                    BankConfigData.Accounts.Add(account);
 
-                                // now need to work out how to notify receiving player that they were paid and/or any message the sending player wrote
-                                // which needs to not send if the player isnt online - pity ive no idea how to write to the faction chat system
-                                // be a good place to send the player a faction message as it would work even if they were offline..
-                                reply = theirnick + ", " + MyAPIGateway.Session.Player.DisplayName + " just paid you " + tran_amount + " for ";                           
-                                //need to check the split[4] and upwards and display up to split.length here in reply
-                                MyAPIGateway.Utilities.ShowMessage("PAY", reply);
-                            }
-                            //*          else { throw error Unable to complete transaction }         
-                            else { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry  can't find them in bank file!"); }
+                                    //if this works this is a very sexy way to work with our file
+                                    //testing: it does indeed work, if i was a teenager id probably need to change my underwear at this point
 
-                            //*      if false/otherwise throw error you dont have enough money
-                        }
-                        else { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry you can't afford that much!"); }
-                        //*      eg /pay bob 50 here is your payment
-                        */
+                                    // now need to work out how to notify receiving player that they were paid and/or any message the sending player wrote
+                                    // which needs to not send if the player isnt online - pity ive no idea how to write to the faction chat system
+                                    // be a good place to send the player a faction message as it would work even if they were offline..
+                                    reply = theirnick + ", " + MyAPIGateway.Session.Player.DisplayName + " just paid you " + tran_amount + " for ";                           
+                                    //need to check the split[4] and upwards and display up to split.length here in reply
+                                    MyAPIGateway.Utilities.ShowMessage("PAY", reply);
+                                }
+                                //*          else { throw error Unable to complete transaction }         
+                                else { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry  can't find them in bank file!"); }
+
+                                //*      if false/otherwise throw error you dont have enough money
+                            } else { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry you can't afford that much!"); }
+                            //*      eg /pay bob 50 here is your payment
+                        
+                        } else { MyAPIGateway.Utilities.ShowMessage("PAY", "Sorry invalid amount!"); } // i guess it wasn't a number
                         return true;
-                    }  // i guess we didnt type enough params
-                    else { MyAPIGateway.Utilities.ShowMessage("PAY", "Not enough parameters");  return true; }
+                    } else { MyAPIGateway.Utilities.ShowMessage("PAY", "Not enough parameters");  return true; }// i guess we didnt type enough params
                 }
 
             } 
 
             //buy command
             if (messageText.StartsWith("/buy", StringComparison.InvariantCultureIgnoreCase))
-            {
-                    MyAPIGateway.Utilities.ShowMessage("BUY", "Not yet implemented in this release");
-                    return true;
-            } 
+            { MyAPIGateway.Utilities.ShowMessage("BUY", "Not yet implemented in this release"); return true; } 
             //sell command
             if (messageText.StartsWith("/sell", StringComparison.InvariantCultureIgnoreCase))
-            {
-                    MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented in this release");
-                    return true;
-            }
+            { MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented in this release"); return true; }
 
             //seen command
             if (messageText.StartsWith("/seen", StringComparison.InvariantCultureIgnoreCase))
