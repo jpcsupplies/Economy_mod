@@ -311,7 +311,7 @@ namespace Economy
                 {
                     //did we just type help? show what else they can get help on
                     MyAPIGateway.Utilities.ShowMessage("help", "Commands: help, buy, sell, bal, pay, seen");
-                    if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("admin", "Commands: accounts, bal player, pay player +/-any_amount"); }
+                    if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("admin", "Commands: accounts, bal player, reset, pay player +/-any_amount"); }
                     MyAPIGateway.Utilities.ShowMessage("help", "Try '/help command' for more informations about specific command debug 0");
                     return true;
                 } else  {
@@ -331,9 +331,11 @@ namespace Economy
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /seen bob");
                             return true;
                         case "accounts":
-                            MyAPIGateway.Utilities.ShowMessage("Help", "/accounts Displays all player bank balances");
-                            MyAPIGateway.Utilities.ShowMessage("Help", "Example: /accounts");
-                            return true;
+                            if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin", "/accounts displays all player balances"); return true; }
+                            else { return false; }
+                        case "reset":
+                            if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin", "/reset resets your balance to 100"); return true; }
+                            else { return false; }
                         case "bal":
                             MyAPIGateway.Utilities.ShowMessage("Help", "/bal Displays bank balance");
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /bal");
