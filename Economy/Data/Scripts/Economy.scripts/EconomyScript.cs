@@ -209,7 +209,7 @@ namespace Economy.scripts
                         Convert.ToDecimal(match.Groups["value"].Value, CultureInfo.InvariantCulture),
                         match.Groups["reason"].Value);
                 else
-                    MyAPIGateway.Utilities.ShowMessage("PAY", "Not enough parameters");
+                    MyAPIGateway.Utilities.ShowMessage("PAY", "Not enough parameters - /pay user amount reason");
                 return true;
             }
 
@@ -274,9 +274,9 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("help", "Commands: help, buy, sell, bal, pay, seen");
                     if (MyAPIGateway.Session.Player.IsAdmin())
                     {
-                        MyAPIGateway.Utilities.ShowMessage("admin", "Commands: accounts, bal player, pay player +/-any_amount");
+                        MyAPIGateway.Utilities.ShowMessage("admin", "Commands: accounts, bal player, reset, pay player +/-any_amount");
                     }
-                    MyAPIGateway.Utilities.ShowMessage("help", "Try '/help command' for more informations about specific command debug 0");
+                    MyAPIGateway.Utilities.ShowMessage("help", "Try '/help command' for more informations about specific command");
                     return true;
                 }
                 else
@@ -291,6 +291,7 @@ namespace Economy.scripts
                         case "pay":
                             MyAPIGateway.Utilities.ShowMessage("Help", "/pay X Y Z Pays player [x] amount [Y] [for reason Z]");
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /pay bob 100 being awesome");
+                            MyAPIGateway.Utilities.ShowMessage("Help", "for larger player names used quotes eg \"bob the builder\"");
                             if (MyAPIGateway.Session.Player.IsAdmin())
                             {
                                 MyAPIGateway.Utilities.ShowMessage("Admin", "Admins can add or remove any amount from a player");
@@ -301,11 +302,13 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /seen bob");
                             return true;
                         case "accounts":
-                            MyAPIGateway.Utilities.ShowMessage("Help", "/accounts Displays all player bank balances");
-                            MyAPIGateway.Utilities.ShowMessage("Help", "Example: /accounts");
-                            return true;
+                            if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin", "/accounts displays all player balances"); return true; }
+                            else { return false; }
+                        case "reset":
+                            if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin", "/reset resets your balance to 100"); return true; }
+                            else { return false; }
                         case "bal":
-                            MyAPIGateway.Utilities.ShowMessage("Help", "/bal Displays bank balance");
+                            MyAPIGateway.Utilities.ShowMessage("Help", "/bal Displays your bank balance");
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /bal");
                             if (MyAPIGateway.Session.Player.IsAdmin())
                             {
