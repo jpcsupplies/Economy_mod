@@ -102,8 +102,8 @@ namespace Economy.scripts
             }
 
             MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
-            MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/help' for more informations about available commands");
-            MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
+            MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/ehelp' for more informations about available commands");
+            //MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
 
             // let the server know we are ready for connections
             ConnectionHelper.SendMessageToServer(new MessageConnectionRequest());
@@ -266,7 +266,7 @@ namespace Economy.scripts
             }
 
             // help command
-            if (split[0].Equals("/help", StringComparison.InvariantCultureIgnoreCase))
+            if (split[0].Equals("/ehelp", StringComparison.InvariantCultureIgnoreCase))
             {
                 if (split.Length <= 1)
                 {
@@ -283,9 +283,9 @@ namespace Economy.scripts
                 {
                     switch (split[1].ToLowerInvariant())
                     {   
-                        // did we type /help help ?
+                        // did we type /ehelp help ?
                         case "help":
-                            MyAPIGateway.Utilities.ShowMessage("/help #", "Displays help on the specified command [#]."); 
+                            MyAPIGateway.Utilities.ShowMessage("/ehelp #", "Displays help on the specified command [#]."); 
                             return true;
                         // did we type /help buy etc
                         case "pay":
