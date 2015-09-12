@@ -65,11 +65,25 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BankConfig.cs" />
+    <Compile Include="Config\BankConfig.cs" />
     <Compile Include="BankManagement.cs" />
-    <Compile Include="Economy.cs" />
-    <Compile Include="BankAccountStruct.cs" />
+    <Compile Include="ConnectionHelper.cs" />
+    <Compile Include="EconomyScript.cs" />
+    <Compile Include="Config\BankAccountStruct.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Messages\MessageBankBalance.cs" />
+    <Compile Include="Messages\MessageBase.cs" />
+    <Compile Include="Messages\MessageClientDialogMessage.cs" />
+    <Compile Include="Messages\MessageClientTextMessage.cs" />
+    <Compile Include="Messages\MessageConnectionRequest.cs" />
+    <Compile Include="Messages\MessageContainer.cs" />
+    <Compile Include="Messages\MessageIncomingMessageParts.cs" />
+    <Compile Include="Messages\MessageListAccounts.cs" />
+    <Compile Include="Messages\MessagePayUser.cs" />
+    <Compile Include="Messages\MessagePlayerSeen.cs" />
+    <Compile Include="Messages\MessageResetAccount.cs" />
+    <Compile Include="Messages\MessageSide.cs" />
+    <Compile Include="TextLogger.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
