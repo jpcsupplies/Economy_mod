@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Economy
+﻿namespace Economy.scripts.Config
 {
+    using System;
+
     public class BankAccountStruct
     {
         public ulong SteamId { get; set; }

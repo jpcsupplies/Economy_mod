@@ -1,11 +1,10 @@
-using System.Collections.Generic;
-using System.Linq;
-
-using Sandbox.Common.ObjectBuilders;
-using Sandbox.ModAPI;
-
-namespace Economy
+namespace Economy.scripts
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using Sandbox.Common.ObjectBuilders;
+    using Sandbox.ModAPI;
+
     public static class Extensions
     {
         /// <summary>
@@ -57,6 +56,13 @@ namespace Economy
         public static bool IsHost(this IMyPlayer player)
         {
             return MyAPIGateway.Multiplayer.IsServerPlayer(player.Client);
+        }
+
+        public static IMyPlayer FindPlayerBySteamId(this IMyPlayerCollection collection, ulong steamId)
+        {
+            var listplayers = new List<IMyPlayer>();
+            MyAPIGateway.Players.GetPlayers(listplayers, p => p.SteamUserId == steamId);
+            return listplayers.FirstOrDefault();
         }
     }
 }

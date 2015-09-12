@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using Sandbox.Common.ObjectBuilders;
-using Sandbox.ModAPI;
-
-namespace Economy
+﻿namespace Economy.scripts
 {
+    using System.Collections.Generic;
+    using System.IO;
+    using Economy.scripts.Config;
+    using Sandbox.ModAPI;
+
     public class BankManagement
     {
         public static string GetContentFilename()
@@ -38,6 +35,7 @@ namespace Economy
             catch
             {
                 // content failed to deserialize.
+                EconomyScript.Instance.ServerLogger.Write("Failed to deserialize BankConfig. Creating new BankConfig.");
                 config = InitContent();
             }
 
