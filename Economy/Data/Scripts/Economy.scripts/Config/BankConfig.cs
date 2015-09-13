@@ -9,7 +9,7 @@
     {
         public List<BankAccountStruct> Accounts;
 
-        #region Generic helpers
+        #region Account helpers
 
         /// <summary>
         /// Load the relevant bank balance data - check player even has an account yet; make one if not
@@ -57,12 +57,12 @@
 
         public BankAccountStruct CreateNewDefaultAccount(ulong steamId, string nickName)
         {
-            return new BankAccountStruct() { BankBalance = 100, Date = DateTime.Now, NickName = nickName, SteamId = steamId };
+            return new BankAccountStruct() { BankBalance = EconomyConsts.DefaultStartingBalance, Date = DateTime.Now, NickName = nickName, SteamId = steamId };
         }
 
         public void ResetAccount(BankAccountStruct account)
         {
-            account.BankBalance = 100;
+            account.BankBalance = EconomyConsts.DefaultStartingBalance;
             account.Date = DateTime.Now;
         }
 

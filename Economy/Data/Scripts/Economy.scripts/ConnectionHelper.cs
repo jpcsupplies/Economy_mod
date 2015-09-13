@@ -13,10 +13,7 @@
     {
         #region fields
 
-        /// <summary>
-        /// Id for messages.
-        /// </summary>
-        public const ushort ConnectionId = 46912;
+        
 
         public static List<byte> ClientMessageCache = new List<byte>();
         public static Dictionary<ulong, List<byte>> ServerMessageCache = new Dictionary<ulong, List<byte>>();
@@ -41,7 +38,7 @@
                 var xml = MyAPIGateway.Utilities.SerializeToXML<MessageContainer>(new MessageContainer() {Content = message});
                 byte[] byteData = System.Text.Encoding.Unicode.GetBytes(xml);
                 if (byteData.Length <= MAX_MESSAGE_SIZE)
-                    MyAPIGateway.Multiplayer.SendMessageToServer(ConnectionId, byteData);
+                    MyAPIGateway.Multiplayer.SendMessageToServer(EconomyConsts.ConnectionId, byteData);
                 else
                     SendMessageParts(byteData, MessageSide.ServerSide);
             }
@@ -83,7 +80,7 @@
                 var xml = MyAPIGateway.Utilities.SerializeToXML(new MessageContainer() {Content = message});
                 byte[] byteData = System.Text.Encoding.Unicode.GetBytes(xml);
                 if (byteData.Length <= MAX_MESSAGE_SIZE)
-                    MyAPIGateway.Multiplayer.SendMessageTo(ConnectionId, byteData, steamId);
+                    MyAPIGateway.Multiplayer.SendMessageTo(EconomyConsts.ConnectionId, byteData, steamId);
                 else
                     SendMessageParts(byteData, MessageSide.ClientSide, steamId);
             }
@@ -232,13 +229,13 @@
                     switch (side)
                     {
                         case MessageSide.ClientSide:
-                            if (MyAPIGateway.Multiplayer.SendMessageTo(ConnectionId, bytes, receiver))
+                            if (MyAPIGateway.Multiplayer.SendMessageTo(EconomyConsts.ConnectionId, bytes, receiver))
                                 byteList.RemoveRange(0, count);
                             else
                                 throw new Exception("Failed to send message parts to client.");
                             break;
                         case MessageSide.ServerSide:
-                            if (MyAPIGateway.Multiplayer.SendMessageToServer(ConnectionId, bytes))
+                            if (MyAPIGateway.Multiplayer.SendMessageToServer(EconomyConsts.ConnectionId, bytes))
                                 byteList.RemoveRange(0, count);
                             else
                                 throw new Exception("Failed to send message parts to server.");

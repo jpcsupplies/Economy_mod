@@ -1,11 +1,13 @@
-﻿using System.Linq;
-
-namespace Economy.scripts.Messages
+﻿namespace Economy.scripts.Messages
 {
-    using System.Collections.Generic;
+    using ProtoBuf;
+    using System.Linq;
 
     public class MessageConnectionRequest : MessageBase
     {
+        [ProtoMember(1)]
+        public int ModCommunicationVersion;
+
         public override void ProcessClient()
         {
             // never processed on client
@@ -14,6 +16,11 @@ namespace Economy.scripts.Messages
         public override void ProcessServer()
         {
             EconomyScript.Instance.ServerLogger.Write("Player '{0}' connected", SenderDisplayName);
+
+            if (ModCommunicationVersion != EconomyConsts.ModCommunicationVersion)
+            {
+                // TODO: respond to the potentional communication conflict.
+            }
 
             var account = EconomyScript.Instance.BankConfigData.Accounts.FirstOrDefault(
                 a => a.SteamId == SenderSteamId);
@@ -29,6 +36,11 @@ namespace Economy.scripts.Messages
             {
                 EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId, SenderDisplayName);
             }
+        }
+
+        public static void SendMessage(int modCommunicationVersion)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageConnectionRequest { ModCommunicationVersion = modCommunicationVersion });
         }
     }
 }

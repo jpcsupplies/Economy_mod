@@ -98,7 +98,7 @@ namespace Economy.scripts
             if (MyAPIGateway.Multiplayer.MultiplayerActive && !_isServerRegistered) // if not the server, also need to register the messagehandler.
             {
                 ClientLogger.Write("RegisterMessageHandler");
-                MyAPIGateway.Multiplayer.RegisterMessageHandler(ConnectionHelper.ConnectionId, _messageHandler);
+                MyAPIGateway.Multiplayer.RegisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
             }
 
             MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
@@ -106,7 +106,7 @@ namespace Economy.scripts
             //MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
 
             // let the server know we are ready for connections
-            ConnectionHelper.SendMessageToServer(new MessageConnectionRequest());
+            MessageConnectionRequest.SendMessage(EconomyConsts.ModCommunicationVersion);
         }
 
         private void InitServer()
@@ -117,7 +117,7 @@ namespace Economy.scripts
             ServerLogger.Write("Starting Server");
 
             ServerLogger.Write("RegisterMessageHandler");
-            MyAPIGateway.Multiplayer.RegisterMessageHandler(ConnectionHelper.ConnectionId, _messageHandler);
+            MyAPIGateway.Multiplayer.RegisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
 
             ServerLogger.Write("LoadBankContent");
             BankConfigData = BankManagement.LoadContent();
@@ -139,7 +139,7 @@ namespace Economy.scripts
                 if (!_isServerRegistered) // if not the server, also need to unregister the messagehandler.
                 {
                     ClientLogger.Write("UnregisterMessageHandler");
-                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(ConnectionHelper.ConnectionId, _messageHandler);
+                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
                 }
 
                 ClientLogger.Write("Closed");
@@ -149,7 +149,7 @@ namespace Economy.scripts
             if (_isServerRegistered)
             {
                 ServerLogger.Write("UnregisterMessageHandler");
-                MyAPIGateway.Multiplayer.UnregisterMessageHandler(ConnectionHelper.ConnectionId, _messageHandler);
+                MyAPIGateway.Multiplayer.UnregisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
 
                 if (BankConfigData != null)
                 {
