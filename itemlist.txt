@@ -1,57 +1,335 @@
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_AngleGrinder
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_AutomaticRifle
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_BulletproofGlass
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_CobaltIngot
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_CobaltOre
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Computer
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_ConstructionComponent
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_DetectorComponents
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Display
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Explosives
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Girder
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_GoldIngot
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_GoldOre
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Gravel
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_GravityGeneratorComponents
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_HandDrill
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Ice
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_InteriorPlate
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_IronIngot
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_IronOre
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_LargeSteelTube
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_MagnesiumOre
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_MagnesiumPowder
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_MedicalComponents
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_MetalGrid
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Missile200mm
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Motor
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_NATO_25x184mm
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_NATO_5p56x45mm
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_NickelIngot
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_NickelOre
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Organic
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Oxygen
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_OxygenBottle
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_OxygenBottles
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_PlatinumIngot
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_PlatinumOre
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Potassium
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_PowerCell
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_RadioCommunicationComponents
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_ReactorComponents
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Scrap
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_ScrapIngot
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SiliconOre
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SiliconWafer
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SilverIngot
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SilverOre
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SmallSteelTube
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SolarCell
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SteelPlate
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_StoneOre
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_ThrustComponents
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_UraniumIngot
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_UraniumOre
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Welder
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Scenario_2Planets
-Sandbox.Game.Localization.MySpaceTexts.DisplayName_Scenario_Planet
+<?xml version="1.0" encoding="utf-16"?>
+<marketConfig xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <items>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_AngleGrinder</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_AutomaticRifle</displayname>
+      <qty>100</qty>
+      <sellprice>15</sellprice>
+      <buyprice>11</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_BulletproofGlass</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_CobaltIngot</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_CobaltOre</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Computer</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_ConstructionComponent</displayname>
+      <qty>100</qty>
+      <sellprice>7</sellprice>
+      <buyprice>6</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_DetectorComponents</displayname>
+      <qty>100</qty>
+      <sellprice>15</sellprice>
+      <buyprice>14</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Display</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Explosives</displayname>
+      <qty>100</qty>
+      <sellprice>50</sellprice>
+      <buyprice>40</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Girder</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_GoldIngot</displayname>
+      <qty>100</qty>
+      <sellprice>20</sellprice>
+      <buyprice>16</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_GoldOre</displayname>
+      <qty>100</qty>
+      <sellprice>16</sellprice>
+      <buyprice>14</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Gravel</displayname>
+      <qty>100</qty>
+      <sellprice>0.02</sellprice>
+      <buyprice>0.01</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_GravityGeneratorComponents</displayname>
+      <qty>100</qty>
+      <sellprice>15</sellprice>
+      <buyprice>14</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_HandDrill</displayname>
+      <qty>100</qty>
+      <sellprice>10</sellprice>
+      <buyprice>8</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Ice</displayname>
+      <qty>100</qty>
+      <sellprice>15</sellprice>
+      <buyprice>14</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_InteriorPlate</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_IronIngot</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_IronOre</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_LargeSteelTube</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_MagnesiumOre</displayname>
+      <qty>100</qty>
+      <sellprice>25</sellprice>
+      <buyprice>24</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_MagnesiumPowder</displayname>
+      <qty>100</qty>
+      <sellprice>25</sellprice>
+      <buyprice>24</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_MedicalComponents</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_MetalGrid</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Missile200mm</displayname>
+      <qty>100</qty>
+      <sellprice>500</sellprice>
+      <buyprice>460</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Motor</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_NATO_25x184mm</displayname>
+      <qty>100</qty>
+      <sellprice>100</sellprice>
+      <buyprice>90</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_NATO_5p56x45mm</displayname>
+      <qty>100</qty>
+      <sellprice>100</sellprice>
+      <buyprice>90</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_NickelIngot</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_NickelOre</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Organic</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Oxygen</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_OxygenBottle</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_OxygenBottles</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_PlatinumIngot</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_PlatinumOre</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Potassium</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_PowerCell</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_RadioCommunicationComponents</displayname>
+      <qty>100</qty>
+      <sellprice>15</sellprice>
+      <buyprice>14</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_ReactorComponents</displayname>
+      <qty>100</qty>
+      <sellprice>15</sellprice>
+      <buyprice>14</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Scrap</displayname>
+      <qty>100</qty>
+      <sellprice>1</sellprice>
+      <buyprice>1</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_ScrapIngot</displayname>
+      <qty>100</qty>
+      <sellprice>1</sellprice>
+      <buyprice>1</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SiliconOre</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SiliconWafer</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SilverIngot</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SilverOre</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SmallSteelTube</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SolarCell</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_SteelPlate</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_StoneOre</displayname>
+      <qty>100</qty>
+      <sellprice>0.02</sellprice>
+      <buyprice>0.01</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_ThrustComponents</displayname>
+      <qty>100</qty>
+      <sellprice>15</sellprice>
+      <buyprice>14</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_UraniumIngot</displayname>
+      <qty>100</qty>
+      <sellprice>15</sellprice>
+      <buyprice>14</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_UraniumOre</displayname>
+      <qty>100</qty>
+      <sellprice>15</sellprice>
+      <buyprice>14</buyprice>
+    </marketstruct>
+    <marketstruct>
+      <displayname>Sandbox.Game.Localization.MySpaceTexts.DisplayName_Item_Welder</displayname>
+      <qty>100</qty>
+      <sellprice>5</sellprice>
+      <buyprice>4</buyprice>
+    </marketstruct>
+  </items>
+</marketConfig>
