@@ -282,6 +282,44 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("BAL", "Incorrect parameters");
                 return true;
             }
+            // value command for looking up the table price of an item - this will need a regex pattern for item name
+            // eg /value itemname optionalqty
+            if (split[0].Equals("/value", StringComparison.InvariantCultureIgnoreCase))
+            {
+                string reply;
+                //oops did we forget to select something TO value?
+                if (split.Length == 1) { reply="You need to specify something to value eg /value ice"; }
+                else
+                    {   //we must have typed more than 1,  search for matching string in price table
+                        //if it !doesnt exist set our reply to item not found
+                        reply = "sample item not found";
+                        //else load the data into a variable
+                
+                        //value BLAH - we only want unit buy/sell price
+                        if (split.Length == 2)
+                        {   // set reply to report back the current buy and sell price
+                            reply = "you can sell each sample item for 4, or buy it for 5 each";
+                        }
+                        else
+                        {
+                            //value BLAH 12 - we must want to know how much we make/pay for buying/selling 12
+                            //set reply to current buy and sell price multiplied by the requested qty - qty needs type checking
+                            //if qty fails type check set reply to invalid qty
+                            decimal x = 0;
+                            if (decimal.TryParse(split[2], out x))
+                            {
+                                reply = "you can sell " + (x) + " sample items for " + (4*x) + " or buy it for " + (5*x)+ " each "; 
+                            }
+                            else
+                            {
+                                reply = "invalid quantity specified"; 
+                            } 
+                         }
+                    }
+                MyAPIGateway.Utilities.ShowMessage("VALUE", reply);
+                return true;
+            }
+
 
             // accounts command.  For Admins only.
             if (split[0].Equals("/accounts", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
@@ -356,6 +394,10 @@ namespace Economy.scripts
                         case "sell":
                             MyAPIGateway.Utilities.ShowMessage("Help", "/sell W X Y Z - Sells a quantity [W] of item [X] [at price Y] [to player Z]");
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /sell 20 Ice ");
+                            return true;
+                        case "value":
+                            MyAPIGateway.Utilities.ShowMessage("Help", "/value X Y - Looks up item [X] of optional quantity [Y] and reports the buy and sell value.");
+                            MyAPIGateway.Utilities.ShowMessage("Help", "Example: /value Ice 20    or   /value ice");
                             return true;
                     } 
                 }
