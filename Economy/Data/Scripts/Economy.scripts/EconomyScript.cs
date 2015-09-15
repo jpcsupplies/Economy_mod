@@ -9,6 +9,7 @@
 namespace Economy.scripts
 {
     using System;
+    using System.Timers;
     using System.IO;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -43,6 +44,7 @@ namespace Economy.scripts
         private bool _isInitialized;
         private bool _isClientRegistered;
         private bool _isServerRegistered;
+        private bool _delayedConnectionRequest;
 
         private readonly Action<byte[]> _messageHandler = new Action<byte[]>(HandleMessage);
 
@@ -50,6 +52,7 @@ namespace Economy.scripts
 
         public TextLogger ServerLogger = new TextLogger();
         public TextLogger ClientLogger = new TextLogger();
+        public Timer DelayedConnectionRequestTimer;
 
         /// Ideally this data should be persistent until someone buys/sells/pays/joins but
         /// lacking other options it will triggers read on these events instead. bal/buy/sell/pay/join
@@ -82,6 +85,13 @@ namespace Economy.scripts
                 return;
             }
 
+            if (_delayedConnectionRequest)
+            {
+                ClientLogger.Write("Delayed Connection Request");
+                _delayedConnectionRequest = false;
+                MessageConnectionRequest.SendMessage(EconomyConsts.ModCommunicationVersion);
+            }
+
             base.UpdateAfterSimulation();
         }
 
@@ -104,6 +114,10 @@ namespace Economy.scripts
             MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
             MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/ehelp' for more informations about available commands");
             //MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
+
+            DelayedConnectionRequestTimer = new Timer(10000);
+            DelayedConnectionRequestTimer.Elapsed += DelayedConnectionRequestTimer_Elapsed;
+            DelayedConnectionRequestTimer.Start();
 
             // let the server know we are ready for connections
             MessageConnectionRequest.SendMessage(EconomyConsts.ModCommunicationVersion);
@@ -140,6 +154,12 @@ namespace Economy.scripts
                 {
                     ClientLogger.Write("UnregisterMessageHandler");
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
+                }
+
+                if (DelayedConnectionRequestTimer != null)
+                {
+                    DelayedConnectionRequestTimer.Stop();
+                    DelayedConnectionRequestTimer.Close();
                 }
 
                 ClientLogger.Write("Closed");
@@ -180,6 +200,11 @@ namespace Economy.scripts
             EconomyScript.Instance.ServerLogger.Write("HandleMessage");
             EconomyScript.Instance.ClientLogger.Write("HandleMessage");
             ConnectionHelper.ProcessData(message);
+        }
+
+        void DelayedConnectionRequestTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            _delayedConnectionRequest = true;
         }
 
         #endregion

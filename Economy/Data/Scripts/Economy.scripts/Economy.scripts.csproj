@@ -67,6 +67,7 @@
   <ItemGroup>
     <Compile Include="Config\BankConfig.cs" />
     <Compile Include="BankManagement.cs" />
+    <Compile Include="Config\ItemsConfig.cs" />
     <Compile Include="ConnectionHelper.cs" />
     <Compile Include="EconomyConsts.cs" />
     <Compile Include="EconomyScript.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="Messages\MessageBase.cs" />
     <Compile Include="Messages\MessageClientDialogMessage.cs" />
     <Compile Include="Messages\MessageClientTextMessage.cs" />
+    <Compile Include="Messages\MessageConnectionResponse.cs" />
     <Compile Include="Messages\MessageConnectionRequest.cs" />
     <Compile Include="Messages\MessageContainer.cs" />
     <Compile Include="Messages\MessageIncomingMessageParts.cs" />

@@ -7,6 +7,7 @@
     // ALL CLASSES DERIVED FROM MessageBase MUST BE ADDED HERE
     [XmlInclude(typeof(MessageIncomingMessageParts))]
     [XmlInclude(typeof(MessageConnectionRequest))]
+    [XmlInclude(typeof(MessageConnectionResponse))]
     [XmlInclude(typeof(MessagePayUser))]
     [XmlInclude(typeof(MessagePlayerSeen))]
     [XmlInclude(typeof(MessageBankBalance))]

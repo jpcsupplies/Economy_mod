@@ -20,7 +20,13 @@
             if (ModCommunicationVersion != EconomyConsts.ModCommunicationVersion)
             {
                 // TODO: respond to the potentional communication conflict.
+                // Could Client be older than Server?
+                // It's possible, if the Client has trouble downloading from Steam Community which can happen on occasion.
             }
+
+            // Is Server version older than what Client is running, or Server version is newer than Client.
+            MessageConnectionResponse.SendMessage(SenderSteamId, 
+                ModCommunicationVersion < EconomyConsts.ModCommunicationVersion, ModCommunicationVersion > EconomyConsts.ModCommunicationVersion);
 
             var account = EconomyScript.Instance.BankConfigData.Accounts.FirstOrDefault(
                 a => a.SteamId == SenderSteamId);
