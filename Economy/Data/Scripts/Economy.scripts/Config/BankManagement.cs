@@ -1,11 +1,10 @@
-﻿namespace Economy.scripts
+﻿namespace Economy.scripts.Config
 {
     using System.Collections.Generic;
     using System.IO;
-    using Economy.scripts.Config;
     using Sandbox.ModAPI;
 
-    public class BankManagement
+    public static class BankManagement
     {
         public static string GetContentFilename()
         {

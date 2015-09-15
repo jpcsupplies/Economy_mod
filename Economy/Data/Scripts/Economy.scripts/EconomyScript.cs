@@ -57,6 +57,7 @@ namespace Economy.scripts
         /// Ideally this data should be persistent until someone buys/sells/pays/joins but
         /// lacking other options it will triggers read on these events instead. bal/buy/sell/pay/join
         public BankConfig BankConfigData;
+        public MarketConfig MarketConfigData;
 
         #endregion
 
@@ -135,6 +136,7 @@ namespace Economy.scripts
 
             ServerLogger.Write("LoadBankContent");
             BankConfigData = BankManagement.LoadContent();
+            MarketConfigData = MarketManagement.LoadContent();
         }
 
         #endregion
@@ -176,6 +178,13 @@ namespace Economy.scripts
                     BankManagement.SaveContent(BankConfigData);
                     BankConfigData = null;
                     ServerLogger.Write("SaveBankContent");
+                }
+
+                if (MarketConfigData != null)
+                {
+                    MarketManagement.SaveContent(MarketConfigData);
+                    MarketConfigData = null;
+                    ServerLogger.Write("SaveMarektContent");
                 }
 
                 ServerLogger.Write("Closed");

@@ -65,9 +65,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\MarketManagement.cs" />
+    <Compile Include="Config\MarketStruct.cs" />
     <Compile Include="Config\BankConfig.cs" />
-    <Compile Include="BankManagement.cs" />
-    <Compile Include="Config\ItemsConfig.cs" />
+    <Compile Include="Config\BankManagement.cs" />
+    <Compile Include="Config\MarketConfig.cs" />
     <Compile Include="ConnectionHelper.cs" />
     <Compile Include="EconomyConsts.cs" />
     <Compile Include="EconomyScript.cs" />
