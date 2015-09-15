@@ -310,7 +310,7 @@ namespace Economy.scripts
                     {
                         MyAPIGateway.Utilities.ShowMessage("admin", "Commands: accounts, bal player, reset, pay player +/-any_amount");
                     }
-                    MyAPIGateway.Utilities.ShowMessage("help", "Try '/help command' for more informations about specific command");
+                    MyAPIGateway.Utilities.ShowMessage("help", "Try '/ehelp command' for more informations about specific command");
                     return true;
                 }
                 else
