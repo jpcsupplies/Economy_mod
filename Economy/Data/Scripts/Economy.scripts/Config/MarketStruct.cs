@@ -11,5 +11,7 @@
         public decimal SellPrice { get; set; }
 
         public decimal BuyPrice { get; set; }
+
+        public bool IsBlacklisted { get; set; }
     }
 }

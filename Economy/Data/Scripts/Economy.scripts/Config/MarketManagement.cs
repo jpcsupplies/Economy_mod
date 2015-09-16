@@ -79,7 +79,8 @@
             {
                 if (item.Public)
                 {
-                    if (!config.MarketItems.Any(e => e.TypeId.Equals(item.Id.TypeId.ToString(), StringComparison.InvariantCultureIgnoreCase) && e.SubtypeName.Equals(item.Id.SubtypeName, StringComparison.InvariantCultureIgnoreCase)))
+                    // TypeId and SubtypeName are both Case sensitive. Do not Ignore case.
+                    if (!config.MarketItems.Any(e => e.TypeId.Equals(item.Id.TypeId.ToString()) && e.SubtypeName.Equals(item.Id.SubtypeName)))
                     {
                         config.MarketItems.Add(new MarketStruct { TypeId = item.Id.TypeId.ToString(), SubtypeName = item.Id.SubtypeName, BuyPrice = 1, SellPrice = 1 });
                         EconomyScript.Instance.ServerLogger.Write("MarketItem Adding new item: {0} {1}.", item.Id.TypeId.ToString(), item.Id.SubtypeName);
@@ -88,12 +89,18 @@
             }
         }
 
-        private static string GetDisplayName(MarketStruct marketItem)
+        /// <summary>
+        /// Must be called by the Client for correct localization.
+        /// </summary>
+        /// <param name="typeId"></param>
+        /// <param name="subtypeName"></param>
+        /// <returns></returns>
+        public static string GetDisplayName(string typeId, string subtypeName)
         {
             MyObjectBuilderType result;
-            if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
+            if (MyObjectBuilderType.TryParse(typeId, out result))
             {
-                var id = new MyDefinitionId(result, marketItem.SubtypeName);
+                var id = new MyDefinitionId(result, subtypeName);
                 MyPhysicalItemDefinition definition;
                 if (MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition))
                 {

@@ -22,6 +22,8 @@ namespace Economy.scripts
     using Sandbox.Common;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Common.Components;
+    using VRage.ModAPI;
+    using VRage.ObjectBuilders;
     using VRageMath;
     using System.Text.RegularExpressions;
     using Economy.scripts.Config;
@@ -36,6 +38,7 @@ namespace Economy.scripts
         const string PayPattern = @"(?<command>/pay)\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*))\s+(?<value>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<reason>.+)\s*$";
         const string BalPattern = @"(?<command>/bal)(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?";
         const string SeenPattern = @"(?<command>/seen)\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*))";
+        const string ValuePattern = @"(?<command>/value)\s+(?:(?<Key>.+)\s+(?<Value>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<Key>.+))";
 
         #endregion
 
@@ -282,52 +285,52 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("BAL", "Incorrect parameters");
                 return true;
             }
-            // value command for looking up the table price of an item - this will need a regex pattern for item name
+            // value command for looking up the table price of an item.
             // eg /value itemname optionalqty
-            // presumably this will also end up in a name space for neatness.. which im still trying to understand
-            // so im coding here sorry midspace!
             if (split[0].Equals("/value", StringComparison.InvariantCultureIgnoreCase))
             {
-                string reply;
-                //oops did we forget to select something TO value?
-                if (split.Length == 1) { reply="You need to specify something to value eg /value ice"; }
-                else
-                    {   //we must have typed more than 1,  search for matching string in price table
-                        //var item=MarketConfig.SubtypeName......
-                        //ok this instance logic is a bit different than before I am struggling to comprehend all our
-                        //array bits even after a nights sleep :(
-                        //if the item !doesnt exist set our reply to item not found
-                        //if(item==null) {
-                        reply = "sample item not found";
-                        //} else { we must have found the item, pull the buy/sell price from item.sellprice and item.buyprice ready for next part }
-                        // subsequent if's should probably be nested to reduce processing time not that 2ms matters but if there is thousands of these requests 
-                        //at once one day in "space engineers the MMO" or on some auto-trading bot it might become a problem
-                
-                        //value BLAH - we only want unit buy/sell price
-                        if (split.Length == 2)
-                        {   // set reply to report back the current buy and sell price only since that is all we asked for
-                            reply = "you can sell each sample item for 4, or buy it for 5 each";
-                        }
-                        else
-                        {
-                            //value BLAH 12 - we must want to know how much we make/pay for buying/selling 12
-                            //set reply to current buy and sell price multiplied by the requested qty - qty needs type checking
-                            //if qty fails type check set reply to invalid qty
-                            decimal x = 0;
-                            if (decimal.TryParse(split[2], out x))
-                            {
-                                reply = "you can sell " + (x) + " sample items for " + (4*x) + " or buy it for " + (5*x)+ " each "; 
-                            }
-                            else
-                            {
-                                reply = "invalid quantity specified"; 
-                            } 
-                         }
+                match = Regex.Match(messageText, ValuePattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    var itemName = match.Groups["Key"].Value;
+                    var strAmount = match.Groups["Value"].Value;
+                    MyObjectBuilder_Base content;
+                    string[] options;
+
+                    // Search for the item and find one match only, either by exact name or partial name.
+                    if (!Support.FindPhysicalParts(itemName, out content, out options) && options.Length > 0)
+                    {
+                        // TODO: use ShowMissionScreen if options.Length > 10 ?
+                        MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                        return true;
                     }
-                MyAPIGateway.Utilities.ShowMessage("VALUE", reply);
+                    if (content != null)
+                    {
+                        decimal amount;
+                        if (!decimal.TryParse(strAmount, out amount))
+                            amount = 1; // if it cannot parse it, assume it is 1. It may not have been specified.
+
+                        if (amount < 0) // if a negative value is provided, make it 1.
+                            amount = 1;
+
+                        if (content.TypeId != typeof (MyObjectBuilder_Ore) && content.TypeId != typeof (MyObjectBuilder_Ingot))
+                        {
+                            // must be whole numbers.
+                            amount = Math.Round(amount, 0);
+                        }
+
+                        // Primary checks for the component are carried out Client side to reduce processing time on the server. not that 2ms matters but if 
+                        // there is thousands of these requests at once one day in "space engineers the MMO" or on some auto-trading bot it might become a problem
+                        MessageMarketItemValue.SendMessage(content.TypeId.ToString(), content.SubtypeName, amount, MarketManagement.GetDisplayName(content.TypeId.ToString(), content.SubtypeName));
+                        return true;
+                    }
+
+                    MyAPIGateway.Utilities.ShowMessage("VALUE", "Unknown Item. Could not find the specified name.");
+                }
+                else
+                    MyAPIGateway.Utilities.ShowMessage("VALUE", "You need to specify something to value eg /value ice");
                 return true;
             }
-
 
             // accounts command.  For Admins only.
             if (split[0].Equals("/accounts", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())

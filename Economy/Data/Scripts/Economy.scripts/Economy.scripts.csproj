@@ -75,6 +75,7 @@
     <Compile Include="EconomyScript.cs" />
     <Compile Include="Config\BankAccountStruct.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Messages\MessageMarketItemValue.cs" />
     <Compile Include="Messages\MessageBankBalance.cs" />
     <Compile Include="Messages\MessageBase.cs" />
     <Compile Include="Messages\MessageClientDialogMessage.cs" />
@@ -88,6 +89,7 @@
     <Compile Include="Messages\MessagePlayerSeen.cs" />
     <Compile Include="Messages\MessageResetAccount.cs" />
     <Compile Include="Messages\MessageSide.cs" />
+    <Compile Include="Support.cs" />
     <Compile Include="TextLogger.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
