@@ -52,15 +52,10 @@
                 // it needs to check the person being paid has an account record, 
                 var account = EconomyScript.Instance.BankConfigData.FindAccount(ToUserName);
 
-                //*               if false, 
-                //*                  it needs to check if the other player is even online
-                //*                     if true
-                //*                         create one with default balance.
-                //*                         flag hasaccount bool true
+                //*               if true - it will always be true if real as it would have created it on join anyway
 
-                //*                     if false
+                //*               if false -  then they were never on this server anyway or seen would have added them already
                 //*                         display an error message player not found
-                //*                         flag hasaccount bool false
                 if (account == null)
                 {
                     MessageClientTextMessage.SendMessage(SenderSteamId, "PAY", "Sorry, player does not exist or have an account!");

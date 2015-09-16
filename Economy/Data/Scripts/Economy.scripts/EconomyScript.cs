@@ -196,7 +196,7 @@ namespace Economy.scripts
 
         #endregion
 
-        #region messge handling
+        #region message handling
 
         private void GotMessage(string messageText, ref bool sendToOthers)
         {
@@ -284,6 +284,8 @@ namespace Economy.scripts
             }
             // value command for looking up the table price of an item - this will need a regex pattern for item name
             // eg /value itemname optionalqty
+            // presumably this will also end up in a name space for neatness.. which im still trying to understand
+            // so im coding here sorry midspace!
             if (split[0].Equals("/value", StringComparison.InvariantCultureIgnoreCase))
             {
                 string reply;
@@ -291,13 +293,19 @@ namespace Economy.scripts
                 if (split.Length == 1) { reply="You need to specify something to value eg /value ice"; }
                 else
                     {   //we must have typed more than 1,  search for matching string in price table
-                        //if it !doesnt exist set our reply to item not found
+                        //var item=MarketConfig.SubtypeName......
+                        //ok this instance logic is a bit different than before I am struggling to comprehend all our
+                        //array bits even after a nights sleep :(
+                        //if the item !doesnt exist set our reply to item not found
+                        //if(item==null) {
                         reply = "sample item not found";
-                        //else load the data into a variable
+                        //} else { we must have found the item, pull the buy/sell price from item.sellprice and item.buyprice ready for next part }
+                        // subsequent if's should probably be nested to reduce processing time not that 2ms matters but if there is thousands of these requests 
+                        //at once one day in "space engineers the MMO" or on some auto-trading bot it might become a problem
                 
                         //value BLAH - we only want unit buy/sell price
                         if (split.Length == 2)
-                        {   // set reply to report back the current buy and sell price
+                        {   // set reply to report back the current buy and sell price only since that is all we asked for
                             reply = "you can sell each sample item for 4, or buy it for 5 each";
                         }
                         else
