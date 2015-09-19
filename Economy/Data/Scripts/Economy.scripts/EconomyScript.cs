@@ -201,7 +201,7 @@ namespace Economy.scripts
                 if (MarketConfigData != null)
                 {
                     MarketManagement.SaveContent(MarketConfigData);
-                    ServerLogger.Write("SaveMarektContent");
+                    ServerLogger.Write("SaveMarketContent");
                 }
             }
         }

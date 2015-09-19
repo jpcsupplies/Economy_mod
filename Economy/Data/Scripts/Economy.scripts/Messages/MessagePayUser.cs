@@ -38,7 +38,7 @@
             //* Get player steam ID
             var payingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
 
-            var accountToSpend = EconomyScript.Instance.BankConfigData.FindOrCreateAccount(SenderSteamId, SenderDisplayName);
+            var accountToSpend = EconomyScript.Instance.BankConfigData.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
 
             // need fix negative amounts before checking if the player can afford it.
             if (!payingPlayer.IsAdmin())

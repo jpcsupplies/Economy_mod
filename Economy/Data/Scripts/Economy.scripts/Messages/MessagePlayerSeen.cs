@@ -30,7 +30,7 @@
             MessageClientTextMessage.SendMessage(SenderSteamId, "SEEN", reply);
 
             // update our own timestamp here
-            EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId);
+            EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId, SenderLanguage);
         }
 
         public static void SendMessage(string userName)

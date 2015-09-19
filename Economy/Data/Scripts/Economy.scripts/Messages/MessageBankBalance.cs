@@ -19,7 +19,7 @@
         public override void ProcessServer()
         {
             // update our own timestamp here
-            EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId);
+            EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId, SenderLanguage);
 
             EconomyScript.Instance.ServerLogger.Write("Balance Request for '{0}' from '{1}'", UserName, SenderSteamId);
 
@@ -34,7 +34,7 @@
                 if (account == null)
                 {
                     EconomyScript.Instance.ServerLogger.Write("Creating new Bank Account for '{0}'", SenderDisplayName);
-                    account = EconomyScript.Instance.BankConfigData.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName);
+                    account = EconomyScript.Instance.BankConfigData.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
                     EconomyScript.Instance.BankConfigData.Accounts.Add(account);
                 }
 

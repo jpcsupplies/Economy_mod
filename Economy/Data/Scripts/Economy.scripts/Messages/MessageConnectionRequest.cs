@@ -35,12 +35,12 @@
             if (account == null)
             {
                 EconomyScript.Instance.ServerLogger.Write("Creating new Bank Account for '{0}'", SenderDisplayName);
-                account = EconomyScript.Instance.BankConfigData.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName);
+                account = EconomyScript.Instance.BankConfigData.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
                 EconomyScript.Instance.BankConfigData.Accounts.Add(account);
             }
             else
             {
-                EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId, SenderDisplayName);
+                EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId, SenderDisplayName, SenderLanguage);
             }
         }
 

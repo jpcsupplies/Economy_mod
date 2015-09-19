@@ -25,14 +25,22 @@
         [ProtoMember(1)]
         public ulong SenderSteamId;
 
-
+        /// <summary>
+        /// The display name of the message sender.
+        /// </summary>
         [ProtoMember(2)]
         public string SenderDisplayName;
 
         /// <summary>
-        /// Defines on which side the message should be processed. Note that this will be set when the message is sent, so there is no need for setting it otherwise.
+        /// The current display language of the sender.
         /// </summary>
         [ProtoMember(3)]
+        public int SenderLanguage;
+
+        /// <summary>
+        /// Defines on which side the message should be processed. Note that this will be set when the message is sent, so there is no need for setting it otherwise.
+        /// </summary>
+        [ProtoMember(4)]
         public MessageSide Side;
 
         /*

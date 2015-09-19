@@ -17,12 +17,12 @@
         /// <param name="steamId"></param>
         /// <param name="nickName"></param>
         /// <returns></returns>
-        public BankAccountStruct FindOrCreateAccount(ulong steamId, string nickName)
+        public BankAccountStruct FindOrCreateAccount(ulong steamId, string nickName, int language)
         {
             var account = Accounts.FirstOrDefault(a => a.SteamId == steamId);
             if (account == null)
             {
-                account = CreateNewDefaultAccount(steamId, nickName);
+                account = CreateNewDefaultAccount(steamId, nickName, language);
                 Accounts.Add(account);
             }
             return account;
@@ -55,9 +55,10 @@
             return null;
         }
 
-        public BankAccountStruct CreateNewDefaultAccount(ulong steamId, string nickName)
+        public BankAccountStruct CreateNewDefaultAccount(ulong steamId, string nickName, int language)
         {
-            return new BankAccountStruct() { BankBalance = EconomyConsts.DefaultStartingBalance, Date = DateTime.Now, NickName = nickName, SteamId = steamId };
+            var create = DateTime.Now; // Keeps the Date and OpenedDate at the same millisecond on creation.
+            return new BankAccountStruct() { BankBalance = EconomyConsts.DefaultStartingBalance, Date = create, NickName = nickName, SteamId = steamId, OpenedDate = create, Language = language};
         }
 
         public void ResetAccount(BankAccountStruct account)
@@ -66,16 +67,16 @@
             account.Date = DateTime.Now;
         }
 
-        public void UpdateLastSeen(ulong steamId)
+        public void UpdateLastSeen(ulong steamId, int language)
         {
             var player = MyAPIGateway.Players.FindPlayerBySteamId(steamId);
             if (player != null)
             {
-                UpdateLastSeen(steamId, player.DisplayName);
+                UpdateLastSeen(steamId, player.DisplayName, language);
             }
         }
 
-        public void UpdateLastSeen(ulong steamId, string nickName)
+        public void UpdateLastSeen(ulong steamId, string nickName, int language)
         {
             var account = EconomyScript.Instance.BankConfigData.Accounts.FirstOrDefault(
                     a => a.SteamId == steamId);
@@ -84,6 +85,7 @@
             {
                 account.NickName = nickName;
                 account.Date = DateTime.Now;
+                account.Language = language;
             }
         }
 

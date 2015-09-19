@@ -13,8 +13,6 @@
     {
         #region fields
 
-        
-
         public static List<byte> ClientMessageCache = new List<byte>();
         public static Dictionary<ulong, List<byte>> ServerMessageCache = new Dictionary<ulong, List<byte>>();
 
@@ -33,6 +31,7 @@
             message.Side = MessageSide.ServerSide;
             message.SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
             message.SenderDisplayName = MyAPIGateway.Session.Player.DisplayName;
+            message.SenderLanguage = (int)MyAPIGateway.Session.Config.Language;
             try
             {
                 var xml = MyAPIGateway.Utilities.SerializeToXML<MessageContainer>(new MessageContainer() {Content = message});
@@ -61,6 +60,7 @@
         {
             message.SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
             message.SenderDisplayName = MyAPIGateway.Session.Player.DisplayName;
+            message.SenderLanguage = (int)MyAPIGateway.Session.Config.Language;
 
             if (!MyAPIGateway.Multiplayer.IsServer)
                 SendMessageToServer(message);
@@ -196,6 +196,7 @@
                     Side = side,
                     SenderSteamId = side == MessageSide.ServerSide ? MyAPIGateway.Session.Player.SteamUserId : 0,
                     SenderDisplayName = side == MessageSide.ServerSide ? MyAPIGateway.Session.Player.DisplayName : "",
+                    SenderLanguage = side == MessageSide.ServerSide ? (int)MyAPIGateway.Session.Config.Language : 0,
                     LastPart = false,
                 };
 

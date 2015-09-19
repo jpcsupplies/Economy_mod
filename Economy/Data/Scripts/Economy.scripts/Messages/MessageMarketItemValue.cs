@@ -30,7 +30,7 @@
         public override void ProcessServer()
         {
             // update our own timestamp here
-            EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId);
+            EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId, SenderLanguage);
             EconomyScript.Instance.ServerLogger.Write("Value Request for '{0}:{1}' from '{2}'", TypeId, SubtypeName, SenderSteamId);
 
             // TypeId and SubtypeName are both Case sensitive. Do not Ignore case when comparing these.
@@ -54,7 +54,7 @@
                 else
                 // value BLAH 12 - we must want to know how much we make/pay for buying/selling 12
                 // set reply to current buy and sell price multiplied by the requested qty.
-                    reply = String.Format("you can sell {0} units of '{1}' at {2} or buy them for {3}.", Quantity, DisplayName, item.SellPrice*Quantity, item.BuyPrice*Quantity);
+                    reply = String.Format("you can sell {0} '{1}' for {2} or buy it for {3} each.", Quantity, DisplayName, item.SellPrice*Quantity, item.BuyPrice*Quantity);
             }
             MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", reply);
         }

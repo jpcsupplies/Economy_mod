@@ -28,7 +28,7 @@
                 else
                 {
                     //ok cause i am an admin and everything else checks out, lets construct our bank record with a new balance
-                    myaccount = EconomyScript.Instance.BankConfigData.CreateNewDefaultAccount(SenderSteamId, player.DisplayName);
+                    myaccount = EconomyScript.Instance.BankConfigData.CreateNewDefaultAccount(SenderSteamId, player.DisplayName, SenderLanguage);
 
                     //ok lets apply it
                     EconomyScript.Instance.BankConfigData.Accounts.Add(myaccount);

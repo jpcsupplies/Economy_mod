@@ -30,7 +30,7 @@
                     description.ToString());
 
                 // update our own timestamp here
-                EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId);
+                EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId, SenderLanguage);
             }
         }
 
