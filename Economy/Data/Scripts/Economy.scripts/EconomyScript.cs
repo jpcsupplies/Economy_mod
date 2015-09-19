@@ -262,6 +262,23 @@ namespace Economy.scripts
             // buy command
             if (split[0].Equals("/buy", StringComparison.InvariantCultureIgnoreCase))
             {
+                //initially we should work only with a players inventory size
+                //worst case scenario overflow gets dropped at the players feet which if they
+                //are standing on a collector should be adequte for Alpha milestone compliance.
+                //Alternately we setup an "item bank" which works like the bank account, but allows 
+                //materials to be stored too.. but that makes raids somewhat pointless.
+                //buy command should be pretty basic since we are buying from appropriate market at requested price.
+                //if in range of valid trade region
+                //examples: /buy 100 uranium (buy 100 uranium starting at lowest offer price if you can afford it, give error if you cant)
+                // /buy 100 uranium 0.5 (buy up to 100 uranium if the price is below 0.5, post a buy offer for any remaining amount if price goes over)
+                // /buy 100 uranium 0.5 bob (ask bob to sell you 100 uranium at 0.5, or if bob already has a sell offer at or below 0.5, buy only from him)
+                // /buy cancel ??? (possible command to close an open buy offer?)
+                //
+                //  if (no price specified) buy whatever the lowest offer is, accumulating qty, and adding up each price point qty until
+                //  sale is concluded at desired qty, or player runs out of money, or there are none left to buy.
+                //  if (they place an offer above market && have access to offers), post offer, and deduct funds
+                //  if they choose to cancel an offer, remove offer and return remaining money
+
                 MyAPIGateway.Utilities.ShowMessage("BUY", "Not yet implemented in this release");
                 return true;
             }
@@ -269,6 +286,35 @@ namespace Economy.scripts
             // sell command
             if (split[0].Equals("/sell", StringComparison.InvariantCultureIgnoreCase))
             {
+                //initially we should work only with a players inventory contents
+                //later on working with a special block or faction only storage crate setup may work
+                //when they need to sell more than can be carried
+                //another out of the box idea is trade when you are in a cockpit
+                //then the mod works with the materials stored in that ship -API capabilites dependant however
+                //
+                //[0] = /sell  [1] = quantity [2] = keyword representing material to sell [3] = optional price (for posting a sell offer instead of selling to NPC) [4] optional player name for making offer to player
+                //special keywords "all"  /sell all = sell their entire inventory || /sell all iron = sell all their iron ore only
+                //examples  /sell 100 uranium  (sells 100 uranium to NPC at price table price - increases the qty in table, so long as npc can afford)
+                //          /sell 100 uranium 5 (puts up a sell offer of 100 uranium at unit price of 5 each - would write to global market table(s))
+                //          /sell 100 uranium 0.5 bob (offers to sell bob 100 uranium at 0.5 each - bob must /accept or /decline or it times out
+                // Modifiers -  allow provision for multiple markets for faction to faction/ player to faction / player to player markets later
+                //              may need restrictions by location or faction eventually as well.  Example - selling to NPC may only be allowed
+                //              if player is located within 5km of 0,0,0 on map (which in ramblers would be the nearest blue mining trade base)
+                //              Example 2 - selling to "BOB" faction is only allowed if you are allied (or neutral?) with them and within 5km of their registered
+                //              trade base location.  So we may eventually need a "register" type command for faction 2 faction trade.
+                // if player location is within range of valid trade territory (or 0,0,0 to begin with for this milestone) 
+                // { 
+                //      select case (does split contain data?)
+                //          case [1] == "cancel" cancel specified order?
+                //          case ![1] display brief help summary (means they only typed /sell)
+                //          case ![2] check if [1] == "all" - display error if not (means they only typed /sell all, or some invalid option) 
+                //              if (it is "ALL" - and [2] isnt "cancel") parse contents of inventory and calculate value, compare against NPC bank balance; transfer qty to bank and value to player if NPC can afford it
+                //              else if [2] is cancel - remove all sell offers posted by this player, return items to inventory or spawn at feet if overflow.
+                //          case ![3] lookup item specified at [2] if valid calculate value of goods at given qty (or all) and compare against NPC bank balance, transfer qty to item file and value to player if NPC can afford it;  up to what the npc can afford.
+                //          case ![4] lookup item specified at [2] - if valid and in inventory, check if player is allowed to post offers here, if so add [1] items [2] to global market at price [3] deduct items from player
+                //          case ![5] (optional check distance to player isnt too high) lookup item specified at [2] - if valid and in inventory && player [4] exists, send offer to player [4] to sell them qty [1] of item [2] at price [3] to player [4]
+                //                                                                      Start timer, wait for reply from player [4], if accept take money transfer goods, if deny or time runs out stop timer cancel sale 
+                //  } else { display error that no trade regions are in range }
                 MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented in this release");
                 return true;
             }
