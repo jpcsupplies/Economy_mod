@@ -26,7 +26,7 @@ namespace Economy.scripts
     using VRage.ObjectBuilders;
     using VRageMath;
     using System.Text.RegularExpressions;
-    using Economy.scripts.Config;
+    using Economy.scripts.EconConfig;
     using System.Globalization;
     using Economy.scripts.Messages;
 
@@ -176,25 +176,34 @@ namespace Economy.scripts
                 ServerLogger.Write("UnregisterMessageHandler");
                 MyAPIGateway.Multiplayer.UnregisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
 
-                if (BankConfigData != null)
-                {
-                    BankManagement.SaveContent(BankConfigData);
-                    BankConfigData = null;
-                    ServerLogger.Write("SaveBankContent");
-                }
-
-                if (MarketConfigData != null)
-                {
-                    MarketManagement.SaveContent(MarketConfigData);
-                    MarketConfigData = null;
-                    ServerLogger.Write("SaveMarektContent");
-                }
+                BankConfigData = null;
+                MarketConfigData = null;
 
                 ServerLogger.Write("Closed");
                 ServerLogger.Terminate();
             }
 
             base.UnloadData();
+        }
+
+        public override void SaveData()
+        {
+            base.SaveData();
+
+            if (_isServerRegistered)
+            {
+                if (BankConfigData != null)
+                {
+                    BankManagement.SaveContent(BankConfigData);
+                    ServerLogger.Write("SaveBankContent");
+                }
+
+                if (MarketConfigData != null)
+                {
+                    MarketManagement.SaveContent(MarketConfigData);
+                    ServerLogger.Write("SaveMarektContent");
+                }
+            }
         }
 
         #endregion

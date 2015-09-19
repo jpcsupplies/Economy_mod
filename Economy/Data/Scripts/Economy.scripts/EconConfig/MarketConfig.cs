@@ -1,4 +1,4 @@
-﻿namespace Economy.scripts.Config
+﻿namespace Economy.scripts.EconConfig
 {
     using System.Collections.Generic;
 

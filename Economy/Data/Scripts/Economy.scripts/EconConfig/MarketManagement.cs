@@ -1,4 +1,4 @@
-﻿namespace Economy.scripts.Config
+﻿namespace Economy.scripts.EconConfig
 {
     using Sandbox.Definitions;
     using System.Linq;
