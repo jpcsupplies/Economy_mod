@@ -1,5 +1,5 @@
 ﻿namespace Economy.scripts
-{
+{  //some of these options will later be configurable in a setting file and/or in game commands but for now set as defaults
     public class EconomyConsts
     {
         /// <summary>
@@ -9,7 +9,40 @@
         public const decimal DefaultStartingBalance = 100;
 
         /// <summary>
-        /// The is the Id which this mod registers iteself for sending and receiving messages through SE.
+        /// Should the NPC market be limited or unlimited supply
+        /// </summary>
+        /// <remarks>This will be a bool that configures if buying and selling from 0.0.0 trade region 
+        /// should be unlimited supply of goods and funds or limited to what has been bought, sold and 
+        /// earn by the NPC</remarks>
+        // public const bool LimitedSupply = True;
+
+        /// <summary>
+        /// Should the NPC market be randomly restocked with simulated trade traffic
+        /// </summary>
+        /// <remarks>This is a bool which enables or disables the behavior that when an NPC resource is 
+        /// exhausted, randomly simulate a random quantity of this resource being sold to the NPC every 5 minutes
+        /// It will also randomly sell random quantities of overstocked resources if NPC funds are running low</remarks>
+        // public const bool ReSupply = True;
+
+        /// <summary>
+        /// Resupply threshold
+        /// </summary>
+        /// <remarks>This is a quantity representing the over and understock thresholds for Resupply</remarks>
+        // public const integer OverStocked = 60000;
+        // public const integer UnderStocked = 5;
+
+        /// <summary>
+        /// Resupply multiplier
+        /// </summary>
+        /// <remarks>This is the max amount and multiplier to apply to random number generation for 
+        /// resupply of depleted materials.  Eg 50 would represent any random number from 1 to 50
+        /// a multiplier of 5 would then multiply that amount.  Eg 2 would make the random chosen number
+        /// of 23 into 46, resulting in a sell of 46 items to the NPC character</remarks>
+        // public const integer Restock = 50;
+        // public const integer multiplier = 2;
+
+        /// <summary>
+        /// The is the Id which this mod registers iteself for sending and receiving messages through SE. 
         /// </summary>
         /// <remarks>
         /// This Id needs to be unique with SE and other mods, otherwise it can send/receive  
@@ -29,5 +62,7 @@
         /// We would now have a Client running newer communication classes trying to talk to the Server with older classes.
         /// </remarks>
         public const int ModCommunicationVersion = 20150913; // This will be based on the date of update.
+
+        //
     }
 }

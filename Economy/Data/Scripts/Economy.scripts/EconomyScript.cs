@@ -304,7 +304,7 @@ namespace Economy.scripts
                 //              trade base location.  So we may eventually need a "register" type command for faction 2 faction trade.
                 // if player location is within range of valid trade territory (or 0,0,0 to begin with for this milestone) 
                 // { 
-                //      select case (does split contain data?)
+                //      select case (does split contain data?) (actually my logic here is terrible, but its just comments ;)
                 //          case [1] == "cancel" cancel specified order?
                 //          case ![1] display brief help summary (means they only typed /sell)
                 //          case ![2] check if [1] == "all" - display error if not (means they only typed /sell all, or some invalid option) 
@@ -315,8 +315,42 @@ namespace Economy.scripts
                 //          case ![5] (optional check distance to player isnt too high) lookup item specified at [2] - if valid and in inventory && player [4] exists, send offer to player [4] to sell them qty [1] of item [2] at price [3] to player [4]
                 //                                                                      Start timer, wait for reply from player [4], if accept take money transfer goods, if deny or time runs out stop timer cancel sale 
                 //  } else { display error that no trade regions are in range }
-                MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented in this release");
+
+                //ok this is a pretty poor set of logic admittedly, regex wont work right here - but it is a start 
+                //just have to figure out how to read coords and take stuff out of inventory and it should be pretty straightforward..
+                //first off is there any point in proceeding
+                //if (My location works out To be within 2500 of a valid trade area) {
+                //in this release the only valid trade area is the default 0:0:0 area of map
+                //but should still go through the motions so when we create a register command the backend is ready
+                //by default in initialisation we should also create a bank entry for the NPC
+                switch (split.Length)
+                {
+                    case 1: //ie /sell
+                        MyAPIGateway.Utilities.ShowMessage("SELL", "/buy #1 #2 #3 #4");
+                        MyAPIGateway.Utilities.ShowMessage("SELL", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional person to sell to");
+                        return true;
+                    case 2: //ie /sell all or /sell cancel or /sell accept or /sell deny
+                        if (split[1].Equals("cancel", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "Cancel Not yet implemented in this release"); return true; }
+                        if (split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "all not yet implemented"); return true; }
+                        if (split[1].Equals("accept", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "accept not yet implemented"); return true; }
+                        if (split[1].Equals("deny", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "deny not yet implemented"); return true; }
+                        return false;
+                    case 3: //ie /sell 1 uranium
+                        MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented"); 
+                        return true;
+                    case 4: //ie /sell 1 uranium 50
+                        MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented"); 
+                        return true;
+                    case 5: //ie /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
+                        // note - if bob has already been sent an offer, reply with bob is already negotiating a deal
+                        //deal timer should be between 30 seconds and 2 minutes
+                        MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented"); 
+                        return true;
+                } 
+                //must be something unexpected
+                MyAPIGateway.Utilities.ShowMessage("SELL", "Unknown Option");
                 return true;
+                // } else { reply that there is nowhere nearby to trade; return true; }
             }
 
             // seen command
