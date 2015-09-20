@@ -15,6 +15,12 @@
         public const decimal NPCStartingBalance = 20000;
 
         /// <summary>
+        /// Should players be near each other to trade or should it be unlimited distance
+        /// </summary>
+        /// <remarks>This sets if players (or traders) should be nearby before being allowed to trade or not</remarks>
+        public const bool LimitedRange = false; //default should be true; may be false for testing or gameplay reasons.
+
+        /// <summary>
         /// Should the NPC market be limited or unlimited supply
         /// </summary>
         /// <remarks>This will be a bool that configures if buying and selling from 0.0.0 trade region 

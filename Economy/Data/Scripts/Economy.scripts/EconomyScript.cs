@@ -39,6 +39,9 @@ namespace Economy.scripts
         const string BalPattern = @"(?<command>/bal)(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?";
         const string SeenPattern = @"(?<command>/seen)\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*))";
         const string ValuePattern = @"(?<command>/value)\s+(?:(?<Key>.+)\s+(?<Value>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<Key>.+))";
+        // sell pattern check for "/sell" at[0], then number or string at [1], then string at [2], then number at [3], then string at [4]
+        // samples(optional): /sell all iron (price) (player/faction) || /sell 10 iron (price) (player/faction) || /sell accept || /sell deny || /sell cancel
+        const string SellPattern = @"(?<command>/sell)\s+(?:(?<Key>.+)|(?<Value>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Key>.+))\s+(?<Value>[+-]?((\d+(\.\d*)?)|(\.\d+)))";
 
         #endregion
 
@@ -291,6 +294,7 @@ namespace Economy.scripts
             // sell command
             if (split[0].Equals("/sell", StringComparison.InvariantCultureIgnoreCase))
             {
+            #region sell notes
                 //initially we should work only with a players inventory contents
                 //later on working with a special block or faction only storage crate setup may work
                 //when they need to sell more than can be carried
@@ -320,85 +324,56 @@ namespace Economy.scripts
                 //          case ![5] (optional check distance to player isnt too high) lookup item specified at [2] - if valid and in inventory && player [4] exists, send offer to player [4] to sell them qty [1] of item [2] at price [3] to player [4]
                 //                                                                      Start timer, wait for reply from player [4], if accept take money transfer goods, if deny or time runs out stop timer cancel sale 
                 //  } else { display error that no trade regions are in range }
+               
+                //  case 4: //ie /sell 1 uranium 50
+                //  case 5: //ie /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
+                            // note - if bob has already been sent an offer, reply with bob is already negotiating a deal
+                            //deal timer should be between 30 seconds and 2 minutes
+                #endregion 
+                //redesigned to be regex friendly
+                // Regex check needs to go here, so we have data to throw at the split and rangecheck
+                match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
+                //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
+                //then populate the other fields.  
+                //if (match.Success)
+                //{ }
 
-                //ok this is a pretty poor set of logic admittedly, regex wont work right here - but it is a start 
+                //now we need to check if range is ignored, or perform a range check on [4] to see if it is in selling range
+                //if both checks fail tell player nothing is near enough to trade with
+
                 //just have to figure out how to read coords and take stuff out of inventory and it should be pretty straightforward..
                 //first off is there any point in proceeding
-                //if (My location works out To be within 2500 of a valid trade area) {
-                //in this release the only valid trade area is the default 0:0:0 area of map
-                //but should still go through the motions so when we create a register command the backend is ready
-                //by default in initialisation we should also create a bank entry for the NPC
-                switch (split.Length)
+                //if (limited range setting is false or My location works out To be within 2500 of a valid trade area) {
+                bool RangeCheck = true; //placeholder until private bool RangeCheck(string targetname) {} can be made
+                if (!EconomyConsts.LimitedRange || RangeCheck)
                 {
-                    case 1: //ie /sell
-                        MyAPIGateway.Utilities.ShowMessage("SELL", "/buy #1 #2 #3 #4");
-                        MyAPIGateway.Utilities.ShowMessage("SELL", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional person to sell to");
-                        return true;
-                    case 2: //ie /sell all or /sell cancel or /sell accept or /sell deny
-                        if (split[1].Equals("cancel", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "Cancel Not yet implemented in this release"); return true; }
-                        if (split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "all not yet implemented"); return true; }
-                        if (split[1].Equals("accept", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "accept not yet implemented"); return true; }
-                        if (split[1].Equals("deny", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "deny not yet implemented"); return true; }
-                        return false;
-                    case 3: //ie /sell 1 uranium
-                        //bit of code reuse from /value here - be better if we moved this stuff to a dif module for neatness
-                        //and reuse item search in buy/sell command - meanwhile this section doesnt work at all... and im out of time today 
-                        match = Regex.Match(messageText, ValuePattern, RegexOptions.IgnoreCase);
-                        if (match.Success)
-                        {
-                            var itemName = match.Groups["Key"].Value;
-                            var strAmount = match.Groups["Value"].Value;
-                            MyObjectBuilder_Base content;
-                            string[] options;
-
-                            // Search for the item and find one match only, either by exact name or partial name.
-                            if (!Support.FindPhysicalParts(itemName, out content, out options) && options.Length > 0)
-                            {
-                                // TODO: use ShowMissionScreen if options.Length > 10 ?
-                                MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
-                                return true;
-                            }
-                            if (content != null)
-                            {
-                                decimal amount;
-                                if (decimal.TryParse(strAmount, out amount))
-                                    amount = Math.Abs(amount); //no negative qtys thanks..
-                                else { MyAPIGateway.Utilities.ShowMessage("SELL", "Invalid Quantity"); return true; }
-
-                                if (content.TypeId != typeof(MyObjectBuilder_Ore) && content.TypeId != typeof(MyObjectBuilder_Ingot))
-                                {
-                                    // must be whole numbers if it is a tool weapon or component.
-                                    amount = Math.Round(amount, 0);
-                                }
-                                string reply = "Test Selling " + amount + " " + MarketManagement.GetDisplayName(content.TypeId.ToString(), content.SubtypeName);
-                                //MessageMarketItemValue.SendMessage(content.TypeId.ToString(), content.SubtypeName, amount, MarketManagement.GetDisplayName(content.TypeId.ToString(), content.SubtypeName));
-                                MyAPIGateway.Utilities.ShowMessage("SELL", reply);
-                                return true;
-                            }
-
-                            MyAPIGateway.Utilities.ShowMessage("VALUE", "Unknown Item. Could not find the specified name.");
-                        }
-                        else
-                        {
-                            MyAPIGateway.Utilities.ShowMessage("VALUE", "You need to specify something to sell eg /sell ice");
+                    //in this release the only valid trade area is the default 0:0:0 area of map or other players?
+                    //but should still go through the motions so backend is ready
+                    //by default in initialisation we alerady created a bank entry for the NPC
+                    //now we take our regex fields populated above and start checking
+                    //what the player seems to want us to do - switch needs to be converted to the regex populated fields
+                    //using split at the moment for debugging and structruing desired logic
+                    switch (split.Length)
+                    {
+                        case 1: //ie /sell
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "/buy #1 #2 #3 #4");
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional person to sell to");
                             return true;
-                        }
-                        // String.Format("you can sell {0} '{1}' for {2} or buy it for {3} each.", Quantity, DisplayName, item.SellPrice*Quantity, item.BuyPrice*Quantity);
-                        //MyAPIGateway.Utilities.ShowMessage("SELL", "Ok you tried to sell"); 
-                        return true;
-                    case 4: //ie /sell 1 uranium 50
-                        MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented"); 
-                        return true;
-                    case 5: //ie /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
-                        // note - if bob has already been sent an offer, reply with bob is already negotiating a deal
-                        //deal timer should be between 30 seconds and 2 minutes
-                        MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented"); 
-                        return true;
-                } 
-                //must be something unexpected
-                MyAPIGateway.Utilities.ShowMessage("SELL", "Unknown Option");
-                return true;
-                // } else { reply that there is nowhere nearby to trade; return true; }
+                        case 2: //ie /sell all or /sell cancel or /sell accept or /sell deny
+                            if (split[1].Equals("cancel", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "Cancel Not yet implemented in this release"); return true; }
+                            if (split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "all not yet implemented"); return true; }
+                            if (split[1].Equals("accept", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "accept not yet implemented"); return true; }
+                            if (split[1].Equals("deny", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "deny not yet implemented"); return true; }
+                            return false;
+                        default: //must be more than 2
+                        //ie /sell all uranium || /sell 1 uranium || /sell 1 uranium 50 || /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
+                            //need an item search sub for this bit to compliment the regex and for neatness
+
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "Ok you tried to sell");
+                            return true;
+                    }
+                
+                 } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Nothing/Nobody nearby to trade with!"); return true; }
             }
 
             // seen command
