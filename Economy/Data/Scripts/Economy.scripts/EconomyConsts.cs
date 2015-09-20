@@ -7,6 +7,12 @@
         /// </summary>
         /// <remarks>This will still be the default value if a Admin does not configure a custom starting balance.</remarks>
         public const decimal DefaultStartingBalance = 100;
+    
+        /// <summary>
+        /// The starting balance for NPC Bankers.
+        /// </summary>
+        /// <remarks>This will still be the default value if a Admin does not configure a custom starting balance.</remarks>
+        public const decimal NPCStartingBalance = 20000;
 
         /// <summary>
         /// Should the NPC market be limited or unlimited supply

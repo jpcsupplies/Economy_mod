@@ -125,6 +125,8 @@ namespace Economy.scripts
 
             // let the server know we are ready for connections
             MessageConnectionRequest.SendMessage(EconomyConsts.ModCommunicationVersion);
+
+
         }
 
         private void InitServer()
@@ -140,6 +142,9 @@ namespace Economy.scripts
             ServerLogger.Write("LoadBankContent");
             BankConfigData = BankManagement.LoadContent();
             MarketConfigData = MarketManagement.LoadContent();
+
+            //Buy/Sell - check we have our NPC banker ready
+            CheckNPC.SendMessage();
         }
 
         #endregion
@@ -248,14 +253,14 @@ namespace Economy.scripts
             // eg /pay bob 50 here is your payment
             // eg /pay "Screaming Angles" 10 fish and chips
             if (split[0].Equals("/pay", StringComparison.InvariantCultureIgnoreCase))
-            {
+            {   //might need to add a check here preventing normal players paying NPC but not critical since they would be silly to try
                 match = Regex.Match(messageText, PayPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                     MessagePayUser.SendMessage(match.Groups["user"].Value,
                         Convert.ToDecimal(match.Groups["value"].Value, CultureInfo.InvariantCulture),
                         match.Groups["reason"].Value);
                 else
-                    MyAPIGateway.Utilities.ShowMessage("PAY", "Not enough parameters - /pay user amount reason");
+                    MyAPIGateway.Utilities.ShowMessage("PAY", "Missing parameter - /pay user amount reason");
                 return true;
             }
 
