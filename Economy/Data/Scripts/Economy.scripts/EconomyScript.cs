@@ -341,7 +341,50 @@ namespace Economy.scripts
                         if (split[1].Equals("deny", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "deny not yet implemented"); return true; }
                         return false;
                     case 3: //ie /sell 1 uranium
-                        MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented"); 
+                        //bit of code reuse from /value here - be better if we moved this stuff to a dif module for neatness
+                        //and reuse item search in buy/sell command - meanwhile this section doesnt work at all... and im out of time today 
+                        match = Regex.Match(messageText, ValuePattern, RegexOptions.IgnoreCase);
+                        if (match.Success)
+                        {
+                            var itemName = match.Groups["Key"].Value;
+                            var strAmount = match.Groups["Value"].Value;
+                            MyObjectBuilder_Base content;
+                            string[] options;
+
+                            // Search for the item and find one match only, either by exact name or partial name.
+                            if (!Support.FindPhysicalParts(itemName, out content, out options) && options.Length > 0)
+                            {
+                                // TODO: use ShowMissionScreen if options.Length > 10 ?
+                                MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                                return true;
+                            }
+                            if (content != null)
+                            {
+                                decimal amount;
+                                if (decimal.TryParse(strAmount, out amount))
+                                    amount = Math.Abs(amount); //no negative qtys thanks..
+                                else { MyAPIGateway.Utilities.ShowMessage("SELL", "Invalid Quantity"); return true; }
+
+                                if (content.TypeId != typeof(MyObjectBuilder_Ore) && content.TypeId != typeof(MyObjectBuilder_Ingot))
+                                {
+                                    // must be whole numbers if it is a tool weapon or component.
+                                    amount = Math.Round(amount, 0);
+                                }
+                                string reply = "Test Selling " + amount + " " + MarketManagement.GetDisplayName(content.TypeId.ToString(), content.SubtypeName);
+                                //MessageMarketItemValue.SendMessage(content.TypeId.ToString(), content.SubtypeName, amount, MarketManagement.GetDisplayName(content.TypeId.ToString(), content.SubtypeName));
+                                MyAPIGateway.Utilities.ShowMessage("SELL", reply);
+                                return true;
+                            }
+
+                            MyAPIGateway.Utilities.ShowMessage("VALUE", "Unknown Item. Could not find the specified name.");
+                        }
+                        else
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("VALUE", "You need to specify something to sell eg /sell ice");
+                            return true;
+                        }
+                        // String.Format("you can sell {0} '{1}' for {2} or buy it for {3} each.", Quantity, DisplayName, item.SellPrice*Quantity, item.BuyPrice*Quantity);
+                        //MyAPIGateway.Utilities.ShowMessage("SELL", "Ok you tried to sell"); 
                         return true;
                     case 4: //ie /sell 1 uranium 50
                         MyAPIGateway.Utilities.ShowMessage("SELL", "Not yet implemented"); 
@@ -381,6 +424,8 @@ namespace Economy.scripts
             }
             // value command for looking up the table price of an item.
             // eg /value itemname optionalqty
+            // !!!is it possible to make this work more like the bal or pay command so
+            // that the same item search can be reused in buy and sell too!!! ?
             if (split[0].Equals("/value", StringComparison.InvariantCultureIgnoreCase))
             {
                 match = Regex.Match(messageText, ValuePattern, RegexOptions.IgnoreCase);
@@ -448,6 +493,7 @@ namespace Economy.scripts
                 if (split.Length <= 1)
                 {
                     //did we just type help? show what else they can get help on
+                    //might be better to make a more detailed help reply here using mission window later on
                     MyAPIGateway.Utilities.ShowMessage("help", "Commands: help, buy, sell, bal, pay, seen");
                     if (MyAPIGateway.Session.Player.IsAdmin())
                     {
