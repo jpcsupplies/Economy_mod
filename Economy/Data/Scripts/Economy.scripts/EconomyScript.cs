@@ -41,7 +41,7 @@ namespace Economy.scripts
         const string ValuePattern = @"(?<command>/value)\s+(?:(?<Key>.+)\s+(?<Value>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<Key>.+))";
         // sell pattern check for "/sell" at[0], then number or string at [1], then string at [2], then number at [3], then string at [4]
         // samples(optional): /sell all iron (price) (player/faction) || /sell 10 iron (price) (player/faction) || /sell accept || /sell deny || /sell cancel
-        const string SellPattern = @"(?<command>/sell)\s+(?:(?<Key>.+)|(?<Value>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Key>.+))\s+(?<Value>[+-]?((\d+(\.\d*)?)|(\.\d+)))";
+        const string SellPattern = @"(?<command>/sell)\s+(?:(?<qty>.+)|(?<sqty>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<price>.+))\s+(?<user>[^\s]*))";
 
         #endregion
 
@@ -335,8 +335,9 @@ namespace Economy.scripts
                 match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
                 //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
                 //then populate the other fields.  
-                //if (match.Success)
-                //{ }
+                //string reply = "match " + match.Groups["qty"].Value + match.Groups["sqty"].Value + match.Groups["user"].Value + match.Groups["price"].Value;
+                //if (match.Success)         
+                //{ MyAPIGateway.Utilities.ShowMessage("SELL", reply); }
 
                 //now we need to check if range is ignored, or perform a range check on [4] to see if it is in selling range
                 //if both checks fail tell player nothing is near enough to trade with
@@ -368,7 +369,7 @@ namespace Economy.scripts
                         default: //must be more than 2
                         //ie /sell all uranium || /sell 1 uranium || /sell 1 uranium 50 || /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
                             //need an item search sub for this bit to compliment the regex and for neatness
-
+                            //if (split[3] == null) split[3]= "NPC";
                             MyAPIGateway.Utilities.ShowMessage("SELL", "Ok you tried to sell");
                             return true;
                     }
