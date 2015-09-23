@@ -41,7 +41,7 @@ namespace Economy.scripts
         const string ValuePattern = @"(?<command>/value)\s+(?:(?<Key>.+)\s+(?<Value>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<Key>.+))";
         // sell pattern check for "/sell" at[0], then number or string at [1], then string at [2], then number at [3], then string at [4]
         // samples(optional): /sell all iron (price) (player/faction) || /sell 10 iron (price) (player/faction) || /sell accept || /sell deny || /sell cancel
-        const string SellPattern = @"(?<command>/sell)\s+(?:(?<qty>.+)|(?<item>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<price>.+))\s+(?<user>[^\s]*))";
+        //const string SellPattern = @"(?<command>/sell)\s+(?:(?<qty>.+)|(?<item>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<price>.+))\s+(?<user>[^\s]*))";
 
         #endregion
 
@@ -332,7 +332,7 @@ namespace Economy.scripts
                 #endregion 
                 //redesigned to be regex friendly
                 // Regex check needs to go here, so we have data to throw at the split and rangecheck
-                match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
+                //match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
                 //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
                 //then populate the other fields.  
                 //string reply = "match " + match.Groups["qty"].Value + match.Groups["item"].Value + match.Groups["user"].Value + match.Groups["price"].Value;
@@ -362,7 +362,7 @@ namespace Economy.scripts
                     switch (split.Length)
                     {
                         case 1: //ie /sell
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "/buy #1 #2 #3 #4");
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "/sell #1 #2 #3 #4");
                             MyAPIGateway.Utilities.ShowMessage("SELL", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional person to sell to");
                             return true;
                         case 2: //ie /sell all or /sell cancel or /sell accept or /sell deny
@@ -375,12 +375,13 @@ namespace Economy.scripts
                             //ie /sell all uranium || /sell 1 uranium || /sell 1 uranium 50 || /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
                             //need an item search sub for this bit to compliment the regex and for neatness
                             //if (split[3] == null) split[3]= "NPC";
-                            if (split.Length == 3 && decimal.TryParse(split[1], out sellqty)) //eg /sell 3 iron
+                            if (split.Length == 3 && (decimal.TryParse(split[1], out sellqty) || split[1].Equals("all",StringComparison.InvariantCultureIgnoreCase)))//eg /sell 3 iron
                             {   //sellqty is now split[1] as decimal
+                                //if split[1] = all then we would need to sell everything they player is carrying
                                 itemname = split[2];
                                 //sell price is set by price book in this scenario, and we assume we are selling to the NPC market
                                 buyer = "NPC";
-                            } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty wasnt a number probably all?"); }
+                            } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty wasnt a number or all?"); }
 
                             //eg /sell 3 iron 50
                             if (split.Length == 4 && decimal.TryParse(split[1], out sellqty) && decimal.TryParse(split[3], out sellprice))
