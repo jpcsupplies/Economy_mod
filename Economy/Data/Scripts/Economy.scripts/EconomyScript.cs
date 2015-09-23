@@ -41,7 +41,7 @@ namespace Economy.scripts
         const string ValuePattern = @"(?<command>/value)\s+(?:(?<Key>.+)\s+(?<Value>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<Key>.+))";
         // sell pattern check for "/sell" at[0], then number or string at [1], then string at [2], then number at [3], then string at [4]
         // samples(optional): /sell all iron (price) (player/faction) || /sell 10 iron (price) (player/faction) || /sell accept || /sell deny || /sell cancel
-        const string SellPattern = @"(?<command>/sell)\s+(?:(?<qty>.+)|(?<sqty>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<price>.+))\s+(?<user>[^\s]*))";
+        const string SellPattern = @"(?<command>/sell)\s+(?:(?<qty>.+)|(?<item>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<price>.+))\s+(?<user>[^\s]*))";
 
         #endregion
 
@@ -335,7 +335,7 @@ namespace Economy.scripts
                 match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
                 //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
                 //then populate the other fields.  
-                //string reply = "match " + match.Groups["qty"].Value + match.Groups["sqty"].Value + match.Groups["user"].Value + match.Groups["price"].Value;
+                //string reply = "match " + match.Groups["qty"].Value + match.Groups["item"].Value + match.Groups["user"].Value + match.Groups["price"].Value;
                 //if (match.Success)         
                 //{ MyAPIGateway.Utilities.ShowMessage("SELL", reply); }
 
@@ -354,6 +354,11 @@ namespace Economy.scripts
                     //now we take our regex fields populated above and start checking
                     //what the player seems to want us to do - switch needs to be converted to the regex populated fields
                     //using split at the moment for debugging and structruing desired logic
+                    decimal sellqty=0;
+                    string itemname="";
+                    decimal sellprice=1;
+                    string buyer="";
+
                     switch (split.Length)
                     {
                         case 1: //ie /sell
@@ -367,12 +372,48 @@ namespace Economy.scripts
                             if (split[1].Equals("deny", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "deny not yet implemented"); return true; }
                             return false;
                         default: //must be more than 2
-                        //ie /sell all uranium || /sell 1 uranium || /sell 1 uranium 50 || /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
+                            //ie /sell all uranium || /sell 1 uranium || /sell 1 uranium 50 || /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
                             //need an item search sub for this bit to compliment the regex and for neatness
                             //if (split[3] == null) split[3]= "NPC";
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "Ok you tried to sell");
+                            if (split.Length == 3 && decimal.TryParse(split[1], out sellqty)) //eg /sell 3 iron
+                            {   //sellqty is now split[1] as decimal
+                                itemname = split[2];
+                                //sell price is set by price book in this scenario, and we assume we are selling to the NPC market
+                                buyer = "NPC";
+                            } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty wasnt a number probably all?"); }
+
+                            //eg /sell 3 iron 50
+                            if (split.Length == 4 && decimal.TryParse(split[1], out sellqty) && decimal.TryParse(split[3], out sellprice))
+                            {   //sellqty is now split[1] as decimal
+                                itemname = split[2];
+                                //sellprice is now split[3], and we assume we are posting an offer to the stockmarket not selling blindly to npc
+                                buyer = "OFFER";
+                            } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt a number probably all?"); }
+
+                            //eg /sell 3 iron 50 fred
+                            if (split.Length == 5 && decimal.TryParse(split[1], out sellqty) && decimal.TryParse(split[3], out sellprice))
+                            {   //sellqty is now split[1] as decimal
+                                itemname = split[2];
+                                //sellprice is now split[3]
+                                buyer = split[4];
+                                //this scenario we assume we sell to a player
+                            } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt a number probably all?"); }
+
+                            //at this point we should have enough information to make a sale
+                            string reply = "Debug: Selling " + sellqty + "x " + itemname + " to " + buyer + " for " + (sellqty*sellprice);
+                            MyAPIGateway.Utilities.ShowMessage("SELL", reply);
+
+                            if (buyer != "NPC" || buyer != "OFFER") { //must be selling to a player (or faction ?)
+                                //check the item to sell is a valid product, do usual qty type checks etc
+                                //check the player / faction exists etc etc
+                                MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We are selling to a player send them the request prompt or if it is a faction check they are trading this item");
+                            } else { 
+                                if (buyer == "NPC") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be selling to NPC - skip prompts sell immediately at price book price"); }
+                                if (buyer == "OFFER") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be posting a sell offer to stockmarket - skip prompts post offer"); }
+                            }
                             return true;
                     }
+
                 
                  } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Nothing/Nobody nearby to trade with!"); return true; }
             }
