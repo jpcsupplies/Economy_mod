@@ -403,8 +403,21 @@ namespace Economy.scripts
                             //at this point we should have enough information to make a sale
                             string reply = "Debug: Selling " + sellqty + "x " + itemname + " to " + buyer + " for " + (sellqty*sellprice);
                             MyAPIGateway.Utilities.ShowMessage("SELL", reply);
+                            //---------  now this bit of code is interesting we get id of item
+                            MyObjectBuilder_Base content;
+                            string[] options;
+                            // Search for the item and find one match only, either by exact name or partial name.
+                            if (!Support.FindPhysicalParts(itemname, out content, out options) && options.Length > 0)
+                            {
 
-                            if (buyer != "NPC" || buyer != "OFFER") { //must be selling to a player (or faction ?)
+                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                            return true;
+                            }
+                            reply = content.TypeId.ToString() +" - " + content.SubtypeName +" - " + MarketManagement.GetDisplayName(content.TypeId.ToString(), content.SubtypeName);
+                            MyAPIGateway.Utilities.ShowMessage("SELL", reply);
+                            //---------
+                            
+                            if (buyer != "NPC" && buyer != "OFFER") { //must be selling to a player (or faction ?)
                                 //check the item to sell is a valid product, do usual qty type checks etc
                                 //check the player / faction exists etc etc
                                 MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We are selling to a player send them the request prompt or if it is a faction check they are trading this item");
