@@ -86,7 +86,7 @@
         /// communications classes. A Player will connect to the server, and will automatically download version 2.
         /// We would now have a Client running newer communication classes trying to talk to the Server with older classes.
         /// </remarks>
-        public const int ModCommunicationVersion = 20150913; // This will be based on the date of update.
+        public const int ModCommunicationVersion = 20150925; // This will be based on the date of update.
 
         //
     }

@@ -399,23 +399,6 @@ namespace Economy.scripts
                             return true;
                         }
 
-                        // Verify that the items are in the player inventory.
-                        // TODO: later check trade block, cockpit inventory, cockpit ship inventory, inventory of targeted cube.
-                        var inventoryOwnwer = MyAPIGateway.Session.Player.Controller.ControlledEntity as IMyInventoryOwner;
-                        var inventory = inventoryOwnwer.GetInventory(0) as Sandbox.ModAPI.IMyInventory;
-                        MyFixedPoint amount = (MyFixedPoint)sellQuantity;
-
-                        if (!inventory.ContainItems(amount, (MyObjectBuilder_PhysicalObject)content))
-                        {
-                            // Insufficient items in inventory.
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "You don't have {0} of '{1}' to sell.", sellQuantity, content.GetDisplayName()) ;
-                            return true;
-                        }
-
-                        MyAPIGateway.Utilities.ShowMessage("SELL", "ok");
-
-                        inventory.RemoveItemsOfType(amount, (MyObjectBuilder_PhysicalObject)content);
-
                         // TODO: add items into holding as part of the sell message, from container Id: inventory.Owner.EntityId.
                         MessageSell.SendMessage(buyerName, sellQuantity, content.TypeId.ToString(), content.SubtypeName, sellPrice, useBankBuyPrice, sellToMerchant, offerToMarket);
 

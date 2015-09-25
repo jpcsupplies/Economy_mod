@@ -3,9 +3,14 @@
     using System;
     using System.Linq;
     using ProtoBuf;
+    using Sandbox.Common.ObjectBuilders;
+    using VRage;
     using Sandbox.ModAPI;
+    using Sandbox.ModAPI.Interfaces;
     using Economy.scripts;
     using EconConfig;
+    using Sandbox.Definitions;
+    using VRage.ObjectBuilders;
 
     /// <summary>
     /// this is to do the actual work of moving the goods checks need to occur before this
@@ -37,29 +42,29 @@
         /// <summary>
         /// unit price of item
         /// </summary>
-        [ProtoMember(4)]
+        [ProtoMember(5)]
         public decimal ItemPrice;
 
         /// <summary>
         /// Use the Current Buy price to sell it at. The Player 
         /// will not have access to this information without fetching it first. This saves us the trouble.
         /// </summary>
-        [ProtoMember(5)]
+        [ProtoMember(6)]
         public bool UseBankBuyPrice;
 
         /// <summary>
         /// We are selling to the Merchant.
         /// </summary>
-        [ProtoMember(6)]
+        [ProtoMember(7)]
         public bool SellToMerchant;
 
         /// <summary>
         /// The Item is been put onto the market.
         /// </summary>
-        [ProtoMember(7)]
+        [ProtoMember(8)]
         public bool OfferToMarket;
 
-        //[ProtoMember(8)]
+        //[ProtoMember(9)]
         //public string zone; //used to identify market we are selling to ??
 
         public static void SendMessage(string toUserName, decimal itemQuantity, string itemTypeId, string itemSubTypeName, decimal itemPrice, bool useBankBuyPrice, bool sellToMerchant, bool offerToMarket)
@@ -75,13 +80,46 @@
 
         public override void ProcessServer()
         {
-            BankAccountStruct account;
-
             //* Logic:                     
             //* Get player steam ID
             var payingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
 
-            // Who are we selling to
+            MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
+            MyPhysicalItemDefinition definition = null;
+            MyObjectBuilderType result;
+            if (MyObjectBuilderType.TryParse(ItemTypeId, out result))
+            {
+                var id = new MyDefinitionId(result, ItemSubTypeName);
+                MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
+            }
+
+            if (definition == null)
+            {
+                // Someone hacking, and passing bad data?
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you specified doesn't exist!");
+                return;
+            }
+
+            // Verify that the items are in the player inventory.
+            // TODO: later check trade block, cockpit inventory, cockpit ship inventory, inventory of targeted cube.
+
+            var definitionId = new MyDefinitionId(definition.Id.TypeId, definition.Id.SubtypeName);
+            var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
+
+            // TODO: This won't work if the is in a ship, or a remote control cube.
+            var inventoryOwnwer = (IMyInventoryOwner)payingPlayer.Controller.ControlledEntity;
+            var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
+
+            if (!inventory.ContainItems(amount, content))
+            {
+                // Insufficient items in inventory.
+                // TODO: use of content.GetDisplayName() isn't localized here.
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell.", ItemQuantity, content.GetDisplayName());
+                return;
+            }
+
+            // Who are we selling to?
+            BankAccountStruct account;
             if (SellToMerchant)
                 account = EconomyScript.Instance.BankConfigData.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
             else
@@ -89,7 +127,6 @@
 
             if (account == null)
             {
-                ReturnInventoryItems();
                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, player does not exist or have an account!");
                 return;
             }
@@ -97,7 +134,6 @@
             var item = EconomyScript.Instance.MarketConfigData.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
             if (item == null)
             {
-                ReturnInventoryItems();
                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the items you are trying to sell doesn't have a market entry!");
                 // TODO: in reality, this item needs not just to have an entry created, but a value applied also. It's the value that is more important.
                 return;
@@ -105,7 +141,6 @@
 
             if (item.IsBlacklisted)
             {
-                ReturnInventoryItems();
                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you tried to sell is blacklisted on this server.");
                 return;
             }
@@ -123,6 +158,16 @@
             if (SellToMerchant)
             {
                 // here we look up item price and transfer items and money as appropriate
+                inventory.RemoveItemsOfType(amount, content);
+
+                account.BankBalance -= transactionAmount;
+                account.Date = DateTime.Now;
+
+                accountToSell.BankBalance += transactionAmount;
+                accountToSell.Date = DateTime.Now;
+
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Transaction complete for {0}", transactionAmount);
+                return;
             }
             else if (OfferToMarket)
             {
@@ -130,8 +175,12 @@
             }
             else
             {
+                // TODO: check if paying player is online?
+
                 // is it a player then?             
             }
+
+            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Not yet complete.");
 
 
             /*

@@ -16,6 +16,7 @@
     [XmlInclude(typeof(MessageResetAccount))]
     [XmlInclude(typeof(MessageClientDialogMessage))]
     [XmlInclude(typeof(MessageClientTextMessage))]
+    [XmlInclude(typeof(MessageSell))]
     [ProtoContract]
     public abstract class MessageBase
     {
