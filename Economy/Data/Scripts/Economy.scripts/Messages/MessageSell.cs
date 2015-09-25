@@ -1,28 +1,71 @@
-﻿namespace Economy.scripts.Messages 
-    // this is to do the actual work of moving the goods checks need to occur before this
+﻿namespace Economy.scripts.Messages
 {
     using System;
+    using System.Linq;
     using ProtoBuf;
     using Sandbox.ModAPI;
     using Economy.scripts;
+    using EconConfig;
 
+    /// <summary>
+    /// this is to do the actual work of moving the goods checks need to occur before this
+    /// </summary>
     [ProtoContract]
     public class MessageSell : MessageBase
     {
+        /// <summary>
+        /// person, NPC, offer or faction to sell to
+        /// </summary>
         [ProtoMember(1)]
-        public string ToUserName; //person, NPC, offer or faction to sell to
+        public string ToUserName;
 
+        /// <summary>
+        /// qty of item
+        /// </summary>
         [ProtoMember(2)]
-        public decimal ItemAmount; //qty of item
+        public decimal ItemQuantity;
 
+        /// <summary>
+        /// item name / id we are selling
+        /// </summary>
         [ProtoMember(3)]
-        public string Item; // item name / id we are selling
+        public string ItemTypeId;
 
         [ProtoMember(4)]
-        public string ItemPrice; //unit price of item 
+        public string ItemSubTypeName;
 
-        //[ProtoMember(5)]
+        /// <summary>
+        /// unit price of item
+        /// </summary>
+        [ProtoMember(4)]
+        public decimal ItemPrice;
+
+        /// <summary>
+        /// Use the Current Buy price to sell it at. The Player 
+        /// will not have access to this information without fetching it first. This saves us the trouble.
+        /// </summary>
+        [ProtoMember(5)]
+        public bool UseBankBuyPrice;
+
+        /// <summary>
+        /// We are selling to the Merchant.
+        /// </summary>
+        [ProtoMember(6)]
+        public bool SellToMerchant;
+
+        /// <summary>
+        /// The Item is been put onto the market.
+        /// </summary>
+        [ProtoMember(7)]
+        public bool OfferToMarket;
+
+        //[ProtoMember(8)]
         //public string zone; //used to identify market we are selling to ??
+
+        public static void SendMessage(string toUserName, decimal itemQuantity, string itemTypeId, string itemSubTypeName, decimal itemPrice, bool useBankBuyPrice, bool sellToMerchant, bool offerToMarket)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageSell { ToUserName = toUserName, ItemQuantity = itemQuantity, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, ItemPrice = itemPrice, UseBankBuyPrice = useBankBuyPrice, SellToMerchant = sellToMerchant, OfferToMarket = offerToMarket });
+        }
 
         public override void ProcessClient()
         {
@@ -32,26 +75,67 @@
 
         public override void ProcessServer()
         {
-           
+            BankAccountStruct account;
+
             //* Logic:                     
             //* Get player steam ID
             var payingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
 
             // Who are we selling to
-            var account = EconomyScript.Instance.BankConfigData.FindAccount(ToUserName);
+            if (SellToMerchant)
+                account = EconomyScript.Instance.BankConfigData.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
+            else
+                account = EconomyScript.Instance.BankConfigData.FindAccount(ToUserName);
 
-           // if (account == "NPC")
-            //{
-                // here we look up item price and transfer items and money as appropriate
-            //} else { if (account=="OFFER") { /*Here we post offer to appropriate zone market*/ }
-            //         else { // is it a player then?             }
+            if (account == null)
+            {
+                ReturnInventoryItems();
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, player does not exist or have an account!");
+                return;
+            }
 
-            /*  old code to be disemboweled later
-            var accountToSpend = EconomyScript.Instance.BankConfigData.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
+            var item = EconomyScript.Instance.MarketConfigData.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
+            if (item == null)
+            {
+                ReturnInventoryItems();
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the items you are trying to sell doesn't have a market entry!");
+                // TODO: in reality, this item needs not just to have an entry created, but a value applied also. It's the value that is more important.
+                return;
+            }
 
+            if (item.IsBlacklisted)
+            {
+                ReturnInventoryItems();
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you tried to sell is blacklisted on this server.");
+                return;
+            }
+
+            if (UseBankBuyPrice)
+                ItemPrice = item.SellPrice * ItemQuantity;
+
+            var accountToSell = EconomyScript.Instance.BankConfigData.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
+            var transactionAmount = ItemPrice * ItemQuantity;
+            
             // need fix negative amounts before checking if the player can afford it.
             if (!payingPlayer.IsAdmin())
-                TransactionAmount = Math.Abs(TransactionAmount);
+                transactionAmount = Math.Abs(transactionAmount);
+
+            if (SellToMerchant)
+            {
+                // here we look up item price and transfer items and money as appropriate
+            }
+            else if (OfferToMarket)
+            {
+                // Here we post offer to appropriate zone market
+            }
+            else
+            {
+                // is it a player then?             
+            }
+
+
+            /*
+            //  old code to be disemboweled later
 
             // It needs to first check the player has enough to cover his payment
             if (TransactionAmount <= accountToSpend.BankBalance || payingPlayer.IsAdmin())
@@ -114,9 +198,9 @@
             } */
         }
 
-        public static void SendMessage(string toUserName, decimal transactionAmount, string reason)
+        private void ReturnInventoryItems()
         {
-            ConnectionHelper.SendMessageToServer(new MessagePayUser { ToUserName = toUserName, TransactionAmount = transactionAmount, Reason = reason });
+            // TODO: return the items to the seller inventory.
         }
     }
 }

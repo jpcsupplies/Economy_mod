@@ -29,6 +29,7 @@ namespace Economy.scripts
     using Economy.scripts.EconConfig;
     using System.Globalization;
     using Economy.scripts.Messages;
+    using VRage;
 
     [Sandbox.Common.MySessionComponentDescriptor(Sandbox.Common.MyUpdateOrder.AfterSimulation)]
     public class EconomyScript : MySessionComponentBase
@@ -39,9 +40,12 @@ namespace Economy.scripts
         const string BalPattern = @"(?<command>/bal)(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?";
         const string SeenPattern = @"(?<command>/seen)\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*))";
         const string ValuePattern = @"(?<command>/value)\s+(?:(?<Key>.+)\s+(?<Value>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<Key>.+))";
-        // sell pattern check for "/sell" at[0], then number or string at [1], then string at [2], then number at [3], then string at [4]
-        // samples(optional): /sell all iron (price) (player/faction) || /sell 10 iron (price) (player/faction) || /sell accept || /sell deny || /sell cancel
-        //const string SellPattern = @"(?<command>/sell)\s+(?:(?<qty>.+)|(?<item>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<price>.+))\s+(?<user>[^\s]*))";
+
+        /// <summary>
+        /// sell pattern check for "/sell" at[0], then number or string at [1], then string at [2], then number at [3], then string at [4]
+        /// samples(optional): /sell all iron (price) (player/faction) || /sell 10 iron (price) (player/faction) || /sell accept || /sell deny || /sell cancel
+        /// </summary>
+        const string SellPattern = @"(?<command>/sell)\s+(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>[^\s]*))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
 
         #endregion
 
@@ -128,8 +132,6 @@ namespace Economy.scripts
 
             // let the server know we are ready for connections
             MessageConnectionRequest.SendMessage(EconomyConsts.ModCommunicationVersion);
-
-
         }
 
         private void InitServer()
@@ -147,7 +149,7 @@ namespace Economy.scripts
             MarketConfigData = MarketManagement.LoadContent();
 
             //Buy/Sell - check we have our NPC banker ready
-            CheckNPC.SendMessage();
+            NpcMerchantManager.VerifyAndCreate();
         }
 
         #endregion
@@ -294,7 +296,7 @@ namespace Economy.scripts
             // sell command
             if (split[0].Equals("/sell", StringComparison.InvariantCultureIgnoreCase))
             {
-            #region sell notes
+                #region sell notes
                 //initially we should work only with a players inventory contents
                 //later on working with a special block or faction only storage crate setup may work
                 //when they need to sell more than can be carried
@@ -324,20 +326,12 @@ namespace Economy.scripts
                 //          case ![5] (optional check distance to player isnt too high) lookup item specified at [2] - if valid and in inventory && player [4] exists, send offer to player [4] to sell them qty [1] of item [2] at price [3] to player [4]
                 //                                                                      Start timer, wait for reply from player [4], if accept take money transfer goods, if deny or time runs out stop timer cancel sale 
                 //  } else { display error that no trade regions are in range }
-               
+
                 //  case 4: //ie /sell 1 uranium 50
                 //  case 5: //ie /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
-                            // note - if bob has already been sent an offer, reply with bob is already negotiating a deal
-                            //deal timer should be between 30 seconds and 2 minutes
-                #endregion 
-                //redesigned to be regex friendly
-                // Regex check needs to go here, so we have data to throw at the split and rangecheck
-                //match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
-                //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
-                //then populate the other fields.  
-                //string reply = "match " + match.Groups["qty"].Value + match.Groups["item"].Value + match.Groups["user"].Value + match.Groups["price"].Value;
-                //if (match.Success)         
-                //{ MyAPIGateway.Utilities.ShowMessage("SELL", reply); }
+                // note - if bob has already been sent an offer, reply with bob is already negotiating a deal
+                //deal timer should be between 30 seconds and 2 minutes
+                #endregion
 
                 //now we need to check if range is ignored, or perform a range check on [4] to see if it is in selling range
                 //if both checks fail tell player nothing is near enough to trade with
@@ -354,10 +348,81 @@ namespace Economy.scripts
                     //now we take our regex fields populated above and start checking
                     //what the player seems to want us to do - switch needs to be converted to the regex populated fields
                     //using split at the moment for debugging and structruing desired logic
-                    decimal sellqty=0;
-                    string itemname="";
-                    decimal sellprice=1;
-                    string buyer="";
+                    decimal sellQuantity = 0;
+                    string itemName = "";
+                    decimal sellPrice = 1;
+                    bool useBankBuyPrice = false;
+                    string buyerName = "";
+                    bool sellToMerchant = false;
+                    bool offerToMarket = false;
+
+                    match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
+                    //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
+                    //then populate the other fields.  
+                    //string reply = "match " + match.Groups["qty"].Value + match.Groups["item"].Value + match.Groups["user"].Value + match.Groups["price"].Value;
+                    if (match.Success)         
+                    {
+                        itemName = match.Groups["item"].Value;
+                        buyerName = match.Groups["user"].Value;
+                        sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
+                        if (!decimal.TryParse(match.Groups["price"].Value, out sellPrice))
+                            // We will use the they price they set at which they will buy from the player.
+                            useBankBuyPrice = true;  // sellprice will be 0 because TryParse failed.
+
+                        if (string.IsNullOrEmpty(buyerName))
+                            sellToMerchant = true;
+
+                        if (!useBankBuyPrice && sellToMerchant)
+                        {
+                            // A price was specified, we actually intend to offer the item for sale at a set price to the market, not the bank.
+                            offerToMarket = true;
+                            sellToMerchant = false;
+                        }
+
+                        MyObjectBuilder_Base content;
+                        string[] options;
+                        // Search for the item and find one match only, either by exact name or partial name.
+                        if (!Support.FindPhysicalParts(itemName, out content, out options) && options.Length > 0)
+                        {
+                            if (options.Length > 10)
+                                MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
+                            else
+                                MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                            return true;
+                        }
+
+                        // TODO: do a floating point check on the item item. Tools and components cannot have decimals. They must be whole numbers.
+
+                        if (sellQuantity <= 0)
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "You must provide a valid quantity to sell.");
+                            return true;
+                        }
+
+                        // Verify that the items are in the player inventory.
+                        // TODO: later check trade block, cockpit inventory, cockpit ship inventory, inventory of targeted cube.
+                        var inventoryOwnwer = MyAPIGateway.Session.Player.Controller.ControlledEntity as IMyInventoryOwner;
+                        var inventory = inventoryOwnwer.GetInventory(0) as Sandbox.ModAPI.IMyInventory;
+                        MyFixedPoint amount = (MyFixedPoint)sellQuantity;
+
+                        if (!inventory.ContainItems(amount, (MyObjectBuilder_PhysicalObject)content))
+                        {
+                            // Insufficient items in inventory.
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "You don't have {0} of '{1}' to sell.", sellQuantity, content.GetDisplayName()) ;
+                            return true;
+                        }
+
+                        MyAPIGateway.Utilities.ShowMessage("SELL", "ok");
+
+                        inventory.RemoveItemsOfType(amount, (MyObjectBuilder_PhysicalObject)content);
+
+                        // TODO: add items into holding as part of the sell message, from container Id: inventory.Owner.EntityId.
+                        MessageSell.SendMessage(buyerName, sellQuantity, content.TypeId.ToString(), content.SubtypeName, sellPrice, useBankBuyPrice, sellToMerchant, offerToMarket);
+
+                        //    MyAPIGateway.Utilities.ShowMessage("SELL", reply);
+                        return true;
+                    }
+
 
                     switch (split.Length)
                     {
@@ -375,61 +440,67 @@ namespace Economy.scripts
                             //ie /sell all uranium || /sell 1 uranium || /sell 1 uranium 50 || /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
                             //need an item search sub for this bit to compliment the regex and for neatness
                             //if (split[3] == null) split[3]= "NPC";
-                            if (split.Length == 3 && (decimal.TryParse(split[1], out sellqty) || split[1].Equals("all",StringComparison.InvariantCultureIgnoreCase)))//eg /sell 3 iron
+                            if (split.Length == 3 && (decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)))//eg /sell 3 iron
                             {   //sellqty is now split[1] as decimal
                                 //if split[1] = all then we would need to sell everything they player is carrying
-                                itemname = split[2];
+                                itemName = split[2];
                                 //sell price is set by price book in this scenario, and we assume we are selling to the NPC market
-                                buyer = "NPC";
-                            } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty wasnt a number or all?"); }
+                                buyerName = EconomyConsts.NpcMerchantName;
+                            }
+                            else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty wasnt a number or all?"); }
 
                             //eg /sell 3 iron 50
-                            if (split.Length == 4 && decimal.TryParse(split[1], out sellqty) && decimal.TryParse(split[3], out sellprice))
+                            if (split.Length == 4 && decimal.TryParse(split[1], out sellQuantity) && decimal.TryParse(split[3], out sellPrice))
                             {   //sellqty is now split[1] as decimal
-                                itemname = split[2];
+                                itemName = split[2];
                                 //sellprice is now split[3], and we assume we are posting an offer to the stockmarket not selling blindly to npc
-                                buyer = "OFFER";
-                            } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt a number probably all?"); }
+                                buyerName = "OFFER";
+                            }
+                            else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt a number probably all?"); }
 
                             //eg /sell 3 iron 50 fred
-                            if (split.Length == 5 && decimal.TryParse(split[1], out sellqty) && decimal.TryParse(split[3], out sellprice))
+                            if (split.Length == 5 && decimal.TryParse(split[1], out sellQuantity) && decimal.TryParse(split[3], out sellPrice))
                             {   //sellqty is now split[1] as decimal
-                                itemname = split[2];
+                                itemName = split[2];
                                 //sellprice is now split[3]
-                                buyer = split[4];
+                                buyerName = split[4];
                                 //this scenario we assume we sell to a player
-                            } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt a number probably all?"); }
+                            }
+                            else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt a number probably all?"); }
 
                             //at this point we should have enough information to make a sale
-                            string reply = "Debug: Selling " + sellqty + "x " + itemname + " to " + buyer + " for " + (sellqty*sellprice);
+                            string reply = "Debug: Selling " + sellQuantity + "x " + itemName + " to " + buyerName + " for " + (sellQuantity * sellPrice);
                             MyAPIGateway.Utilities.ShowMessage("SELL", reply);
                             //---------  now this bit of code is interesting we get id of item
                             MyObjectBuilder_Base content;
                             string[] options;
                             // Search for the item and find one match only, either by exact name or partial name.
-                            if (!Support.FindPhysicalParts(itemname, out content, out options) && options.Length > 0)
+                            if (!Support.FindPhysicalParts(itemName, out content, out options) && options.Length > 0)
                             {
-
-                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
-                            return true;
+                                MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                                return true;
                             }
-                            reply = content.TypeId.ToString() +" - " + content.SubtypeName +" - " + MarketManagement.GetDisplayName(content.TypeId.ToString(), content.SubtypeName);
+                            reply = content.TypeId.ToString() + " - " + content.SubtypeName + " - " + MarketManagement.GetDisplayName(content.TypeId.ToString(), content.SubtypeName);
                             MyAPIGateway.Utilities.ShowMessage("SELL", reply);
                             //---------
-                            
-                            if (buyer != "NPC" && buyer != "OFFER") { //must be selling to a player (or faction ?)
+
+                            if (buyerName != EconomyConsts.NpcMerchantName && buyerName != "OFFER")
+                            { //must be selling to a player (or faction ?)
                                 //check the item to sell is a valid product, do usual qty type checks etc
                                 //check the player / faction exists etc etc
                                 MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We are selling to a player send them the request prompt or if it is a faction check they are trading this item");
-                            } else { 
-                                if (buyer == "NPC") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be selling to NPC - skip prompts sell immediately at price book price"); }
-                                if (buyer == "OFFER") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be posting a sell offer to stockmarket - skip prompts post offer"); }
+                            }
+                            else
+                            {
+                                if (buyerName == EconomyConsts.NpcMerchantName) { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be selling to NPC - skip prompts sell immediately at price book price"); }
+                                if (buyerName == "OFFER") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be posting a sell offer to stockmarket - skip prompts post offer"); }
                             }
                             return true;
                     }
 
-                
-                 } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Nothing/Nobody nearby to trade with!"); return true; }
+
+                }
+                else { MyAPIGateway.Utilities.ShowMessage("SELL", "Nothing/Nobody nearby to trade with!"); return true; }
             }
 
             // seen command
@@ -453,6 +524,7 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("BAL", "Incorrect parameters");
                 return true;
             }
+
             // value command for looking up the table price of an item.
             // eg /value itemname optionalqty
             // !!!is it possible to make this work more like the bal or pay command so
@@ -483,7 +555,7 @@ namespace Economy.scripts
                         if (amount < 0) // if a negative value is provided, make it 1.
                             amount = 1;
 
-                        if (content.TypeId != typeof (MyObjectBuilder_Ore) && content.TypeId != typeof (MyObjectBuilder_Ingot))
+                        if (content.TypeId != typeof(MyObjectBuilder_Ore) && content.TypeId != typeof(MyObjectBuilder_Ingot))
                         {
                             // must be whole numbers.
                             amount = Math.Round(amount, 0);
@@ -536,10 +608,10 @@ namespace Economy.scripts
                 else
                 {
                     switch (split[1].ToLowerInvariant())
-                    {   
+                    {
                         // did we type /ehelp help ?
                         case "help":
-                            MyAPIGateway.Utilities.ShowMessage("/ehelp #", "Displays help on the specified command [#]."); 
+                            MyAPIGateway.Utilities.ShowMessage("/ehelp #", "Displays help on the specified command [#].");
                             return true;
                         // did we type /help buy etc
                         case "pay":
@@ -581,7 +653,7 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMessage("Help", "/value X Y - Looks up item [X] of optional quantity [Y] and reports the buy and sell value.");
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /value Ice 20    or   /value ice");
                             return true;
-                    } 
+                    }
                 }
             }
 

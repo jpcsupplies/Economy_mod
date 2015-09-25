@@ -36,7 +36,10 @@
             // TypeId and SubtypeName are both Case sensitive. Do not Ignore case when comparing these.
             var item = EconomyScript.Instance.MarketConfigData.MarketItems.FirstOrDefault(e => e.TypeId == TypeId && e.SubtypeName == SubtypeName);
             if (item == null)
+            {
+                MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", "Sorry, the items you are trying to value doesn't have a market entry!");
                 return;
+            }
 
             string reply;
 

@@ -4,6 +4,9 @@ namespace Economy.scripts
     using System.Linq;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.ModAPI;
+    using VRage.ObjectBuilders;
+    using Sandbox.Definitions;
+    using VRage;
 
     public static class Extensions
     {
@@ -63,6 +66,12 @@ namespace Economy.scripts
             var listplayers = new List<IMyPlayer>();
             MyAPIGateway.Players.GetPlayers(listplayers, p => p.SteamUserId == steamId);
             return listplayers.FirstOrDefault();
+        }
+
+        public static string GetDisplayName(this MyObjectBuilder_Base objectBuilder)
+        {
+            var defintion = MyDefinitionManager.Static.GetPhysicalItemDefinition(objectBuilder);
+            return defintion.DisplayNameEnum.HasValue ? MyTexts.GetString(defintion.DisplayNameEnum.Value) : defintion.DisplayNameString;
         }
     }
 }

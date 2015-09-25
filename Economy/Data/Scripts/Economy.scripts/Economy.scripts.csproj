@@ -75,7 +75,7 @@
     <Compile Include="EconomyScript.cs" />
     <Compile Include="EconConfig\BankAccountStruct.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="Messages\CheckNPC.cs" />
+    <Compile Include="EconConfig\NpcMerchantManager.cs" />
     <Compile Include="Messages\MessageSell.cs" />
     <Compile Include="Messages\MessageMarketItemValue.cs" />
     <Compile Include="Messages\MessageBankBalance.cs" />

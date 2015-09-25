@@ -1,5 +1,8 @@
 ﻿namespace Economy.scripts
-{  //some of these options will later be configurable in a setting file and/or in game commands but for now set as defaults
+{
+    /// <summary>
+    /// Some of these options will later be configurable in a setting file and/or in game commands but for now set as defaults
+    /// </summary>
     public class EconomyConsts
     {
         /// <summary>
@@ -27,6 +30,16 @@
         /// should be unlimited supply of goods and funds or limited to what has been bought, sold and 
         /// earn by the NPC</remarks>
         // public const bool LimitedSupply = True;
+
+        /// <summary>
+        /// The internal id we used to identify the Merchant's server account.
+        /// </summary> 
+        public const ulong NpcMerchantId = 1234;
+
+        /// <summary>
+        /// The name that will used to identify the Merchant's server account.
+        /// </summary>
+        public const string NpcMerchantName = "NPC";
 
         /// <summary>
         /// Should the NPC market be randomly restocked with simulated trade traffic
