@@ -444,6 +444,7 @@ namespace Economy.scripts
                                     //if split[1] = all then we would need to sell every specified item the player is carrying
                                     //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
                                 }
+                                if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
                                 //sellprice is now split[3], and we assume we are posting an offer to the stockmarket not selling blindly to npc
                                 buyerName = "OFFER";
                             } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt valid?"); return false; }
