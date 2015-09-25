@@ -286,7 +286,7 @@ namespace Economy.scripts
                 //
                 //  if (no price specified) buy whatever the lowest offer is, accumulating qty, and adding up each price point qty until
                 //  sale is concluded at desired qty, or player runs out of money, or there are none left to buy.
-                //  if (they place an offer above market && have access to offers), post offer, and deduct funds
+                //  if (they place an offer above/below market && have access to offers), post offer, and deduct funds
                 //  if they choose to cancel an offer, remove offer and return remaining money
 
                 MyAPIGateway.Utilities.ShowMessage("BUY", "Not yet implemented in this release");
@@ -415,7 +415,7 @@ namespace Economy.scripts
                             return true;
                         case 2: //ie /sell all or /sell cancel or /sell accept or /sell deny
                             if (split[1].Equals("cancel", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "Cancel Not yet implemented in this release"); return true; }
-                            if (split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "all not yet implemented"); return true; }
+                            if (split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "all not yet implemented - sell all carried items"); return true; }
                             if (split[1].Equals("accept", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "accept not yet implemented"); return true; }
                             if (split[1].Equals("deny", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "deny not yet implemented"); return true; }
                             return false;
@@ -423,33 +423,45 @@ namespace Economy.scripts
                             //ie /sell all uranium || /sell 1 uranium || /sell 1 uranium 50 || /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
                             //need an item search sub for this bit to compliment the regex and for neatness
                             //if (split[3] == null) split[3]= "NPC";
-                            if (split.Length == 3 && (decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)))//eg /sell 3 iron
-                            {   //sellqty is now split[1] as decimal
-                                //if split[1] = all then we would need to sell everything they player is carrying
-                                itemName = split[2];
+                            if (split.Length == 3 && ((decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))))//eg /sell 3 iron
+                            {   //sellqty is now split[1] as decimal -
+                                if (sellQuantity == 0 && split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
+                                {  //in this case try parse failed but "all" matched..
+                                    //if split[1] = all then we would need to sell every specified item the player is carrying
+                                    //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
+                                }
+
+                                if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
                                 //sell price is set by price book in this scenario, and we assume we are selling to the NPC market
                                 buyerName = EconomyConsts.NpcMerchantName;
-                            }
-                            else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty wasnt a number or all?"); }
+                            } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty wasnt valid?"); return false; }
 
                             //eg /sell 3 iron 50
-                            if (split.Length == 4 && decimal.TryParse(split[1], out sellQuantity) && decimal.TryParse(split[3], out sellPrice))
+                            if (split.Length == 4 && (decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) && decimal.TryParse(split[3], out sellPrice))
                             {   //sellqty is now split[1] as decimal
-                                itemName = split[2];
+                                if (sellQuantity == 0 && split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
+                                {  //in this case try parse failed but "all" matched..
+                                    //if split[1] = all then we would need to sell every specified item the player is carrying
+                                    //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
+                                }
                                 //sellprice is now split[3], and we assume we are posting an offer to the stockmarket not selling blindly to npc
                                 buyerName = "OFFER";
-                            }
-                            else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt a number probably all?"); }
+                            } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt valid?"); return false; }
 
                             //eg /sell 3 iron 50 fred
-                            if (split.Length == 5 && decimal.TryParse(split[1], out sellQuantity) && decimal.TryParse(split[3], out sellPrice))
+                            if (split.Length == 5 && (decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) && decimal.TryParse(split[3], out sellPrice))
                             {   //sellqty is now split[1] as decimal
-                                itemName = split[2];
+                                if (sellQuantity == 0 && split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
+                                {  //in this case try parse failed but "all" matched..
+                                    //if split[1] = all then we would need to sell every specified item the player is carrying
+                                    //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
+                                }
+                                if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
                                 //sellprice is now split[3]
                                 buyerName = split[4];
                                 //this scenario we assume we sell to a player
                             }
-                            else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt a number probably all?"); }
+                            else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt valid?"); return false; }
 
                             //at this point we should have enough information to make a sale
                             string reply = "Debug: Selling " + sellQuantity + "x " + itemName + " to " + buyerName + " for " + (sellQuantity * sellPrice);
@@ -471,12 +483,12 @@ namespace Economy.scripts
                             { //must be selling to a player (or faction ?)
                                 //check the item to sell is a valid product, do usual qty type checks etc
                                 //check the player / faction exists etc etc
-                                MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We are selling to a player send them the request prompt or if it is a faction check they are trading this item");
+                                MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We are selling to a player send request prompt or if it is a faction check they are trading this item");
                             }
                             else
                             {
                                 if (buyerName == EconomyConsts.NpcMerchantName) { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be selling to NPC - skip prompts sell immediately at price book price"); }
-                                if (buyerName == "OFFER") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be posting a sell offer to stockmarket - skip prompts post offer"); }
+                                if (buyerName == "OFFER") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be posting a sell offer to stockmarket - skip prompts post offer UNLESS we match a buy offer at the same price then process that"); }
                             }
                             return true;
                     }
