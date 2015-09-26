@@ -1,7 +1,7 @@
 ﻿namespace Economy.scripts.Messages
 {
-    using ProtoBuf;
     using System.Linq;
+    using ProtoBuf;
 
     public class MessageConnectionRequest : MessageBase
     {

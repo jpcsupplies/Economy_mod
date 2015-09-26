@@ -3,10 +3,10 @@ namespace Economy.scripts
     using System.Collections.Generic;
     using System.Linq;
     using Sandbox.Common.ObjectBuilders;
-    using Sandbox.ModAPI;
-    using VRage.ObjectBuilders;
     using Sandbox.Definitions;
+    using Sandbox.ModAPI;
     using VRage;
+    using VRage.ObjectBuilders;
 
     public static class Extensions
     {
@@ -49,6 +49,25 @@ namespace Economy.scripts
             utilities.ShowMessage(sender, string.Format(messageText, args));
         }
 
+        /// <summary>
+        /// Determines if the player is an Author/Creator.
+        /// This is used expressly for debugging and testing of commands.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        public static bool IsExperimentalCreator(this IMyPlayer player)
+        {
+            switch (player.SteamUserId)
+            {
+                case 76561197961224864L:
+                    return true;
+                case 76561197968837138L:
+                    return true;
+            }
+
+            return false;
+        }
+
         public static IMyPlayer Player(this IMyIdentity identity)
         {
             var listplayers = new List<IMyPlayer>();
@@ -72,6 +91,42 @@ namespace Economy.scripts
         {
             var defintion = MyDefinitionManager.Static.GetPhysicalItemDefinition(objectBuilder);
             return defintion.DisplayNameEnum.HasValue ? MyTexts.GetString(defintion.DisplayNameEnum.Value) : defintion.DisplayNameString;
+        }
+
+        /// <summary>
+        /// Used to find the Character Entity (which is the physical representation in game) from the Player (the network connected human).
+        /// This is a kludge as a proper API doesn't exist, even though the game code could easily expose this and save all this processing we are forced to do.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        public static IMyCharacter GetCharacter(this IMyPlayer player)
+        {
+            var character = player.Controller.ControlledEntity as IMyCharacter;
+            if (character != null)
+                return character;
+
+            var cubeBlock = player.Controller.ControlledEntity as IMyCubeBlock;
+            if (cubeBlock == null)
+                return null;
+
+            var controller = cubeBlock as Sandbox.Game.Entities.MyShipController;
+            if (controller != null)
+                return controller.Pilot;
+
+            // Cannot determine Character controlling MyLargeTurretBase as class is internal.
+            // TODO: find if the player is controlling a turret.
+
+            //var charComponent = cubeBlock.Components.Get<MyCharacterComponent>();
+
+            //if (charComponent != null)
+            //{
+            //    var entity = charComponent.Entity;
+            //    MyAPIGateway.Utilities.ShowMessage("Entity", "Good");
+            //}
+            //var turret = cubeBlock as Sandbox.Game.Weapons.MyLargeTurretBase;
+            //var turret = cubeBlock as IMyControllableEntity;
+
+            return null;
         }
     }
 }

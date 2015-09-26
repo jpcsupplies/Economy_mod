@@ -1,8 +1,8 @@
 ﻿namespace Economy.scripts
 {
-    using Sandbox.ModAPI;
     using System;
     using System.IO;
+    using Sandbox.ModAPI;
 
     public class TextLogger
     {
@@ -17,6 +17,10 @@
         #region properties
 
         public string LogFileName { get { return _logFileName; } }
+
+        public string LogFile { get { return Path.Combine(MyAPIGateway.Utilities.GamePaths.UserDataPath, "Storage", _logFileName); } }
+
+        public bool IsActive { get { return _isInitialized; } }
 
         #endregion
 
@@ -63,7 +67,7 @@
 
             // we create the writer when it is needed to prevent the creation of empty files
             if (_logWriter == null)
-                _logWriter = MyAPIGateway.Utilities.WriteFileInLocalStorage(_logFileName, typeof(TextLogger));
+                _logWriter = MyAPIGateway.Utilities.WriteFileInGlobalStorage(_logFileName);
 
             string message;
             if (args == null || args.Length == 0)
@@ -82,7 +86,7 @@
 
             // we create the writer when it is needed to prevent the creation of empty files
             if (_logWriter == null)
-                _logWriter = MyAPIGateway.Utilities.WriteFileInLocalStorage(_logFileName, typeof(TextLogger));
+                _logWriter = MyAPIGateway.Utilities.WriteFileInGlobalStorage(_logFileName);
 
             _logWriter.WriteLine("{0:yyyy-MM-dd HH:mm:ss:fff} Error - {1}", DateTime.Now, ex);
 

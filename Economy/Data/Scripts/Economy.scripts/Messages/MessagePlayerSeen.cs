@@ -1,8 +1,8 @@
 ﻿namespace Economy.scripts.Messages
 {
     using System;
-    using ProtoBuf;
     using System.Linq;
+    using ProtoBuf;
 
     [ProtoContract]
     public class MessagePlayerSeen : MessageBase

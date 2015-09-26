@@ -1,9 +1,9 @@
 ﻿namespace Economy.scripts.Messages
 {
     using System;
+    using Economy.scripts;
     using ProtoBuf;
     using Sandbox.ModAPI;
-    using Economy.scripts;
 
     [ProtoContract]
     public class MessagePayUser : MessageBase

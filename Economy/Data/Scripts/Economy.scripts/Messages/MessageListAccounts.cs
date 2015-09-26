@@ -1,9 +1,9 @@
 ﻿namespace Economy.scripts.Messages
 {
+    using System.Linq;
     using System.Text;
     using ProtoBuf;
     using Sandbox.ModAPI;
-    using System.Linq;
 
     [ProtoContract]
     public class MessageListAccounts : MessageBase

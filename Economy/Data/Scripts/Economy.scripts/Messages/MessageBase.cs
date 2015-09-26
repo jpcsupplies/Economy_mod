@@ -1,8 +1,8 @@
 ﻿namespace Economy.scripts.Messages
 {
-    using ProtoBuf;
     using System;
     using System.Xml.Serialization;
+    using ProtoBuf;
 
     // ALL CLASSES DERIVED FROM MessageBase MUST BE ADDED HERE
     [XmlInclude(typeof(MessageIncomingMessageParts))]

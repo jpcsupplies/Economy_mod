@@ -2,14 +2,14 @@
 {
     using System;
     using System.Linq;
+    using EconConfig;
+    using Economy.scripts;
     using ProtoBuf;
     using Sandbox.Common.ObjectBuilders;
-    using VRage;
+    using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Interfaces;
-    using Economy.scripts;
-    using EconConfig;
-    using Sandbox.Definitions;
+    using VRage;
     using VRage.ObjectBuilders;
 
     /// <summary>
@@ -106,8 +106,31 @@
             var definitionId = new MyDefinitionId(definition.Id.TypeId, definition.Id.SubtypeName);
             var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
 
-            // TODO: This won't work if the is in a ship, or a remote control cube.
-            var inventoryOwnwer = (IMyInventoryOwner)payingPlayer.Controller.ControlledEntity;
+            // Get the player's inventory, regardless of if they are in a ship, or a remote control cube.
+            var character = payingPlayer.GetCharacter();
+            if (character == null)
+            {
+                // Player has no body. Could mean they are dead.
+                // Either way, there is no inventory.
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are dead. You cannot trade while dead.");
+                return;
+            }
+
+            // TODO: is a null check adaqaute?, or do we need to check for IsDead?
+            // I don't think the chat console is accessible during respawn, only immediately after death.
+            // Is it valid to be able to trade when freshly dead?
+            //var identities = new List<IMyIdentity>();
+            //MyAPIGateway.Players.GetAllIdentites(identities, ident => ident.PlayerId == payingPlayer.PlayerID);
+            //var identity = identities.FirstOrDefault();
+            //MyAPIGateway.Utilities.ShowMessage("CHECK", "Is Dead: {0}", identity.IsDead);
+
+            //if (identities.FirstOrDefault().IsDead)
+            //{
+            //    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are dead. You cannot trade while dead.");
+            //    return;
+            //}
+
+            var inventoryOwnwer = (IMyInventoryOwner)character;
             var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
 
             if (!inventory.ContainItems(amount, content))

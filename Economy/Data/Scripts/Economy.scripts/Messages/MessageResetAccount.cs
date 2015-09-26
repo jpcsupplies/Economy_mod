@@ -1,8 +1,8 @@
 ﻿namespace Economy.scripts.Messages
 {
+    using System.Linq;
     using ProtoBuf;
     using Sandbox.ModAPI;
-    using System.Linq;
 
     [ProtoContract]
     public class MessageResetAccount : MessageBase

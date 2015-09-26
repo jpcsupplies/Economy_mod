@@ -1,10 +1,10 @@
 ﻿namespace Economy.scripts
 {
-    using Economy.scripts.Messages;
-    using Sandbox.ModAPI;
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Economy.scripts.Messages;
+    using Sandbox.ModAPI;
 
     /// <summary>
     /// Conains useful methods and fields for organizing the connections.

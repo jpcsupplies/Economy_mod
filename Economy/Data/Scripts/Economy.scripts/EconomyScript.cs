@@ -9,27 +9,27 @@
 namespace Economy.scripts
 {
     using System;
-    using System.Timers;
-    using System.IO;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
+    using System.Timers;
+    using Economy.scripts.EconConfig;
+    using Economy.scripts.Messages;
+    using Sandbox.Common;
+    using Sandbox.Common.Components;
+    using Sandbox.Common.ObjectBuilders;
+    using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Interfaces;
-    using Sandbox.Definitions;
-    using Sandbox.Common;
-    using Sandbox.Common.ObjectBuilders;
-    using Sandbox.Common.Components;
+    using VRage;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
-    using System.Text.RegularExpressions;
-    using Economy.scripts.EconConfig;
-    using System.Globalization;
-    using Economy.scripts.Messages;
-    using VRage;
 
     [Sandbox.Common.MySessionComponentDescriptor(Sandbox.Common.MyUpdateOrder.AfterSimulation)]
     public class EconomyScript : MySessionComponentBase
@@ -69,6 +69,11 @@ namespace Economy.scripts
         public BankConfig BankConfigData;
         public MarketConfig MarketConfigData;
 
+        /// <summary>
+        /// Set manually to true for testing purposes. No need for this function in general.
+        /// </summary>
+        public bool Debug = false;
+
         #endregion
 
         #region attaching events and wiring up
@@ -81,6 +86,7 @@ namespace Economy.scripts
             // It would be nicer to just read a property that indicates this is a dedicated server, and simply return.
             if (!_isInitialized && MyAPIGateway.Session != null && MyAPIGateway.Session.Player != null)
             {
+                Debug = MyAPIGateway.Session.Player.IsExperimentalCreator();
                 if (MyAPIGateway.Session.OnlineMode.Equals(MyOnlineModeEnum.OFFLINE)) // pretend single player instance is also server.
                     InitServer();
                 if (!MyAPIGateway.Session.OnlineMode.Equals(MyOnlineModeEnum.OFFLINE) && MyAPIGateway.Multiplayer.IsServer && !MyAPIGateway.Utilities.IsDedicated)
@@ -111,8 +117,10 @@ namespace Economy.scripts
             _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
             _isClientRegistered = true;
 
-            ClientLogger.Init("EconClient.Log"); // comment this out if logging is not required for the Client.
-            ClientLogger.Write("Starting Client");
+            ClientLogger.Init("EconomyClient.Log"); // comment this out if logging is not required for the Client.
+            ClientLogger.Write("Economy Client Log Started");
+            if (ClientLogger.IsActive)
+                VRage.Utils.MyLog.Default.WriteLine(String.Format("##Mod## Economy Client Logging File: {0}", ClientLogger.LogFile));
 
             MyAPIGateway.Utilities.MessageEntered += GotMessage;
 
@@ -138,8 +146,10 @@ namespace Economy.scripts
         {
             _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
             _isServerRegistered = true;
-            ServerLogger.Init("EconServer.Log", true); // comment this out if logging is not required for the Server.
-            ServerLogger.Write("Starting Server");
+            ServerLogger.Init("EconomyServer.Log", !Debug); // comment this out if logging is not required for the Server.
+            ServerLogger.Write("Economy Server Log Started");
+            if (ServerLogger.IsActive)
+                VRage.Utils.MyLog.Default.WriteLine(String.Format("##Mod## Economy Server Logging File: {0}", ServerLogger.LogFile));
 
             ServerLogger.Write("RegisterMessageHandler");
             MyAPIGateway.Multiplayer.RegisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);

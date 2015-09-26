@@ -1,7 +1,7 @@
 ﻿namespace Economy.scripts.Messages
 {
-    using System.Linq;
     using System;
+    using System.Linq;
     using ProtoBuf;
 
     [ProtoContract]
