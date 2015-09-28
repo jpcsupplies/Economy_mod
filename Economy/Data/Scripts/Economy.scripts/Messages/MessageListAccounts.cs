@@ -20,9 +20,10 @@
             {
                 var description = new StringBuilder();
                 var index = 1;
+                //probably should add column headings too.. ie number, opened, name, balance, lastseen etc
                 foreach (var account in EconomyScript.Instance.BankConfigData.Accounts.OrderBy(s => s.NickName))
                 {
-                    description.AppendFormat("#{0}: {1} : {2}\r\n", index++, account.NickName, account.BankBalance);
+                    description.AppendFormat("#{0}: {1} : {2} : {3}\r\n", index++, account.NickName, account.BankBalance, account.Date);
                 }
 
                 MessageClientDialogMessage.SendMessage(SenderSteamId, "List Accounts",
