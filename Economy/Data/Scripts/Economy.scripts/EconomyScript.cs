@@ -228,6 +228,7 @@ namespace Economy.scripts
 
         #endregion
 
+
         #region message handling
 
         private void GotMessage(string messageText, ref bool sendToOthers)
@@ -249,6 +250,14 @@ namespace Economy.scripts
         }
 
         #endregion
+
+        //check the seller is in range of a valid trade region or player
+        private bool RangeCheck(string targetname)
+        {
+            //lookup the location of target name and compare with location of seller
+            //there has to be an easy way to do this, the GPSs use it..
+            return true;
+        } 
 
         private bool ProcessMessage(string messageText)
         {
@@ -345,12 +354,20 @@ namespace Economy.scripts
 
                 //now we need to check if range is ignored, or perform a range check on [4] to see if it is in selling range
                 //if both checks fail tell player nothing is near enough to trade with
+                decimal sellQuantity = 0;
+                string itemName = "";
+                decimal sellPrice = 1;
+                bool useBankBuyPrice = false;
+                string buyerName = "";
+                bool sellToMerchant = false;
+                bool offerToMarket = false;
 
+                match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
                 //just have to figure out how to read coords and take stuff out of inventory and it should be pretty straightforward..
                 //first off is there any point in proceeding
                 //if (limited range setting is false or My location works out To be within 2500 of a valid trade area) {
-                bool RangeCheck = true; //placeholder until private bool RangeCheck(string targetname) {} can be made
-                if (!EconomyConsts.LimitedRange || RangeCheck)
+                //bool RangeCheck = true; //placeholder until private bool RangeCheck(string targetname) {} can be made
+                if (!EconomyConsts.LimitedRange || RangeCheck(match.Groups["user"].Value))
                 {
                     //in this release the only valid trade area is the default 0:0:0 area of map or other players?
                     //but should still go through the motions so backend is ready
@@ -358,15 +375,7 @@ namespace Economy.scripts
                     //now we take our regex fields populated above and start checking
                     //what the player seems to want us to do - switch needs to be converted to the regex populated fields
                     //using split at the moment for debugging and structruing desired logic
-                    decimal sellQuantity = 0;
-                    string itemName = "";
-                    decimal sellPrice = 1;
-                    bool useBankBuyPrice = false;
-                    string buyerName = "";
-                    bool sellToMerchant = false;
-                    bool offerToMarket = false;
 
-                    match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
                     //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
                     //then populate the other fields.  
                     //string reply = "match " + match.Groups["qty"].Value + match.Groups["item"].Value + match.Groups["user"].Value + match.Groups["price"].Value;
