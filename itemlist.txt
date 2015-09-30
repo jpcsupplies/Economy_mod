@@ -1,369 +1,43 @@
-<?xml version="1.0" encoding="utf-16"?>
-<MarketConfig xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <MarketItems>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
-      <SubtypeName>NATO_5p56x45mm</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
-      <SubtypeName>NATO_25x184mm</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
-      <SubtypeName>Missile200mm</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>Construction</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>MetalGrid</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>InteriorPlate</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>SteelPlate</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>Girder</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>SmallTube</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>LargeTube</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>Motor</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>Display</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>BulletproofGlass</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>Computer</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>Reactor</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>Thrust</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>GravityGenerator</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>Medical</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>RadioCommunication</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>Detector</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>Explosives</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>SolarCell</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Component</TypeId>
-      <SubtypeName>PowerCell</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Stone</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Iron</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Nickel</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Cobalt</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Magnesium</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Silicon</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Silver</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Gold</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Platinum</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Uranium</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ingot</TypeId>
-      <SubtypeName>Stone</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ingot</TypeId>
-      <SubtypeName>Iron</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ingot</TypeId>
-      <SubtypeName>Nickel</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ingot</TypeId>
-      <SubtypeName>Cobalt</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ingot</TypeId>
-      <SubtypeName>Magnesium</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ingot</TypeId>
-      <SubtypeName>Silicon</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ingot</TypeId>
-      <SubtypeName>Silver</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ingot</TypeId>
-      <SubtypeName>Gold</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ingot</TypeId>
-      <SubtypeName>Platinum</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ingot</TypeId>
-      <SubtypeName>Uranium</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
-      <SubtypeName>AutomaticRifleItem</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_OxygenContainerObject</TypeId>
-      <SubtypeName>OxygenBottle</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
-      <SubtypeName>WelderItem</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
-      <SubtypeName>AngleGrinderItem</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
-      <SubtypeName>HandDrillItem</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Scrap</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ingot</TypeId>
-      <SubtypeName>Scrap</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Ice</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-    <MarketStruct>
-      <TypeId>MyObjectBuilder_Ore</TypeId>
-      <SubtypeName>Organic</SubtypeName>
-      <Quantity>0</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-    </MarketStruct>
-  </MarketItems>
-</MarketConfig>
+item,qty,sell,buy,blacklisted
+Cobalt,1000,9.904,8.803555556,FALSE
+Gold,1000,9.9461,8.840977778,FALSE
+Ice,1000,12.36725,10.99311111,FALSE
+Iron,1000,0.4547,0.404177778,FALSE
+Magnesium,1000,12.36625,10.99222222,FALSE
+Nickel,1000,9.922,8.819555556,FALSE
+Platinum,1000,9.936,8.832,FALSE
+Silicon,1000,9.903,8.802666667,FALSE
+Silver,1000,9.8929,8.793688889,FALSE
+Stone,1000,0.6638,0.590044444,FALSE
+Uraninite,1000,12.434,11.05244444,FALSE
+NATO_5p56x45mm,1000,2.34816,2.087253333,FALSE
+NATO_25x184mm,1000,111.079875,98.73766667,FALSE
+Missile200mm,1000,96.4431,85.7272,FALSE
+MetalGrid,1000,84.7784,75.35857778,FALSE
+Construction,1000,4.547,4.041777778,FALSE
+InteriorPlate,1000,1.59145,1.414622222,FALSE
+SteelPlate,1000,9.5487,8.487733333,FALSE
+Girder,1000,3.1829,2.829244444,FALSE
+SmallTube,1000,2.2735,2.020888889,FALSE
+LargeTube,1000,13.641,12.12533333,FALSE
+Motor,1000,58.704,52.18133333,FALSE
+Display,1000,49.9697,44.41751111,FALSE
+BulletproofGlass,1000,148.545,132.04,FALSE
+Computer,1000,2.20795,1.962622222,FALSE
+Reactor,1000,69.561,61.832,FALSE
+Thrust,1000,162.3711,144.3298667,FALSE
+GravityGenerator,1000,2600.6255,2311.667111,FALSE
+Medical,1000,919.68,817.4933333,FALSE
+RadioCommunication,1000,13.5406,12.03608889,FALSE
+Detector,1000,151.1035,134.3142222,FALSE
+Explosives,1000,74.2475,65.99777778,FALSE
+SolarCell,1000,178.444,158.6168889,FALSE
+PowerCell,1000,34.294,30.48355556,FALSE
+AutomaticRifleItem,100,11.2861,10.03208889,FALSE
+OxygenBottle,100,433.066,384.9475556,FALSE
+WelderItem,100,17.16855,15.26093333,FALSE
+AngleGrinderItem,100,166.139,147.6791111,FALSE
+HandDrillItem,100,251.80265,223.8245778,FALSE
+Scrap,100,1,0.888888889,FALSE
+Organic,100,1,0.888888889,TRUE
+HydrogenBottle,100,1,0.888888889,TRUE
