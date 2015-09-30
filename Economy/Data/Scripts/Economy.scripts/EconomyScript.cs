@@ -257,7 +257,7 @@ namespace Economy.scripts
             //lookup the location of target name and compare with location of seller
             //there has to be an easy way to do this, the GPSs use it..
             return true;
-        } 
+        }
 
         private bool ProcessMessage(string messageText)
         {
@@ -379,7 +379,7 @@ namespace Economy.scripts
                     //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
                     //then populate the other fields.  
                     //string reply = "match " + match.Groups["qty"].Value + match.Groups["item"].Value + match.Groups["user"].Value + match.Groups["price"].Value;
-                    if (match.Success)         
+                    if (match.Success)
                     {
                         itemName = match.Groups["item"].Value;
                         buyerName = match.Groups["user"].Value;
@@ -407,14 +407,6 @@ namespace Economy.scripts
                                 MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
                             else
                                 MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
-                            return true;
-                        }
-
-                        // TODO: do a floating point check on the item item. Tools and components cannot have decimals. They must be whole numbers.
-
-                        if (sellQuantity <= 0)
-                        {
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "You must provide a valid quantity to sell.");
                             return true;
                         }
 
@@ -453,7 +445,8 @@ namespace Economy.scripts
                                 if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
                                 //sell price is set by price book in this scenario, and we assume we are selling to the NPC market
                                 buyerName = EconomyConsts.NpcMerchantName;
-                            } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty wasnt valid?"); return false; }
+                            }
+                            else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty wasnt valid?"); return false; }
 
                             //eg /sell 3 iron 50
                             if (split.Length == 4 && (decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) && decimal.TryParse(split[3], out sellPrice))
@@ -466,7 +459,8 @@ namespace Economy.scripts
                                 if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
                                 //sellprice is now split[3], and we assume we are posting an offer to the stockmarket not selling blindly to npc
                                 buyerName = "OFFER";
-                            } else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt valid?"); return false; }
+                            }
+                            else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt valid?"); return false; }
 
                             //eg /sell 3 iron 50 fred
                             if (split.Length == 5 && (decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) && decimal.TryParse(split[3], out sellPrice))

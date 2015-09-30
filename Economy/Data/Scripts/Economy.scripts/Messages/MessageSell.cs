@@ -84,7 +84,6 @@
             //* Get player steam ID
             var payingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
 
-            MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
             MyPhysicalItemDefinition definition = null;
             MyObjectBuilderType result;
             if (MyObjectBuilderType.TryParse(ItemTypeId, out result))
@@ -100,44 +99,20 @@
                 return;
             }
 
-            // Verify that the items are in the player inventory.
-            // TODO: later check trade block, cockpit inventory, cockpit ship inventory, inventory of targeted cube.
-
-            var definitionId = new MyDefinitionId(definition.Id.TypeId, definition.Id.SubtypeName);
-            var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
-
-            // Get the player's inventory, regardless of if they are in a ship, or a remote control cube.
-            var character = payingPlayer.GetCharacter();
-            if (character == null)
+            // Do a floating point check on the item item. Tools and components cannot have decimals. They must be whole numbers.
+            if (definition.Id.TypeId != typeof(MyObjectBuilder_Ore) && definition.Id.TypeId != typeof(MyObjectBuilder_Ingot))
             {
-                // Player has no body. Could mean they are dead.
-                // Either way, there is no inventory.
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are dead. You cannot trade while dead.");
-                return;
+                if (ItemQuantity != Math.Truncate(ItemQuantity))
+                {
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You must provide a whole number for the quantity to sell that item.");
+                    return;
+                }
+                //ItemQuantity = Math.Round(ItemQuantity, 0);  // Or do we just round the number?
             }
 
-            // TODO: is a null check adaqaute?, or do we need to check for IsDead?
-            // I don't think the chat console is accessible during respawn, only immediately after death.
-            // Is it valid to be able to trade when freshly dead?
-            //var identities = new List<IMyIdentity>();
-            //MyAPIGateway.Players.GetAllIdentites(identities, ident => ident.PlayerId == payingPlayer.PlayerID);
-            //var identity = identities.FirstOrDefault();
-            //MyAPIGateway.Utilities.ShowMessage("CHECK", "Is Dead: {0}", identity.IsDead);
-
-            //if (identities.FirstOrDefault().IsDead)
-            //{
-            //    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are dead. You cannot trade while dead.");
-            //    return;
-            //}
-
-            var inventoryOwnwer = (IMyInventoryOwner)character;
-            var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
-
-            if (!inventory.ContainItems(amount, content))
+            if (ItemQuantity <= 0)
             {
-                // Insufficient items in inventory.
-                // TODO: use of content.GetDisplayName() isn't localized here.
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell.", ItemQuantity, content.GetDisplayName());
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You must provide a valid quantity to sell.");
                 return;
             }
 
@@ -168,12 +143,56 @@
                 return;
             }
 
+            // Verify that the items are in the player inventory.
+            // TODO: later check trade block, cockpit inventory, cockpit ship inventory, inventory of targeted cube.
+
+            var definitionId = new MyDefinitionId(definition.Id.TypeId, definition.Id.SubtypeName);
+            var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
+
+            // Get the player's inventory, regardless of if they are in a ship, or a remote control cube.
+            var character = payingPlayer.GetCharacter();
+            // TODO: do players in Cryochambers count as a valid trading partner? They should be alive, but the connected player may be offline.
+            // I think we'll have to do lower level checks to see if a physical player is Online.
+            if (character == null)
+            {
+                // Player has no body. Could mean they are dead.
+                // Either way, there is no inventory.
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are dead. You cannot trade while dead.");
+                return;
+            }
+
+            // TODO: is a null check adaqaute?, or do we need to check for IsDead?
+            // I don't think the chat console is accessible during respawn, only immediately after death.
+            // Is it valid to be able to trade when freshly dead?
+            //var identities = new List<IMyIdentity>();
+            //MyAPIGateway.Players.GetAllIdentites(identities, ident => ident.PlayerId == payingPlayer.PlayerID);
+            //var identity = identities.FirstOrDefault();
+            //MyAPIGateway.Utilities.ShowMessage("CHECK", "Is Dead: {0}", identity.IsDead);
+
+            //if (identities.FirstOrDefault().IsDead)
+            //{
+            //    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are dead. You cannot trade while dead.");
+            //    return;
+            //}
+
+            var inventoryOwnwer = (IMyInventoryOwner)character;
+            var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
+            MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
+
+            if (!inventory.ContainItems(amount, content))
+            {
+                // Insufficient items in inventory.
+                // TODO: use of content.GetDisplayName() isn't localized here.
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell.", ItemQuantity, content.GetDisplayName());
+                return;
+            }
+
             if (UseBankBuyPrice)
                 ItemPrice = item.SellPrice * ItemQuantity;
 
             var accountToSell = EconomyScript.Instance.BankConfigData.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
             var transactionAmount = ItemPrice * ItemQuantity;
-            
+
             // need fix negative amounts before checking if the player can afford it.
             if (!payingPlayer.IsAdmin())
                 transactionAmount = Math.Abs(transactionAmount);
