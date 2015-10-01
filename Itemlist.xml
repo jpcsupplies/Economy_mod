@@ -381,8 +381,8 @@
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>HandDrillItem</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>235.31</SellPrice>
-      <BuyPrice>209.16</BuyPrice>
+      <SellPrice>7.81</SellPrice>
+      <BuyPrice>6.94</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
     <MarketStruct>
