@@ -164,12 +164,10 @@
             // TODO: is a null check adaqaute?, or do we need to check for IsDead?
             // I don't think the chat console is accessible during respawn, only immediately after death.
             // Is it valid to be able to trade when freshly dead?
-            //var identities = new List<IMyIdentity>();
-            //MyAPIGateway.Players.GetAllIdentites(identities, ident => ident.PlayerId == payingPlayer.PlayerID);
-            //var identity = identities.FirstOrDefault();
-            //MyAPIGateway.Utilities.ShowMessage("CHECK", "Is Dead: {0}", identity.IsDead);
+            var identity = payingPlayer.Identity();
+            MyAPIGateway.Utilities.ShowMessage("CHECK", "Is Dead: {0}", identity.IsDead);
 
-            //if (identities.FirstOrDefault().IsDead)
+            //if (identity.IsDead)
             //{
             //    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are dead. You cannot trade while dead.");
             //    return;
@@ -202,6 +200,7 @@
             {
                 // here we look up item price and transfer items and money as appropriate
                 inventory.RemoveItemsOfType(amount, content);
+                marketItem.Quantity += ItemQuantity; // increment Market content.
 
                 account.BankBalance -= transactionAmount;
                 account.Date = DateTime.Now;
@@ -214,13 +213,31 @@
             }
             else if (OfferToMarket)
             {
-                // Here we post offer to appropriate zone market
+                // TODO: Here we post offer to appropriate zone market
+
+                return;
             }
             else
             {
-                // TODO: check if paying player is online?
-
                 // is it a player then?             
+                if (account.SteamId == payingPlayer.SteamUserId)
+                {
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "PAY", "Sorry, you cannot pay yourself!");
+                    return;
+                }
+
+                // check if paying player is online?
+                var player = MyAPIGateway.Players.FindPlayerBySteamId(account.SteamId);
+                if (player == null)
+                {
+                    // TODO: other player offline.
+
+                }
+                else
+                {
+                    // TODO: other player is online.
+
+                }
             }
 
             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Not yet complete.");

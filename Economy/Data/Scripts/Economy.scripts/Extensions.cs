@@ -75,7 +75,7 @@ namespace Economy.scripts
             return listPlayers.FirstOrDefault();
         }
 
-        public static IMyIdentity Player(this IMyPlayer player)
+        public static IMyIdentity Identity(this IMyPlayer player)
         {
             var listIdentites = new List<IMyIdentity>();
             MyAPIGateway.Players.GetAllIdentites(listIdentites, p => p.IdentityId == player.IdentityId);
