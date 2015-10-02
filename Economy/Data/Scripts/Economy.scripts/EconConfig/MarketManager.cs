@@ -1,5 +1,6 @@
 ﻿namespace Economy.scripts.EconConfig
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -8,13 +9,15 @@
     using VRage;
     using VRage.ObjectBuilders;
 
-    public static class MarketManagement
+    public static class MarketManager
     {
+        [Obsolete("To be removed")]
         public static string GetContentFilename()
         {
             return string.Format("Itemlist_{0}.txt", Path.GetFileNameWithoutExtension(MyAPIGateway.Session.CurrentPath));
         }
 
+        [Obsolete("To be removed")]
         public static MarketConfig LoadContent()
         {
             string filename = GetContentFilename();
@@ -35,7 +38,6 @@
             {
                 config = MyAPIGateway.Utilities.SerializeFromXML<MarketConfig>(xmlText);
                 EconomyScript.Instance.ServerLogger.Write("Loading existing MarketConfig.");
-                SyncMarketItems(config);
             }
             catch
             {
@@ -47,15 +49,16 @@
             return config;
         }
 
+        [Obsolete("To be removed")]
         private static MarketConfig InitContent()
         {
             EconomyScript.Instance.ServerLogger.Write("Creating new MarketConfig.");
             MarketConfig marketConfig = new MarketConfig();
             marketConfig.MarketItems = new List<MarketStruct>();
-            SyncMarketItems(marketConfig);
             return marketConfig;
         }
 
+        [Obsolete("To be removed")]
         public static void SaveContent(MarketConfig config)
         {
             string filename = GetContentFilename();
@@ -65,11 +68,13 @@
             writer.Close();
         }
 
+        #region Market helpers
+
         /// <summary>
-        /// Check that all current Definitions are in the MarketConfig.
+        /// Check that all current Definitions are in the EconContentStruct.
         /// </summary>
-        /// <param name="config"></param>
-        private static void SyncMarketItems(MarketConfig config)
+        /// <param name="marketItems"></param>
+        public static void SyncMarketItems(ref List<MarketStruct> marketItems)
         {
             // Combination of Components.sbc, PhysicalItems.sbc, and AmmoMagazines.sbc files.
             var physicalItems = MyDefinitionManager.Static.GetPhysicalItemDefinitions();
@@ -79,9 +84,9 @@
                 if (item.Public)
                 {
                     // TypeId and SubtypeName are both Case sensitive. Do not Ignore case.
-                    if (!config.MarketItems.Any(e => e.TypeId.Equals(item.Id.TypeId.ToString()) && e.SubtypeName.Equals(item.Id.SubtypeName)))
+                    if (!marketItems.Any(e => e.TypeId.Equals(item.Id.TypeId.ToString()) && e.SubtypeName.Equals(item.Id.SubtypeName)))
                     {
-                        config.MarketItems.Add(new MarketStruct { TypeId = item.Id.TypeId.ToString(), SubtypeName = item.Id.SubtypeName, BuyPrice = 1, SellPrice = 1 });
+                        marketItems.Add(new MarketStruct { TypeId = item.Id.TypeId.ToString(), SubtypeName = item.Id.SubtypeName, BuyPrice = 1, SellPrice = 1, IsBlacklisted = false });
                         EconomyScript.Instance.ServerLogger.Write("MarketItem Adding new item: {0} {1}.", item.Id.TypeId.ToString(), item.Id.SubtypeName);
                     }
                 }
@@ -119,5 +124,7 @@
 
             return null;
         }
+
+        #endregion
     }
 }

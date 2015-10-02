@@ -70,27 +70,16 @@ namespace Economy.scripts
 
         public static IMyPlayer Player(this IMyIdentity identity)
         {
-            var listplayers = new List<IMyPlayer>();
-            MyAPIGateway.Players.GetPlayers(listplayers, p => p.PlayerID == identity.PlayerId);
-            return listplayers.FirstOrDefault();
+            var listPlayers = new List<IMyPlayer>();
+            MyAPIGateway.Players.GetPlayers(listPlayers, p => p.PlayerID == identity.PlayerId);
+            return listPlayers.FirstOrDefault();
         }
 
-        public static bool IsHost(this IMyPlayer player)
+        public static IMyIdentity Player(this IMyPlayer player)
         {
-            return MyAPIGateway.Multiplayer.IsServerPlayer(player.Client);
-        }
-
-        public static IMyPlayer FindPlayerBySteamId(this IMyPlayerCollection collection, ulong steamId)
-        {
-            var listplayers = new List<IMyPlayer>();
-            MyAPIGateway.Players.GetPlayers(listplayers, p => p.SteamUserId == steamId);
-            return listplayers.FirstOrDefault();
-        }
-
-        public static string GetDisplayName(this MyObjectBuilder_Base objectBuilder)
-        {
-            var defintion = MyDefinitionManager.Static.GetPhysicalItemDefinition(objectBuilder);
-            return defintion.DisplayNameEnum.HasValue ? MyTexts.GetString(defintion.DisplayNameEnum.Value) : defintion.DisplayNameString;
+            var listIdentites = new List<IMyIdentity>();
+            MyAPIGateway.Players.GetAllIdentites(listIdentites, p => p.IdentityId == player.IdentityId);
+            return listIdentites.FirstOrDefault();
         }
 
         /// <summary>
@@ -113,6 +102,8 @@ namespace Economy.scripts
             if (controller != null)
                 return controller.Pilot;
 
+            // TODO: test conditions for Cryochamber block.
+
             // Cannot determine Character controlling MyLargeTurretBase as class is internal.
             // TODO: find if the player is controlling a turret.
 
@@ -127,6 +118,24 @@ namespace Economy.scripts
             //var turret = cubeBlock as IMyControllableEntity;
 
             return null;
+        }
+
+        public static bool IsHost(this IMyPlayer player)
+        {
+            return MyAPIGateway.Multiplayer.IsServerPlayer(player.Client);
+        }
+
+        public static IMyPlayer FindPlayerBySteamId(this IMyPlayerCollection collection, ulong steamId)
+        {
+            var listplayers = new List<IMyPlayer>();
+            MyAPIGateway.Players.GetPlayers(listplayers, p => p.SteamUserId == steamId);
+            return listplayers.FirstOrDefault();
+        }
+
+        public static string GetDisplayName(this MyObjectBuilder_Base objectBuilder)
+        {
+            var defintion = MyDefinitionManager.Static.GetPhysicalItemDefinition(objectBuilder);
+            return defintion.DisplayNameEnum.HasValue ? MyTexts.GetString(defintion.DisplayNameEnum.Value) : defintion.DisplayNameString;
         }
     }
 }

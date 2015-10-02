@@ -66,8 +66,8 @@ namespace Economy.scripts
 
         /// Ideally this data should be persistent until someone buys/sells/pays/joins but
         /// lacking other options it will triggers read on these events instead. bal/buy/sell/pay/join
-        public BankConfig BankConfigData;
-        public MarketConfig MarketConfigData;
+        public EconDataStruct Data;
+        public EconConfigStruct Config;
 
         /// <summary>
         /// Set manually to true for testing purposes. No need for this function in general.
@@ -155,11 +155,9 @@ namespace Economy.scripts
             MyAPIGateway.Multiplayer.RegisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
 
             ServerLogger.Write("LoadBankContent");
-            BankConfigData = BankManagement.LoadContent();
-            MarketConfigData = MarketManagement.LoadContent();
 
-            //Buy/Sell - check we have our NPC banker ready
-            NpcMerchantManager.VerifyAndCreate();
+            Config = EconDataManager.LoadConfig(); // Load config first.
+            Data = EconDataManager.LoadData(Config.DefaultPrices);
         }
 
         #endregion
@@ -196,8 +194,7 @@ namespace Economy.scripts
                 ServerLogger.Write("UnregisterMessageHandler");
                 MyAPIGateway.Multiplayer.UnregisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
 
-                BankConfigData = null;
-                MarketConfigData = null;
+                Data = null;
 
                 ServerLogger.Write("Closed");
                 ServerLogger.Terminate();
@@ -212,16 +209,16 @@ namespace Economy.scripts
 
             if (_isServerRegistered)
             {
-                if (BankConfigData != null)
+                if (Data != null)
                 {
-                    BankManagement.SaveContent(BankConfigData);
-                    ServerLogger.Write("SaveBankContent");
+                    ServerLogger.Write("Save Data");
+                    EconDataManager.SaveData(Data);
                 }
 
-                if (MarketConfigData != null)
+                if (Config != null)
                 {
-                    MarketManagement.SaveContent(MarketConfigData);
-                    ServerLogger.Write("SaveMarketContent");
+                    ServerLogger.Write("Save Config");
+                    EconDataManager.SaveConfig(Config);
                 }
             }
         }
@@ -489,7 +486,7 @@ namespace Economy.scripts
                                 MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
                                 return true;
                             }
-                            reply = content.TypeId.ToString() + " - " + content.SubtypeName + " - " + MarketManagement.GetDisplayName(content.TypeId.ToString(), content.SubtypeName);
+                            reply = content.TypeId.ToString() + " - " + content.SubtypeName + " - " + MarketManager.GetDisplayName(content.TypeId.ToString(), content.SubtypeName);
                             MyAPIGateway.Utilities.ShowMessage("SELL", reply);
                             //---------
 
@@ -572,7 +569,7 @@ namespace Economy.scripts
 
                         // Primary checks for the component are carried out Client side to reduce processing time on the server. not that 2ms matters but if 
                         // there is thousands of these requests at once one day in "space engineers the MMO" or on some auto-trading bot it might become a problem
-                        MessageMarketItemValue.SendMessage(content.TypeId.ToString(), content.SubtypeName, amount, MarketManagement.GetDisplayName(content.TypeId.ToString(), content.SubtypeName));
+                        MessageMarketItemValue.SendMessage(content.TypeId.ToString(), content.SubtypeName, amount, MarketManager.GetDisplayName(content.TypeId.ToString(), content.SubtypeName));
                         return true;
                     }
 

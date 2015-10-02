@@ -1,16 +1,19 @@
 ﻿namespace Economy.scripts.EconConfig
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using Sandbox.ModAPI;
 
     public static class BankManagement
     {
+        [Obsolete("To be removed")]
         public static string GetContentFilename()
         {
             return string.Format("Bank_{0}.txt", Path.GetFileNameWithoutExtension(MyAPIGateway.Session.CurrentPath));
         }
 
+        [Obsolete("To be removed")]
         public static BankConfig LoadContent()
         {
             string filename = GetContentFilename();
@@ -41,6 +44,7 @@
             return config;
         }
 
+        [Obsolete("To be removed")]
         private static BankConfig InitContent()
         {
             BankConfig bankConfig = new BankConfig();
@@ -48,6 +52,7 @@
             return bankConfig;
         }
 
+        [Obsolete("To be removed")]
         public static void SaveContent(BankConfig config)
         {
             string filename = GetContentFilename();

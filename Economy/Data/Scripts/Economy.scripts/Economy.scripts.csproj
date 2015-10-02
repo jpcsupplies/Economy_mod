@@ -65,7 +65,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EconConfig\AccountManager.cs" />
+    <Compile Include="EconConfig\EconConfigStruct.cs" />
+    <Compile Include="EconConfig\EconDataManager.cs" />
+    <Compile Include="EconConfig\EconDataStruct.cs" />
     <Compile Include="EconConfig\MarketManagement.cs" />
+    <Compile Include="EconConfig\MarketManager.cs" />
     <Compile Include="EconConfig\MarketStruct.cs" />
     <Compile Include="EconConfig\BankConfig.cs" />
     <Compile Include="EconConfig\BankManagement.cs" />

@@ -1,6 +1,7 @@
 ﻿namespace Economy.scripts.Messages
 {
     using System;
+    using EconConfig;
     using Economy.scripts;
     using ProtoBuf;
     using Sandbox.ModAPI;
@@ -38,7 +39,7 @@
             //* Get player steam ID
             var payingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
 
-            var accountToSpend = EconomyScript.Instance.BankConfigData.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
+            var accountToSpend = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
 
             // need fix negative amounts before checking if the player can afford it.
             if (!payingPlayer.IsAdmin())
@@ -50,7 +51,7 @@
             //*      if true, 
             {
                 // it needs to check the person being paid has an account record, 
-                var account = EconomyScript.Instance.BankConfigData.FindAccount(ToUserName);
+                var account = AccountManager.FindAccount(ToUserName);
 
                 //*               if true - it will always be true if real as it would have created it on join anyway
 

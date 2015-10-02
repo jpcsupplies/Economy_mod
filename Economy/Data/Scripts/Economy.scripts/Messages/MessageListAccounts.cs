@@ -2,6 +2,7 @@
 {
     using System.Linq;
     using System.Text;
+    using EconConfig;
     using ProtoBuf;
     using Sandbox.ModAPI;
 
@@ -21,17 +22,17 @@
                 var description = new StringBuilder();
                 var index = 1;
                 //probably should add column headings too.. ie number, opened, name, balance, lastseen etc
-                foreach (var account in EconomyScript.Instance.BankConfigData.Accounts.OrderBy(s => s.NickName))
+                foreach (var account in EconomyScript.Instance.Data.Accounts.OrderBy(s => s.NickName))
                 {
                     description.AppendFormat("#{0}: {1} : {2} : {3}\r\n", index++, account.NickName, account.BankBalance, account.Date);
                 }
 
                 MessageClientDialogMessage.SendMessage(SenderSteamId, "List Accounts",
-                    string.Format("Count: {0}", EconomyScript.Instance.BankConfigData.Accounts.Count),
+                    string.Format("Count: {0}", EconomyScript.Instance.Data.Accounts.Count),
                     description.ToString());
 
                 // update our own timestamp here
-                EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId, SenderLanguage);
+                AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
             }
         }
 

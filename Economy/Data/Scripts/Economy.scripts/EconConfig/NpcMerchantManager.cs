@@ -1,4 +1,4 @@
-﻿namespace Economy.scripts.Messages
+﻿namespace Economy.scripts.EconConfig
 {
     using System.Linq;
 
@@ -10,19 +10,19 @@
         /// <summary>
         /// Check we have our NPC banker ready.
         /// </summary>
-        public static void VerifyAndCreate()
+        public static void VerifyAndCreate(EconDataStruct data)
         {
             // we look up our bank record based on our bogus NPC Steam Id/
-            var myNPCaccount = EconomyScript.Instance.BankConfigData.Accounts.FirstOrDefault(
+            var myNpcAccount = data.Accounts.FirstOrDefault(
                 a => a.SteamId == EconomyConsts.NpcMerchantId);
             // Do it have an account already?
-            if (myNPCaccount == null)
+            if (myNpcAccount == null)
             {
                 //nope, lets construct our bank record with a new balance
-                myNPCaccount = EconomyScript.Instance.BankConfigData.CreateNewDefaultAccount(EconomyConsts.NpcMerchantId, EconomyConsts.NpcMerchantName, 0);
+                myNpcAccount = AccountManager.CreateNewDefaultAccount(EconomyConsts.NpcMerchantId, EconomyConsts.NpcMerchantName, 0);
 
                 //ok lets apply it
-                EconomyScript.Instance.BankConfigData.Accounts.Add(myNPCaccount);
+                data.Accounts.Add(myNpcAccount);
                 EconomyScript.Instance.ServerLogger.Write("Banker Account Created.");
             }
             else

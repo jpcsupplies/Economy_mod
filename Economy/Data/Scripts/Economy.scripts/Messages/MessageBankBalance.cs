@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using EconConfig;
     using ProtoBuf;
     using Sandbox.ModAPI;
 
@@ -19,7 +20,7 @@
         public override void ProcessServer()
         {
             // update our own timestamp here
-            EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId, SenderLanguage);
+            AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
 
             EconomyScript.Instance.ServerLogger.Write("Balance Request for '{0}' from '{1}'", UserName, SenderSteamId);
 
@@ -27,15 +28,15 @@
             {
                 // lets grab the current player data from our bankfile ready for next step
                 // we look up our Steam Id/
-                var account = EconomyScript.Instance.BankConfigData.Accounts.FirstOrDefault(
+                var account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(
                     a => a.SteamId == SenderSteamId);
 
                 // check if we actually found it, add default if not
                 if (account == null)
                 {
                     EconomyScript.Instance.ServerLogger.Write("Creating new Bank Account for '{0}'", SenderDisplayName);
-                    account = EconomyScript.Instance.BankConfigData.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
-                    EconomyScript.Instance.BankConfigData.Accounts.Add(account);
+                    account = AccountManager.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
+                    EconomyScript.Instance.Data.Accounts.Add(account);
                 }
 
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BALANCE",
@@ -46,7 +47,7 @@
                 var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
                 if (player != null && player.IsAdmin()) // hold on there, are we an admin first?
                 {
-                    var account = EconomyScript.Instance.BankConfigData.Accounts.FirstOrDefault(
+                    var account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(
                         a => a.NickName.Equals(UserName, StringComparison.InvariantCultureIgnoreCase));
 
                     string reply;

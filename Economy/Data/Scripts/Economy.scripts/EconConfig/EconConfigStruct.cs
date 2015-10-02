@@ -2,8 +2,8 @@
 {
     using System.Collections.Generic;
 
-    public class BankConfig
+    public class EconConfigStruct
     {
-        public List<BankAccountStruct> Accounts;
+        public List<MarketStruct> DefaultPrices;
     }
 }

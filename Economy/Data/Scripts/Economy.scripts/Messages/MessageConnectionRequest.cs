@@ -2,6 +2,7 @@
 {
     using System.Linq;
     using ProtoBuf;
+    using EconConfig;
 
     public class MessageConnectionRequest : MessageBase
     {
@@ -28,19 +29,19 @@
             MessageConnectionResponse.SendMessage(SenderSteamId, 
                 ModCommunicationVersion < EconomyConsts.ModCommunicationVersion, ModCommunicationVersion > EconomyConsts.ModCommunicationVersion);
 
-            var account = EconomyScript.Instance.BankConfigData.Accounts.FirstOrDefault(
+            var account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(
                 a => a.SteamId == SenderSteamId);
 
             // Create the Bank Account when the player first joins.
             if (account == null)
             {
                 EconomyScript.Instance.ServerLogger.Write("Creating new Bank Account for '{0}'", SenderDisplayName);
-                account = EconomyScript.Instance.BankConfigData.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
-                EconomyScript.Instance.BankConfigData.Accounts.Add(account);
+                account = AccountManager.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
+                EconomyScript.Instance.Data.Accounts.Add(account);
             }
             else
             {
-                EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId, SenderDisplayName, SenderLanguage);
+                AccountManager.UpdateLastSeen(SenderSteamId, SenderDisplayName, SenderLanguage);
             }
         }
 

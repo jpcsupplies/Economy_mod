@@ -119,9 +119,9 @@
             // Who are we selling to?
             BankAccountStruct account;
             if (SellToMerchant)
-                account = EconomyScript.Instance.BankConfigData.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
+                account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
             else
-                account = EconomyScript.Instance.BankConfigData.FindAccount(ToUserName);
+                account = AccountManager.FindAccount(ToUserName);
 
             if (account == null)
             {
@@ -129,15 +129,15 @@
                 return;
             }
 
-            var item = EconomyScript.Instance.MarketConfigData.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
-            if (item == null)
+            var marketItem = EconomyScript.Instance.Data.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
+            if (marketItem == null)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the items you are trying to sell doesn't have a market entry!");
                 // TODO: in reality, this item needs not just to have an entry created, but a value applied also. It's the value that is more important.
                 return;
             }
 
-            if (item.IsBlacklisted)
+            if (marketItem.IsBlacklisted)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you tried to sell is blacklisted on this server.");
                 return;
@@ -188,9 +188,10 @@
             }
 
             if (UseBankBuyPrice)
-                ItemPrice = item.SellPrice * ItemQuantity;
+                // The player is selling, but the *Market* will *buy* it from the player at this price.
+                ItemPrice = marketItem.BuyPrice * ItemQuantity;
 
-            var accountToSell = EconomyScript.Instance.BankConfigData.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
+            var accountToSell = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
             var transactionAmount = ItemPrice * ItemQuantity;
 
             // need fix negative amounts before checking if the player can afford it.

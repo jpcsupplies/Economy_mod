@@ -1,6 +1,7 @@
 ﻿namespace Economy.scripts.Messages
 {
     using System.Linq;
+    using EconConfig;
     using ProtoBuf;
     using Sandbox.ModAPI;
 
@@ -18,20 +19,20 @@
             if (player != null && player.IsAdmin()) // hold on there, are we an admin first?
             {
                 // we look up our bank record based on our Steam Id/
-                var myaccount = EconomyScript.Instance.BankConfigData.Accounts.FirstOrDefault(
+                var myaccount = EconomyScript.Instance.Data.Accounts.FirstOrDefault(
                     a => a.SteamId == SenderSteamId);
                 // wait do we even have an account yet? Cant remove whats not there!
                 if (myaccount != null)
                 {
-                    EconomyScript.Instance.BankConfigData.ResetAccount(myaccount);
+                    AccountManager.ResetAccount(myaccount);
                 }
                 else
                 {
                     //ok cause i am an admin and everything else checks out, lets construct our bank record with a new balance
-                    myaccount = EconomyScript.Instance.BankConfigData.CreateNewDefaultAccount(SenderSteamId, player.DisplayName, SenderLanguage);
+                    myaccount = AccountManager.CreateNewDefaultAccount(SenderSteamId, player.DisplayName, SenderLanguage);
 
                     //ok lets apply it
-                    EconomyScript.Instance.BankConfigData.Accounts.Add(myaccount);
+                    EconomyScript.Instance.Data.Accounts.Add(myaccount);
                 }
 
                 MessageClientTextMessage.SendMessage(SenderSteamId, "RESET", "Done");

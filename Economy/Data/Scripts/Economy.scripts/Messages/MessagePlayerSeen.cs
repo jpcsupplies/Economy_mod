@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using EconConfig;
     using ProtoBuf;
 
     [ProtoContract]
@@ -17,7 +18,7 @@
 
         public override void ProcessServer()
         {
-            var account = EconomyScript.Instance.BankConfigData.Accounts.FirstOrDefault(
+            var account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(
                 a => a.NickName.Equals(UserName, StringComparison.InvariantCultureIgnoreCase));
 
             string reply;
@@ -30,7 +31,7 @@
             MessageClientTextMessage.SendMessage(SenderSteamId, "SEEN", reply);
 
             // update our own timestamp here
-            EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId, SenderLanguage);
+            AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
         }
 
         public static void SendMessage(string userName)

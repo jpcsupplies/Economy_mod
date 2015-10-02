@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using EconConfig;
     using ProtoBuf;
 
     [ProtoContract]
@@ -30,11 +31,11 @@
         public override void ProcessServer()
         {
             // update our own timestamp here
-            EconomyScript.Instance.BankConfigData.UpdateLastSeen(SenderSteamId, SenderLanguage);
+            AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
             EconomyScript.Instance.ServerLogger.Write("Value Request for '{0}:{1}' from '{2}'", TypeId, SubtypeName, SenderSteamId);
 
             // TypeId and SubtypeName are both Case sensitive. Do not Ignore case when comparing these.
-            var item = EconomyScript.Instance.MarketConfigData.MarketItems.FirstOrDefault(e => e.TypeId == TypeId && e.SubtypeName == SubtypeName);
+            var item = EconomyScript.Instance.Data.MarketItems.FirstOrDefault(e => e.TypeId == TypeId && e.SubtypeName == SubtypeName);
             if (item == null)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", "Sorry, the items you are trying to value doesn't have a market entry!");
