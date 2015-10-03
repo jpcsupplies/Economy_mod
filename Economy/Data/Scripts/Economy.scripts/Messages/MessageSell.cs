@@ -187,7 +187,7 @@
 
             if (UseBankBuyPrice)
                 // The player is selling, but the *Market* will *buy* it from the player at this price.
-                ItemPrice = marketItem.BuyPrice * ItemQuantity;
+                ItemPrice = marketItem.BuyPrice;// *ItemQuantity; this looks like our bug <- #51
 
             var accountToSell = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
             var transactionAmount = ItemPrice * ItemQuantity;
