@@ -45,7 +45,7 @@ namespace Economy.scripts
         /// sell pattern check for "/sell" at[0], then number or string at [1], then string at [2], then number at [3], then string at [4]
         /// samples(optional): /sell all iron (price) (player/faction) || /sell 10 iron (price) (player/faction) || /sell accept || /sell deny || /sell cancel
         /// </summary>
-        const string SellPattern = @"(?<command>/sell)\s+(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>[^\s]*))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
+        const string SellPattern = @"(?<command>/sell)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<qtyall>ALL))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>[^\s]*))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
 
         #endregion
 
@@ -359,6 +359,7 @@ namespace Economy.scripts
                 //now we need to check if range is ignored, or perform a range check on [4] to see if it is in selling range
                 //if both checks fail tell player nothing is near enough to trade with
                 decimal sellQuantity = 0;
+                bool sellAll;
                 string itemName = "";
                 decimal sellPrice = 1;
                 bool useBankBuyPrice = false;
@@ -387,7 +388,9 @@ namespace Economy.scripts
                     {
                         itemName = match.Groups["item"].Value;
                         buyerName = match.Groups["user"].Value;
-                        sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
+                        sellAll = match.Groups["qtyall"].Value.Equals("all", StringComparison.InvariantCultureIgnoreCase);
+                        if (!sellAll)
+                            sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
                         if (!decimal.TryParse(match.Groups["price"].Value, out sellPrice))
                             // We will use the they price they set at which they will buy from the player.
                             useBankBuyPrice = true;  // sellprice will be 0 because TryParse failed.
@@ -402,7 +405,7 @@ namespace Economy.scripts
                             sellToMerchant = false;
                         }
 
-                        MyObjectBuilder_Base content;
+                        MyObjectBuilder_Base content = null;
                         string[] options;
                         // Search for the item and find one match only, either by exact name or partial name.
                         if (!Support.FindPhysicalParts(itemName, out content, out options))
@@ -414,6 +417,15 @@ namespace Economy.scripts
                             else
                                 MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
                             return true;
+                        }
+
+                        if (sellAll)
+                        {
+                            var character = MyAPIGateway.Session.Player.GetCharacter();
+                            // TODO: may have to recheck that character is not null.
+                            var inventoryOwnwer = (IMyInventoryOwner)character;
+                            var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
+                            sellQuantity = (decimal)inventory.GetItemAmount(content.GetId());
                         }
 
                         // TODO: add items into holding as part of the sell message, from container Id: inventory.Owner.EntityId.

@@ -209,7 +209,7 @@
                 accountToSell.BankBalance += transactionAmount;
                 accountToSell.Date = DateTime.Now;
 
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Transaction complete for {0}", transactionAmount);
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "{1} units sold. Transaction complete for {0}", transactionAmount, ItemQuantity);
                 return;
             }
             else if (OfferToMarket)
@@ -223,7 +223,7 @@
                 // is it a player then?             
                 if (account.SteamId == payingPlayer.SteamUserId)
                 {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "PAY", "Sorry, you cannot pay yourself!");
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, you cannot sell to yourself!");
                     return;
                 }
 
