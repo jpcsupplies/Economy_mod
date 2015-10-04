@@ -64,12 +64,15 @@
         [ProtoMember(8)]
         public bool OfferToMarket;
 
-        //[ProtoMember(9)]
+        [ProtoMember(9)]
+        public bool Buying;
+
+        //[ProtoMember(10)]
         //public string zone; //used to identify market we are selling to ??
 
-        public static void SendMessage(string toUserName, decimal itemQuantity, string itemTypeId, string itemSubTypeName, decimal itemPrice, bool useBankBuyPrice, bool sellToMerchant, bool offerToMarket)
+        public static void SendMessage(string toUserName, decimal itemQuantity, string itemTypeId, string itemSubTypeName, decimal itemPrice, bool useBankBuyPrice, bool sellToMerchant, bool offerToMarket, bool buying)
         {
-            ConnectionHelper.SendMessageToServer(new MessageSell { ToUserName = toUserName, ItemQuantity = itemQuantity, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, ItemPrice = itemPrice, UseBankBuyPrice = useBankBuyPrice, SellToMerchant = sellToMerchant, OfferToMarket = offerToMarket });
+            ConnectionHelper.SendMessageToServer(new MessageSell { ToUserName = toUserName, ItemQuantity = itemQuantity, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, ItemPrice = itemPrice, UseBankBuyPrice = useBankBuyPrice, SellToMerchant = sellToMerchant, OfferToMarket = offerToMarket, Buying=buying });
         }
 
         public override void ProcessClient()
@@ -95,7 +98,7 @@
             if (definition == null)
             {
                 // Someone hacking, and passing bad data?
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you specified doesn't exist!");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "Sorry, the item you specified doesn't exist!");
                 return;
             }
 
@@ -104,7 +107,7 @@
             {
                 if (ItemQuantity != Math.Truncate(ItemQuantity))
                 {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You must provide a whole number for the quantity to sell that item.");
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "You must provide a whole number for the quantity of that item.");
                     return;
                 }
                 //ItemQuantity = Math.Round(ItemQuantity, 0);  // Or do we just round the number?
@@ -112,7 +115,7 @@
 
             if (ItemQuantity <= 0)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You must provide a valid quantity to sell.");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "You must provide a valid quantity.");
                 return;
             }
 
@@ -125,21 +128,21 @@
 
             if (account == null)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, player does not exist or have an account!");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "Sorry, player does not exist or have an account!");
                 return;
             }
 
             var marketItem = EconomyScript.Instance.Data.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
             if (marketItem == null)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the items you are trying to sell doesn't have a market entry!");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the items you are trying to trade doesn't have a market entry!");
                 // TODO: in reality, this item needs not just to have an entry created, but a value applied also. It's the value that is more important.
                 return;
             }
 
             if (marketItem.IsBlacklisted)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you tried to sell is blacklisted on this server.");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "Sorry, the item you tried to trade is blacklisted on this server.");
                 return;
             }
 
@@ -157,7 +160,7 @@
             {
                 // Player has no body. Could mean they are dead.
                 // Either way, there is no inventory.
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are dead. You cannot trade while dead.");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "You are dead. You cannot trade while dead.");
                 return;
             }
 
@@ -177,18 +180,20 @@
             var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
             MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
 
-            if (!inventory.ContainItems(amount, content))
-            {
-                var storedAmount = inventory.GetItemAmount(content.GetObjectId());
-                // Insufficient items in inventory.
-                // TODO: use of content.GetDisplayName() isn't localized here.
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your inventory.", ItemQuantity, content.GetDisplayName(), storedAmount);
-                return;
-            }
-
+                if (!inventory.ContainItems(amount, content) && !Buying)
+                {
+                    var storedAmount = inventory.GetItemAmount(content.GetObjectId());
+                    // Insufficient items in inventory.
+                    // TODO: use of content.GetDisplayName() isn't localized here.
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your inventory.", ItemQuantity, content.GetDisplayName(), storedAmount);
+                    return;
+                }
+            
             if (UseBankBuyPrice)
+                // The player is buying, use sell price
+                if (Buying) { ItemPrice = marketItem.SellPrice; }
                 // The player is selling, but the *Market* will *buy* it from the player at this price.
-                ItemPrice = marketItem.BuyPrice;// *ItemQuantity; this looks like our bug <- #51
+                else { ItemPrice = marketItem.BuyPrice; }
 
             var accountToSell = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
             var transactionAmount = ItemPrice * ItemQuantity;
@@ -200,16 +205,24 @@
             if (SellToMerchant)
             {
                 // here we look up item price and transfer items and money as appropriate
-                inventory.RemoveItemsOfType(amount, content);
-                marketItem.Quantity += ItemQuantity; // increment Market content.
-
-                account.BankBalance -= transactionAmount;
+                if (Buying) {
+                    inventory.AddItems(amount, content);
+                    marketItem.Quantity -= ItemQuantity; // reduce Market content.
+                    account.BankBalance += transactionAmount;
+                    accountToSell.BankBalance -= transactionAmount;     
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "{1} units purchased. Transaction complete for {0}", transactionAmount, ItemQuantity);
+                }
+                else
+                {
+                    inventory.RemoveItemsOfType(amount, content);
+                    marketItem.Quantity += ItemQuantity; // increment Market content.
+                    account.BankBalance -= transactionAmount;
+                    accountToSell.BankBalance += transactionAmount;
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "{1} units sold. Transaction complete for {0}", transactionAmount, ItemQuantity);
+                }
                 account.Date = DateTime.Now;
-
-                accountToSell.BankBalance += transactionAmount;
                 accountToSell.Date = DateTime.Now;
 
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "{1} units sold. Transaction complete for {0}", transactionAmount, ItemQuantity);
                 return;
             }
             else if (OfferToMarket)
@@ -223,7 +236,7 @@
                 // is it a player then?             
                 if (account.SteamId == payingPlayer.SteamUserId)
                 {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, you cannot sell to yourself!");
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "Sorry, you cannot TRADE with yourself!");
                     return;
                 }
 
@@ -241,71 +254,10 @@
                 }
             }
 
-            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Not yet complete.");
+            MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "Not yet complete.");
 
 
-            /*
-            //  old code to be disemboweled later
 
-            // It needs to first check the player has enough to cover his payment
-            if (TransactionAmount <= accountToSpend.BankBalance || payingPlayer.IsAdmin())
-            // do we have enough or are we admin so it doesnt matter
-            //*      if true, 
-            {
-                // it needs to check the person being paid has an account record, 
-                var account = EconomyScript.Instance.BankConfigData.FindAccount(ToUserName);
-
-                //*               if true - it will always be true if real as it would have created it on join anyway
-
-                //*               if false -  then they were never on this server anyway or seen would have added them already
-                //*                         display an error message player not found
-                if (account == null)
-                {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "PAY", "Sorry, player does not exist or have an account!");
-                    return;
-                }
-                //*               if true, { flag hasaccount bool true }
-
-                if (account.SteamId == payingPlayer.SteamUserId)
-                {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "PAY", "Sorry, you cannot pay yourself!");
-                    return;
-                }
-
-                //*          if hasaccount bool true   
-
-                // is there a modify property to save the need to remove then re-add? 
-                // admins can give or take money, normal players can only give money so convert negative to positive
-                // here we add the players bank record again with the updated balance minus what they spent
-                accountToSpend.BankBalance -= TransactionAmount;
-                accountToSpend.Date = DateTime.Now;
-
-                // here we retrive the target player steam id and balance
-                // here we write it back to our bank ledger file
-                account.BankBalance += TransactionAmount;
-                account.Date = DateTime.Now;
-
-                // if this works this is a very sexy way to work with our file
-                // testing: it does indeed work, if i was a teenager id probably need to change my underwear at this point
-
-                // This notifies receiving player that they were paid and/or any message the sending player wrote
-                // which needs to not send if the player isnt online - pity ive no idea how to write to the faction chat system
-                // be a good place to send the player a faction message as it would work even if they were offline..
-                MessageClientTextMessage.SendMessage(account.SteamId, "PAY",
-                    string.Format("{0}, {1} just paid you {2} for {3}", account.NickName, SenderDisplayName, TransactionAmount, Reason));
-
-                MessageClientTextMessage.SendMessage(SenderSteamId, "PAY",
-                    string.Format("You just paid {0}, {1} for {2}", account.NickName, TransactionAmount, Reason));
-
-                EconomyScript.Instance.ServerLogger.Write("Pay: '{0}' sent {1} to '{2}'", accountToSpend.NickName, TransactionAmount, ToUserName);
-
-
-                //*      if false/otherwise throw error you dont have enough money
-            }
-            else
-            {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "PAY", "Sorry you can't afford that much!");
-            } */
         }
 
         private void ReturnInventoryItems()

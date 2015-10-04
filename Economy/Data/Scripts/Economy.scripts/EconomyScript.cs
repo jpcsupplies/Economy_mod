@@ -47,6 +47,12 @@ namespace Economy.scripts
         /// </summary>
         const string SellPattern = @"(?<command>/sell)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<qtyall>ALL))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>[^\s]*))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
 
+        // buy pattern no "all" required.   reusing sell  
+        // /buy 10 "iron ingot" || /buy 10 "iron ingot" 1 || /buy 10 "iron ingot" 1 fred
+        //
+        const string BuyPattern = @"(?<command>/buy)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<qtyall>ALL))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>[^\s]*))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
+
+        //const string BuyPattern = @"(?<command>/buy)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>[^\s]*))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
         #endregion
 
         #region fields
@@ -295,6 +301,7 @@ namespace Economy.scripts
             // buy command
             if (split[0].Equals("/buy", StringComparison.InvariantCultureIgnoreCase))
             {
+
                 //initially we should work only with a players inventory size
                 //worst case scenario overflow gets dropped at the players feet which if they
                 //are standing on a collector should be adequte for Alpha milestone compliance.
@@ -312,8 +319,62 @@ namespace Economy.scripts
                 //  if (they place an offer above/below market && have access to offers), post offer, and deduct funds
                 //  if they choose to cancel an offer, remove offer and return remaining money
 
-                MyAPIGateway.Utilities.ShowMessage("BUY", "Not yet implemented in this release");
-                return true;
+                decimal buyQuantity = 0;
+                string itemName = "";
+                decimal buyPrice = 1;
+                bool useBankSellPrice = false;
+                string SellerName = "";
+                bool BuyOffMerchant = false;
+                bool offerToMarket = false;
+
+                match = Regex.Match(messageText, BuyPattern, RegexOptions.IgnoreCase);
+                if (!EconomyConsts.LimitedRange || RangeCheck(match.Groups["user"].Value))
+                {
+                    if (match.Success)
+                    {
+                        itemName = match.Groups["item"].Value;
+                        SellerName = match.Groups["user"].Value;
+                        buyQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
+                        if (!decimal.TryParse(match.Groups["price"].Value, out buyPrice))
+                            // We will use the they price they set at which they will sell to the player.
+                            useBankSellPrice = true;  // sellprice will be 0 because TryParse failed.
+
+                        if (string.IsNullOrEmpty(SellerName))
+                            BuyOffMerchant = true;
+
+                        if (!useBankSellPrice && BuyOffMerchant)
+                        {
+                            // A price was specified, we actually intend to post an offer to buy the item from the market, not the bank.
+                            offerToMarket = true;
+                            BuyOffMerchant = false;
+                        }
+                        MyObjectBuilder_Base content = null;
+                        string[] options;
+                        // Search for the item and find one match only, either by exact name or partial name.
+                        if (!Support.FindPhysicalParts(itemName, out content, out options))
+                        {
+                            if (options.Length == 0)
+                                MyAPIGateway.Utilities.ShowMessage("BUY", "Item name not found.");
+                            else if (options.Length > 10)
+                                MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
+                            else
+                                MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                            return true;
+                        }
+                        // TODO: add items into holding as part of the buy message, from container Id: inventory.Owner.EntityId.
+                        MessageSell.SendMessage(SellerName, buyQuantity, content.TypeId.ToString(), content.SubtypeName, buyPrice, useBankSellPrice, BuyOffMerchant, offerToMarket, true);
+
+                        return true;
+                    }
+
+                    switch (split.Length)
+                    {
+                        case 1: //ie /buy
+                            MyAPIGateway.Utilities.ShowMessage("BUY", "/buy #1 #2 #3 #4");
+                            MyAPIGateway.Utilities.ShowMessage("BUY", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional where to buy from");
+                            return true;
+                    }
+                } else { MyAPIGateway.Utilities.ShowMessage("BUY", "Nothing nearby to trade with?"); return true; }
             }
 
             // sell command
@@ -376,7 +437,7 @@ namespace Economy.scripts
                 {
                     //in this release the only valid trade area is the default 0:0:0 area of map or other players?
                     //but should still go through the motions so backend is ready
-                    //by default in initialisation we alerady created a bank entry for the NPC
+                    //by default in initialisation we already created a bank entry for the NPC
                     //now we take our regex fields populated above and start checking
                     //what the player seems to want us to do - switch needs to be converted to the regex populated fields
                     //using split at the moment for debugging and structruing desired logic
@@ -429,7 +490,7 @@ namespace Economy.scripts
                         }
 
                         // TODO: add items into holding as part of the sell message, from container Id: inventory.Owner.EntityId.
-                        MessageSell.SendMessage(buyerName, sellQuantity, content.TypeId.ToString(), content.SubtypeName, sellPrice, useBankBuyPrice, sellToMerchant, offerToMarket);
+                        MessageSell.SendMessage(buyerName, sellQuantity, content.TypeId.ToString(), content.SubtypeName, sellPrice, useBankBuyPrice, sellToMerchant, offerToMarket, false);
 
                         //    MyAPIGateway.Utilities.ShowMessage("SELL", reply);
                         return true;
@@ -440,7 +501,7 @@ namespace Economy.scripts
                     {
                         case 1: //ie /sell
                             MyAPIGateway.Utilities.ShowMessage("SELL", "/sell #1 #2 #3 #4");
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional person to sell to");
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional where to sell to");
                             return true;
                         case 2: //ie /sell all or /sell cancel or /sell accept or /sell deny
                             if (split[1].Equals("cancel", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "Cancel Not yet implemented in this release"); return true; }
