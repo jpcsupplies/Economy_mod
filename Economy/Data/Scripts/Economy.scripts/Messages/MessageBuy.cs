@@ -178,14 +178,16 @@
             if (!buyingPlayer.IsAdmin())
                 transactionAmount = Math.Abs(transactionAmount);
 
-            // TODO: admin check on ability to afford it?
+            // TODO: admin check on ability to afford it? 
+            //[maybe later, our pay and reset commands let us steal money from npc anyway best to keep admin abuse features to minimum]
+            //[we could put an admin check on blacklist however, allow admins to spawn even blacklisted gear]
             if (accountToBuy.BankBalance < transactionAmount)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you cannot afford {0}!", transactionAmount);
                 return;
             }
 
-            if (BuyFromMerchant)
+            if (BuyFromMerchant) // && (merchant supply of this good is not exhausted || !EconomyConst.LimitedSupply)
             {
                 // here we look up item price and transfer items and money as appropriate
                 marketItem.Quantity -= ItemQuantity; // reduce Market content.

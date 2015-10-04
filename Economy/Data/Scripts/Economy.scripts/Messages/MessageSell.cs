@@ -117,7 +117,7 @@
 
             // Who are we selling to?
             BankAccountStruct accountToBuy;
-            if (SellToMerchant)
+            if (SellToMerchant) // && (merchant has enough money  || !EconomyConsts.LimitedSupply)
                 accountToBuy = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
             else
                 accountToBuy = AccountManager.FindAccount(ToUserName);
