@@ -54,11 +54,11 @@
 
                 if (Quantity == 1)
                     // set reply to report back the current buy and sell price only since that is all we asked for
-                    reply = String.Format("you can sell each '{0}' for {1}, or buy it for {2} each.", DisplayName, item.SellPrice, item.BuyPrice);
+                    reply = String.Format("TRADE - You can buy each '{0}' for {1}, or sell it back for {2} each.", DisplayName, item.SellPrice, item.BuyPrice);
                 else
                 // value BLAH 12 - we must want to know how much we make/pay for buying/selling 12
                 // set reply to current buy and sell price multiplied by the requested qty.
-                    reply = String.Format("you can sell {0} '{1}' for {2} or buy it for {3} each.", Quantity, DisplayName, item.SellPrice*Quantity, item.BuyPrice*Quantity);
+                    reply = String.Format("TRADE - You can buy {0} '{1}' for {2} or sell it back for {3} each.", Quantity, DisplayName, item.SellPrice*Quantity, item.BuyPrice*Quantity);
             }
             MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", reply);
         }
