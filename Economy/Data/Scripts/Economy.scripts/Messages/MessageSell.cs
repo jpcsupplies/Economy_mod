@@ -174,7 +174,7 @@
             MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
 
             var storedAmount = inventory.GetItemAmount(definition.Id);
-            if (amount < storedAmount)
+            if (amount > storedAmount)
             {
                 // Insufficient items in inventory.
                 // TODO: use of definition.GetDisplayName() isn't localized here.

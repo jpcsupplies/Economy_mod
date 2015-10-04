@@ -473,6 +473,12 @@ namespace Economy.scripts
                         var inventoryOwnwer = (IMyInventoryOwner)character;
                         var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
                         sellQuantity = (decimal)inventory.GetItemAmount(content.GetId());
+
+                        if (sellQuantity == 0)
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "You don't have any '{0}' to sell.", content.GetDisplayName());
+                            return true;
+                        }
                     }
 
                     // TODO: add items into holding as part of the sell message, from container Id: inventory.Owner.EntityId.
