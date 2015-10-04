@@ -179,9 +179,10 @@
 
             if (!inventory.ContainItems(amount, content))
             {
+                var storedAmount = inventory.GetItemAmount(content.GetObjectId());
                 // Insufficient items in inventory.
                 // TODO: use of content.GetDisplayName() isn't localized here.
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell.", ItemQuantity, content.GetDisplayName());
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your inventory.", ItemQuantity, content.GetDisplayName(), storedAmount);
                 return;
             }
 
