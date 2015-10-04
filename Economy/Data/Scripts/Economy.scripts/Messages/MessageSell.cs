@@ -115,7 +115,7 @@
 
             if (ItemQuantity <= 0)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "You must provide a valid quantity.");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "Invalid quantity, or you dont have any to trade!");
                 return;
             }
 
