@@ -225,13 +225,20 @@ namespace Economy.scripts
 
         #endregion
 
-
         #region message handling
 
         private void GotMessage(string messageText, ref bool sendToOthers)
         {
-            // here is where we nail the echo back on commands "return" also exits us from processMessage
-            if (ProcessMessage(messageText)) { sendToOthers = false; }
+            try
+            {
+                // here is where we nail the echo back on commands "return" also exits us from processMessage
+                if (ProcessMessage(messageText)) { sendToOthers = false; }
+            }
+            catch (Exception ex)
+            {
+                ClientLogger.WriteException(ex);
+                MyAPIGateway.Utilities.ShowMessage("Error", "An exception has been logged in the file: {0}", ClientLogger.LogFileName);
+            }
         }
 
         private static void HandleMessage(byte[] message)
@@ -398,9 +405,11 @@ namespace Economy.scripts
                         MyObjectBuilder_Base content;
                         string[] options;
                         // Search for the item and find one match only, either by exact name or partial name.
-                        if (!Support.FindPhysicalParts(itemName, out content, out options) && options.Length > 0)
+                        if (!Support.FindPhysicalParts(itemName, out content, out options))
                         {
-                            if (options.Length > 10)
+                            if (options.Length == 0)
+                                MyAPIGateway.Utilities.ShowMessage("SELL", "Item name not found.");
+                            else if (options.Length > 10)
                                 MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
                             else
                                 MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
@@ -481,9 +490,12 @@ namespace Economy.scripts
                             MyObjectBuilder_Base content;
                             string[] options;
                             // Search for the item and find one match only, either by exact name or partial name.
-                            if (!Support.FindPhysicalParts(itemName, out content, out options) && options.Length > 0)
+                            if (!Support.FindPhysicalParts(itemName, out content, out options))
                             {
-                                MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                                if (options.Length == 0)
+                                    MyAPIGateway.Utilities.ShowMessage("SELL", "Item name not found.");
+                                else
+                                    MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
                                 return true;
                             }
                             reply = content.TypeId.ToString() + " - " + content.SubtypeName + " - " + MarketManager.GetDisplayName(content.TypeId.ToString(), content.SubtypeName);
@@ -503,8 +515,6 @@ namespace Economy.scripts
                             }
                             return true;
                     }
-
-
                 }
                 else { MyAPIGateway.Utilities.ShowMessage("SELL", "Nothing/Nobody nearby to trade with!"); return true; }
             }
@@ -546,10 +556,14 @@ namespace Economy.scripts
                     string[] options;
 
                     // Search for the item and find one match only, either by exact name or partial name.
-                    if (!Support.FindPhysicalParts(itemName, out content, out options) && options.Length > 0)
+                    if (!Support.FindPhysicalParts(itemName, out content, out options))
                     {
-                        // TODO: use ShowMissionScreen if options.Length > 10 ?
-                        MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                        if (options.Length == 0)
+                            MyAPIGateway.Utilities.ShowMessage("VALUE", "Item name not found.");
+                        else if (options.Length > 10)
+                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
+                        else
+                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
                         return true;
                     }
                     if (content != null)
