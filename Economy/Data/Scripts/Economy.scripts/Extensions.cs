@@ -7,6 +7,7 @@ namespace Economy.scripts
     using Sandbox.ModAPI;
     using VRage;
     using VRage.ObjectBuilders;
+    using VRageMath;
 
     public static class Extensions
     {
@@ -136,6 +137,36 @@ namespace Economy.scripts
         {
             var defintion = MyDefinitionManager.Static.GetPhysicalItemDefinition(objectBuilder);
             return defintion.DisplayNameEnum.HasValue ? MyTexts.GetString(defintion.DisplayNameEnum.Value) : defintion.DisplayNameString;
+        }
+
+        public static string GetDisplayName(this MyPhysicalItemDefinition defintion)
+        {
+            return defintion.DisplayNameEnum.HasValue ? MyTexts.GetString(defintion.DisplayNameEnum.Value) : defintion.DisplayNameString;
+        }
+
+        public static SerializableVector3 ToSerializableVector3(this Vector3D v)
+        {
+            return new SerializableVector3((float)v.X, (float)v.Y, (float)v.Z);
+        }
+
+        /// <summary>
+        /// Creates the objectbuilder in game, and syncs it to the server and all clients.
+        /// </summary>
+        /// <param name="entity"></param>
+        public static void CreateAndSyncEntity(this MyObjectBuilder_EntityBase entity)
+        {
+            CreateAndSyncEntities(new List<MyObjectBuilder_EntityBase> { entity });
+        }
+
+        /// <summary>
+        /// Creates the objectbuilders in game, and syncs it to the server and all clients.
+        /// </summary>
+        /// <param name="entities"></param>
+        public static void CreateAndSyncEntities(this List<MyObjectBuilder_EntityBase> entities)
+        {
+            MyAPIGateway.Entities.RemapObjectBuilderCollection(entities);
+            entities.ForEach(item => MyAPIGateway.Entities.CreateFromObjectBuilderAndAdd(item));
+            MyAPIGateway.Multiplayer.SendEntitiesCreated(entities);
         }
     }
 }
