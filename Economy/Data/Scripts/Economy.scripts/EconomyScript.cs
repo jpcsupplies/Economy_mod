@@ -368,42 +368,7 @@ namespace Economy.scripts
             // sell command
             if (split[0].Equals("/sell", StringComparison.InvariantCultureIgnoreCase))
             {
-                #region sell notes
-                //initially we should work only with a players inventory contents
-                //later on working with a special block or faction only storage crate setup may work
-                //when they need to sell more than can be carried
-                //another out of the box idea is trade when you are in a cockpit
-                //then the mod works with the materials stored in that ship -API capabilites dependant however
-                //
-                //[0] = /sell  [1] = quantity [2] = keyword representing material to sell [3] = optional price (for posting a sell offer instead of selling to NPC) [4] optional player name for making offer to player
-                //special keywords "all"  /sell all = sell their entire inventory || /sell all iron = sell all their iron ore only
-                //examples  /sell 100 uranium  (sells 100 uranium to NPC at price table price - increases the qty in table, so long as npc can afford)
-                //          /sell 100 uranium 5 (puts up a sell offer of 100 uranium at unit price of 5 each - would write to global market table(s))
-                //          /sell 100 uranium 0.5 bob (offers to sell bob 100 uranium at 0.5 each - bob must /accept or /decline or it times out
-                // Modifiers -  allow provision for multiple markets for faction to faction/ player to faction / player to player markets later
-                //              may need restrictions by location or faction eventually as well.  Example - selling to NPC may only be allowed
-                //              if player is located within 5km of 0,0,0 on map (which in ramblers would be the nearest blue mining trade base)
-                //              Example 2 - selling to "BOB" faction is only allowed if you are allied (or neutral?) with them and within 5km of their registered
-                //              trade base location.  So we may eventually need a "register" type command for faction 2 faction trade.
-                // if player location is within range of valid trade territory (or 0,0,0 to begin with for this milestone) 
-                // { 
-                //      select case (does split contain data?) (actually my logic here is terrible, but its just comments ;)
-                //          case [1] == "cancel" cancel specified order?
-                //          case ![1] display brief help summary (means they only typed /sell)
-                //          case ![2] check if [1] == "all" - display error if not (means they only typed /sell all, or some invalid option) 
-                //              if (it is "ALL" - and [2] isnt "cancel") parse contents of inventory and calculate value, compare against NPC bank balance; transfer qty to bank and value to player if NPC can afford it
-                //              else if [2] is cancel - remove all sell offers posted by this player, return items to inventory or spawn at feet if overflow.
-                //          case ![3] lookup item specified at [2] if valid calculate value of goods at given qty (or all) and compare against NPC bank balance, transfer qty to item file and value to player if NPC can afford it;  up to what the npc can afford.
-                //          case ![4] lookup item specified at [2] - if valid and in inventory, check if player is allowed to post offers here, if so add [1] items [2] to global market at price [3] deduct items from player
-                //          case ![5] (optional check distance to player isnt too high) lookup item specified at [2] - if valid and in inventory && player [4] exists, send offer to player [4] to sell them qty [1] of item [2] at price [3] to player [4]
-                //                                                                      Start timer, wait for reply from player [4], if accept take money transfer goods, if deny or time runs out stop timer cancel sale 
-                //  } else { display error that no trade regions are in range }
 
-                //  case 4: //ie /sell 1 uranium 50
-                //  case 5: //ie /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
-                // note - if bob has already been sent an offer, reply with bob is already negotiating a deal
-                //deal timer should be between 30 seconds and 2 minutes
-                #endregion
 
                 //now we need to check if range is ignored, or perform a range check on [4] to see if it is in selling range
                 //if both checks fail tell player nothing is near enough to trade with
@@ -495,15 +460,11 @@ namespace Economy.scripts
                         MyAPIGateway.Utilities.ShowMessage("SELL", "/sell #1 #2 #3 #4");
                         MyAPIGateway.Utilities.ShowMessage("SELL", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional where to sell to");
                         return true;
+                        // everything below here is not used but kept for reference for later functions
                     case 2: //ie /sell all or /sell cancel or /sell accept or /sell deny
                         if (split[1].Equals("cancel", StringComparison.InvariantCultureIgnoreCase))
                         {
                             MyAPIGateway.Utilities.ShowMessage("SELL", "Cancel Not yet implemented in this release");
-                            return true;
-                        }
-                        if (split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "all not yet implemented - sell all carried items");
                             return true;
                         }
                         if (split[1].Equals("accept", StringComparison.InvariantCultureIgnoreCase))
@@ -517,91 +478,8 @@ namespace Economy.scripts
                             return true;
                         }
                         return false;
-                    default: //must be more than 2
-                        //ie /sell all uranium || /sell 1 uranium || /sell 1 uranium 50 || /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
-                        //need an item search sub for this bit to compliment the regex and for neatness
-                        //if (split[3] == null) split[3]= "NPC";
-                        if (split.Length == 3 && ((decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)))) //eg /sell 3 iron
-                        {
-                            //sellqty is now split[1] as decimal -
-                            if (sellQuantity == 0 && split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                //in this case try parse failed but "all" matched..
-                                //if split[1] = all then we would need to sell every specified item the player is carrying
-                                //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
-                            }
-
-                            if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
-                            //sell price is set by price book in this scenario, and we assume we are selling to the NPC market
-                            buyerName = EconomyConsts.NpcMerchantName;
-                        }
-                        else
-                        {
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty wasnt valid?");
-                            return false;
-                        }
-
-                        //eg /sell 3 iron 50
-                        if (split.Length == 4 && (decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) && decimal.TryParse(split[3], out sellPrice))
-                        {
-                            //sellqty is now split[1] as decimal
-                            if (sellQuantity == 0 && split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                //in this case try parse failed but "all" matched..
-                                //if split[1] = all then we would need to sell every specified item the player is carrying
-                                //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
-                            }
-                            if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
-                            //sellprice is now split[3], and we assume we are posting an offer to the stockmarket not selling blindly to npc
-                            buyerName = "OFFER";
-                        }
-                        else
-                        {
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt valid?");
-                            return false;
-                        }
-
-                        //eg /sell 3 iron 50 fred
-                        if (split.Length == 5 && (decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) && decimal.TryParse(split[3], out sellPrice))
-                        {
-                            //sellqty is now split[1] as decimal
-                            if (sellQuantity == 0 && split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                //in this case try parse failed but "all" matched..
-                                //if split[1] = all then we would need to sell every specified item the player is carrying
-                                //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
-                            }
-                            if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
-                            //sellprice is now split[3]
-                            buyerName = split[4];
-                            //this scenario we assume we sell to a player
-                        }
-                        else
-                        {
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt valid?");
-                            return false;
-                        }
-
-                        //at this point we should have enough information to make a sale
-                        string reply = "Debug: Selling " + sellQuantity + "x " + itemName + " to " + buyerName + " for " + (sellQuantity * sellPrice);
-                        MyAPIGateway.Utilities.ShowMessage("SELL", reply);
-                        //---------  now this bit of code is interesting we get id of item
-                        MyObjectBuilder_Base content;
-                        string[] options;
-                        // Search for the item and find one match only, either by exact name or partial name.
-                        if (!Support.FindPhysicalParts(itemName, out content, out options))
-                        {
-                            if (options.Length == 0)
-                                MyAPIGateway.Utilities.ShowMessage("SELL", "Item name not found.");
-                            else
-                                MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
-                            return true;
-                        }
-                        reply = content.TypeId.ToString() + " - " + content.SubtypeName + " - " + MarketManager.GetDisplayName(content.TypeId.ToString(), content.SubtypeName);
-                        MyAPIGateway.Utilities.ShowMessage("SELL", reply);
-                        //---------
-
-                        if (buyerName != EconomyConsts.NpcMerchantName && buyerName != "OFFER")
+                    default: //must be more than 2 and invalid
+/*                        if (buyerName != EconomyConsts.NpcMerchantName && buyerName != "OFFER")
                         {
                             //must be selling to a player (or faction ?)
                             //check the item to sell is a valid product, do usual qty type checks etc
@@ -612,8 +490,8 @@ namespace Economy.scripts
                         {
                             if (buyerName == EconomyConsts.NpcMerchantName) { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be selling to NPC - skip prompts sell immediately at price book price"); }
                             if (buyerName == "OFFER") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be posting a sell offer to stockmarket - skip prompts post offer UNLESS we match a buy offer at the same price then process that"); }
-                        }
-                        return true;
+                        }*/
+                        return false; 
                 }
 
                 MyAPIGateway.Utilities.ShowMessage("SELL", "Nothing/Nobody nearby to trade with!");
@@ -716,7 +594,7 @@ namespace Economy.scripts
             {
                 if (split.Length <= 1)
                 {
-                    //did we just type help? show what else they can get help on
+                    //did we just type ehelp? show what else they can get help on
                     //might be better to make a more detailed help reply here using mission window later on
                     MyAPIGateway.Utilities.ShowMessage("help", "Commands: help, buy, sell, bal, pay, seen");
                     if (MyAPIGateway.Session.Player.IsAdmin())
