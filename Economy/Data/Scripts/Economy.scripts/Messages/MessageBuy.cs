@@ -204,7 +204,7 @@
                 accountToBuy.BankBalance -= transactionAmount;
                 accountToBuy.Date = DateTime.Now;
 
-                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "{1} units purchased. Transaction complete for {0}", transactionAmount, ItemQuantity);
+                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0}", transactionAmount, ItemQuantity, definition.GetDisplayName());
                 return;
             }
             else if (FindOnMarket)
@@ -243,6 +243,7 @@
                 }
             }
 
+            // this is a fall through from the above conditions not yet complete.
             MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Not yet complete.");
         }
 

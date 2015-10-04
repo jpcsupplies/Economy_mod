@@ -205,7 +205,7 @@
                 accountToSell.BankBalance += transactionAmount;
                 accountToSell.Date = DateTime.Now;
 
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "{1} units sold. Transaction complete for {0}", transactionAmount, ItemQuantity);
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "{1} units of '{2}' sold. Transaction complete for {0}", transactionAmount, ItemQuantity, definition.GetDisplayName());
                 return;
             }
             else if (OfferToMarket)
@@ -244,10 +244,8 @@
                 }
             }
 
+            // this is a fall through from the above conditions not yet complete.
             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Not yet complete.");
-
-
-
         }
     }
 }
