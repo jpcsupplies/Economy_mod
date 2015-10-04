@@ -13,7 +13,7 @@
     using VRage.ObjectBuilders;
 
     /// <summary>
-    /// this is to do the actual work of moving the goods checks need to occur before this
+    /// this is to do the actual work of checking and moving the goods.
     /// </summary>
     [ProtoContract]
     public class MessageSell : MessageBase
@@ -64,21 +64,17 @@
         [ProtoMember(8)]
         public bool OfferToMarket;
 
-        [ProtoMember(9)]
-        public bool Buying;
-
-        //[ProtoMember(10)]
+        //[ProtoMember(9)]
         //public string zone; //used to identify market we are selling to ??
 
-        public static void SendMessage(string toUserName, decimal itemQuantity, string itemTypeId, string itemSubTypeName, decimal itemPrice, bool useBankBuyPrice, bool sellToMerchant, bool offerToMarket, bool buying)
+        public static void SendMessage(string toUserName, decimal itemQuantity, string itemTypeId, string itemSubTypeName, decimal itemPrice, bool useBankBuyPrice, bool sellToMerchant, bool offerToMarket)
         {
-            ConnectionHelper.SendMessageToServer(new MessageSell { ToUserName = toUserName, ItemQuantity = itemQuantity, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, ItemPrice = itemPrice, UseBankBuyPrice = useBankBuyPrice, SellToMerchant = sellToMerchant, OfferToMarket = offerToMarket, Buying=buying });
+            ConnectionHelper.SendMessageToServer(new MessageSell { ToUserName = toUserName, ItemQuantity = itemQuantity, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, ItemPrice = itemPrice, UseBankBuyPrice = useBankBuyPrice, SellToMerchant = sellToMerchant, OfferToMarket = offerToMarket });
         }
 
         public override void ProcessClient()
         {
             // never processed on client
-            //will we need this to remove players inventory items?
         }
 
         public override void ProcessServer()
@@ -98,7 +94,7 @@
             if (definition == null)
             {
                 // Someone hacking, and passing bad data?
-                MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "Sorry, the item you specified doesn't exist!");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you specified doesn't exist!");
                 return;
             }
 
@@ -107,7 +103,7 @@
             {
                 if (ItemQuantity != Math.Truncate(ItemQuantity))
                 {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "You must provide a whole number for the quantity of that item.");
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You must provide a whole number for the quantity of that item.");
                     return;
                 }
                 //ItemQuantity = Math.Round(ItemQuantity, 0);  // Or do we just round the number?
@@ -115,42 +111,39 @@
 
             if (ItemQuantity <= 0)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "You must provide a valid quantity.");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You must provide a valid quantity.");
                 return;
             }
 
             // Who are we selling to?
-            BankAccountStruct account;
+            BankAccountStruct accountToBuy;
             if (SellToMerchant)
-                account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
+                accountToBuy = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
             else
-                account = AccountManager.FindAccount(ToUserName);
+                accountToBuy = AccountManager.FindAccount(ToUserName);
 
-            if (account == null)
+            if (accountToBuy == null)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "Sorry, player does not exist or have an account!");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, player does not exist or have an account!");
                 return;
             }
 
             var marketItem = EconomyScript.Instance.Data.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
             if (marketItem == null)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the items you are trying to trade doesn't have a market entry!");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the items you are trying to sell doesn't have a market entry!");
                 // TODO: in reality, this item needs not just to have an entry created, but a value applied also. It's the value that is more important.
                 return;
             }
 
             if (marketItem.IsBlacklisted)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "Sorry, the item you tried to trade is blacklisted on this server.");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you tried to sell is blacklisted on this server.");
                 return;
             }
 
             // Verify that the items are in the player inventory.
             // TODO: later check trade block, cockpit inventory, cockpit ship inventory, inventory of targeted cube.
-
-            var definitionId = new MyDefinitionId(definition.Id.TypeId, definition.Id.SubtypeName);
-            var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
 
             // Get the player's inventory, regardless of if they are in a ship, or a remote control cube.
             var character = payingPlayer.GetCharacter();
@@ -160,15 +153,15 @@
             {
                 // Player has no body. Could mean they are dead.
                 // Either way, there is no inventory.
-                MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "You are dead. You cannot trade while dead.");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are dead. You cannot trade while dead.");
                 return;
             }
 
             // TODO: is a null check adaqaute?, or do we need to check for IsDead?
             // I don't think the chat console is accessible during respawn, only immediately after death.
             // Is it valid to be able to trade when freshly dead?
-            var identity = payingPlayer.Identity();
-            MyAPIGateway.Utilities.ShowMessage("CHECK", "Is Dead: {0}", identity.IsDead);
+            //var identity = payingPlayer.Identity();
+            //MyAPIGateway.Utilities.ShowMessage("CHECK", "Is Dead: {0}", identity.IsDead);
 
             //if (identity.IsDead)
             //{
@@ -180,20 +173,18 @@
             var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
             MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
 
-                if (!inventory.ContainItems(amount, content) && !Buying)
-                {
-                    var storedAmount = inventory.GetItemAmount(content.GetObjectId());
-                    // Insufficient items in inventory.
-                    // TODO: use of content.GetDisplayName() isn't localized here.
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your inventory.", ItemQuantity, content.GetDisplayName(), storedAmount);
-                    return;
-                }
-            
+            var storedAmount = inventory.GetItemAmount(definition.Id);
+            if (amount < storedAmount)
+            {
+                // Insufficient items in inventory.
+                // TODO: use of definition.GetDisplayName() isn't localized here.
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your inventory.", ItemQuantity, definition.GetDisplayName(), storedAmount);
+                return;
+            }
+
             if (UseBankBuyPrice)
-                // The player is buying, use sell price
-                if (Buying) { ItemPrice = marketItem.SellPrice; }
                 // The player is selling, but the *Market* will *buy* it from the player at this price.
-                else { ItemPrice = marketItem.BuyPrice; }
+                ItemPrice = marketItem.BuyPrice;
 
             var accountToSell = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
             var transactionAmount = ItemPrice * ItemQuantity;
@@ -205,24 +196,16 @@
             if (SellToMerchant)
             {
                 // here we look up item price and transfer items and money as appropriate
-                if (Buying) {
-                    inventory.AddItems(amount, content);
-                    marketItem.Quantity -= ItemQuantity; // reduce Market content.
-                    account.BankBalance += transactionAmount;
-                    accountToSell.BankBalance -= transactionAmount;     
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "{1} units purchased. Transaction complete for {0}", transactionAmount, ItemQuantity);
-                }
-                else
-                {
-                    inventory.RemoveItemsOfType(amount, content);
-                    marketItem.Quantity += ItemQuantity; // increment Market content.
-                    account.BankBalance -= transactionAmount;
-                    accountToSell.BankBalance += transactionAmount;
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "{1} units sold. Transaction complete for {0}", transactionAmount, ItemQuantity);
-                }
-                account.Date = DateTime.Now;
+                inventory.RemoveItemsOfType(amount, definition.Id);
+                marketItem.Quantity += ItemQuantity; // increment Market content.
+
+                accountToBuy.BankBalance -= transactionAmount;
+                accountToBuy.Date = DateTime.Now;
+
+                accountToSell.BankBalance += transactionAmount;
                 accountToSell.Date = DateTime.Now;
 
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "{1} units sold. Transaction complete for {0}", transactionAmount, ItemQuantity);
                 return;
             }
             else if (OfferToMarket)
@@ -234,15 +217,22 @@
             else
             {
                 // is it a player then?             
-                if (account.SteamId == payingPlayer.SteamUserId)
+                if (accountToBuy.SteamId == payingPlayer.SteamUserId)
                 {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "Sorry, you cannot TRADE with yourself!");
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, you cannot sell to yourself!");
                     return;
                 }
 
-                // check if paying player is online?
-                var player = MyAPIGateway.Players.FindPlayerBySteamId(account.SteamId);
-                if (player == null)
+                // check if buying player is online and in range?
+                var buyingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(accountToBuy.SteamId);
+
+                if (EconomyConsts.LimitedRange && !Support.RangeCheck(buyingPlayer, payingPlayer))
+                {
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you are not in range of that player!");
+                    return;
+                }
+
+                if (buyingPlayer == null)
                 {
                     // TODO: other player offline.
 
@@ -254,15 +244,10 @@
                 }
             }
 
-            MessageClientTextMessage.SendMessage(SenderSteamId, "TRADE", "Not yet complete.");
+            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Not yet complete.");
 
 
 
-        }
-
-        private void ReturnInventoryItems()
-        {
-            // TODO: return the items to the seller inventory.
         }
     }
 }

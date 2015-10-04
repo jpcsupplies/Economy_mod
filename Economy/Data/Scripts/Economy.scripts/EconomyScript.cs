@@ -47,12 +47,12 @@ namespace Economy.scripts
         /// </summary>
         const string SellPattern = @"(?<command>/sell)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<qtyall>ALL))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>[^\s]*))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
 
-        // buy pattern no "all" required.   reusing sell  
-        // /buy 10 "iron ingot" || /buy 10 "iron ingot" 1 || /buy 10 "iron ingot" 1 fred
-        //
-        const string BuyPattern = @"(?<command>/buy)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<qtyall>ALL))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>[^\s]*))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
+        /// <summary>
+        ///  buy pattern no "all" required.   reusing sell  
+        /// /buy 10 "iron ingot" || /buy 10 "iron ingot" 1 || /buy 10 "iron ingot" 1 fred
+        /// </summary>
+        const string BuyPattern = @"(?<command>/buy)\s+(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>[^\s]*))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
 
-        //const string BuyPattern = @"(?<command>/buy)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>[^\s]*))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
         #endregion
 
         #region fields
@@ -261,14 +261,6 @@ namespace Economy.scripts
 
         #endregion
 
-        //check the seller is in range of a valid trade region or player
-        private bool RangeCheck(string targetname)
-        {
-            //lookup the location of target name and compare with location of seller
-            //there has to be an easy way to do this, the GPSs use it..
-            return true;
-        }
-
         private bool ProcessMessage(string messageText)
         {
             Match match; // used by the Regular Expression to test user input.
@@ -301,7 +293,6 @@ namespace Economy.scripts
             // buy command
             if (split[0].Equals("/buy", StringComparison.InvariantCultureIgnoreCase))
             {
-
                 //initially we should work only with a players inventory size
                 //worst case scenario overflow gets dropped at the players feet which if they
                 //are standing on a collector should be adequte for Alpha milestone compliance.
@@ -319,62 +310,59 @@ namespace Economy.scripts
                 //  if (they place an offer above/below market && have access to offers), post offer, and deduct funds
                 //  if they choose to cancel an offer, remove offer and return remaining money
 
-                decimal buyQuantity = 0;
-                string itemName = "";
-                decimal buyPrice = 1;
-                bool useBankSellPrice = false;
-                string SellerName = "";
-                bool BuyOffMerchant = false;
-                bool offerToMarket = false;
-
                 match = Regex.Match(messageText, BuyPattern, RegexOptions.IgnoreCase);
-                if (!EconomyConsts.LimitedRange || RangeCheck(match.Groups["user"].Value))
+                if (match.Success)
                 {
-                    if (match.Success)
+                    decimal buyPrice;
+                    bool useMarketSellPrice = false;
+                    bool buyFromMerchant = false;
+                    bool findOnMarket = false;
+
+                    string itemName = match.Groups["item"].Value;
+                    string sellerName = match.Groups["user"].Value;
+                    decimal buyQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
+                    if (!decimal.TryParse(match.Groups["price"].Value, out buyPrice))
+                        // We will use the they price they set at which they will buy from the player.
+                        useMarketSellPrice = true; // buyprice will be 0 because TryParse failed.
+
+                    if (string.IsNullOrEmpty(sellerName))
+                        buyFromMerchant = true;
+
+                    if (!useMarketSellPrice && buyFromMerchant)
                     {
-                        itemName = match.Groups["item"].Value;
-                        SellerName = match.Groups["user"].Value;
-                        buyQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
-                        if (!decimal.TryParse(match.Groups["price"].Value, out buyPrice))
-                            // We will use the they price they set at which they will sell to the player.
-                            useBankSellPrice = true;  // sellprice will be 0 because TryParse failed.
+                        // A price was specified, we actually intend to offer the item for sale at a set price to the market, not the bank.
+                        findOnMarket = true;
+                        buyFromMerchant = false;
+                    }
 
-                        if (string.IsNullOrEmpty(SellerName))
-                            BuyOffMerchant = true;
-
-                        if (!useBankSellPrice && BuyOffMerchant)
-                        {
-                            // A price was specified, we actually intend to post an offer to buy the item from the market, not the bank.
-                            offerToMarket = true;
-                            BuyOffMerchant = false;
-                        }
-                        MyObjectBuilder_Base content = null;
-                        string[] options;
-                        // Search for the item and find one match only, either by exact name or partial name.
-                        if (!Support.FindPhysicalParts(itemName, out content, out options))
-                        {
-                            if (options.Length == 0)
-                                MyAPIGateway.Utilities.ShowMessage("BUY", "Item name not found.");
-                            else if (options.Length > 10)
-                                MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
-                            else
-                                MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
-                            return true;
-                        }
-                        // TODO: add items into holding as part of the buy message, from container Id: inventory.Owner.EntityId.
-                        MessageSell.SendMessage(SellerName, buyQuantity, content.TypeId.ToString(), content.SubtypeName, buyPrice, useBankSellPrice, BuyOffMerchant, offerToMarket, true);
-
+                    MyObjectBuilder_Base content;
+                    string[] options;
+                    // Search for the item and find one match only, either by exact name or partial name.
+                    if (!Support.FindPhysicalParts(itemName, out content, out options))
+                    {
+                        if (options.Length == 0)
+                            MyAPIGateway.Utilities.ShowMessage("BUY", "Item name not found.");
+                        else if (options.Length > 10)
+                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
+                        else
+                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
                         return true;
                     }
 
-                    switch (split.Length)
-                    {
-                        case 1: //ie /buy
-                            MyAPIGateway.Utilities.ShowMessage("BUY", "/buy #1 #2 #3 #4");
-                            MyAPIGateway.Utilities.ShowMessage("BUY", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional where to buy from");
-                            return true;
-                    }
-                } else { MyAPIGateway.Utilities.ShowMessage("BUY", "Nothing nearby to trade with?"); return true; }
+                    MessageBuy.SendMessage(sellerName, buyQuantity, content.TypeId.ToString(), content.SubtypeName, buyPrice, useMarketSellPrice, buyFromMerchant, findOnMarket);
+                    return true;
+                }
+
+                switch (split.Length)
+                {
+                    case 1: //ie /buy
+                        MyAPIGateway.Utilities.ShowMessage("BUY", "/buy #1 #2 #3 #4");
+                        MyAPIGateway.Utilities.ShowMessage("BUY", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional where to buy from");
+                        return true;
+                }
+
+                MyAPIGateway.Utilities.ShowMessage("BUY", "Nothing nearby to trade with?");
+                return true;
             }
 
             // sell command
@@ -423,7 +411,7 @@ namespace Economy.scripts
                 bool sellAll;
                 string itemName = "";
                 decimal sellPrice = 1;
-                bool useBankBuyPrice = false;
+                bool useMarketBuyPrice = false;
                 string buyerName = "";
                 bool sellToMerchant = false;
                 bool offerToMarket = false;
@@ -431,165 +419,199 @@ namespace Economy.scripts
                 match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
                 //just have to figure out how to read coords and take stuff out of inventory and it should be pretty straightforward..
                 //first off is there any point in proceeding
-                //if (limited range setting is false or My location works out To be within 2500 of a valid trade area) {
-                //bool RangeCheck = true; //placeholder until private bool RangeCheck(string targetname) {} can be made
-                if (!EconomyConsts.LimitedRange || RangeCheck(match.Groups["user"].Value))
+
+
+                //in this release the only valid trade area is the default 0:0:0 area of map or other players?
+                //but should still go through the motions so backend is ready
+                //by default in initialisation we alerady created a bank entry for the NPC
+                //now we take our regex fields populated above and start checking
+                //what the player seems to want us to do - switch needs to be converted to the regex populated fields
+                //using split at the moment for debugging and structruing desired logic
+
+                //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
+                //then populate the other fields.  
+                //string reply = "match " + match.Groups["qty"].Value + match.Groups["item"].Value + match.Groups["user"].Value + match.Groups["price"].Value;
+                if (match.Success)
                 {
-                    //in this release the only valid trade area is the default 0:0:0 area of map or other players?
-                    //but should still go through the motions so backend is ready
-                    //by default in initialisation we already created a bank entry for the NPC
-                    //now we take our regex fields populated above and start checking
-                    //what the player seems to want us to do - switch needs to be converted to the regex populated fields
-                    //using split at the moment for debugging and structruing desired logic
+                    itemName = match.Groups["item"].Value;
+                    buyerName = match.Groups["user"].Value;
+                    sellAll = match.Groups["qtyall"].Value.Equals("all", StringComparison.InvariantCultureIgnoreCase);
+                    if (!sellAll)
+                        sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
+                    if (!decimal.TryParse(match.Groups["price"].Value, out sellPrice))
+                        // We will use the they price they set at which they will buy from the player.
+                        useMarketBuyPrice = true;  // sellprice will be 0 because TryParse failed.
 
-                    //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
-                    //then populate the other fields.  
-                    //string reply = "match " + match.Groups["qty"].Value + match.Groups["item"].Value + match.Groups["user"].Value + match.Groups["price"].Value;
-                    if (match.Success)
+                    if (string.IsNullOrEmpty(buyerName))
+                        sellToMerchant = true;
+
+                    if (!useMarketBuyPrice && sellToMerchant)
                     {
-                        itemName = match.Groups["item"].Value;
-                        buyerName = match.Groups["user"].Value;
-                        sellAll = match.Groups["qtyall"].Value.Equals("all", StringComparison.InvariantCultureIgnoreCase);
-                        if (!sellAll)
-                            sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
-                        if (!decimal.TryParse(match.Groups["price"].Value, out sellPrice))
-                            // We will use the they price they set at which they will buy from the player.
-                            useBankBuyPrice = true;  // sellprice will be 0 because TryParse failed.
+                        // A price was specified, we actually intend to offer the item for sale at a set price to the market, not the bank.
+                        offerToMarket = true;
+                        sellToMerchant = false;
+                    }
 
-                        if (string.IsNullOrEmpty(buyerName))
-                            sellToMerchant = true;
+                    MyObjectBuilder_Base content = null;
+                    string[] options;
+                    // Search for the item and find one match only, either by exact name or partial name.
+                    if (!Support.FindPhysicalParts(itemName, out content, out options))
+                    {
+                        if (options.Length == 0)
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "Item name not found.");
+                        else if (options.Length > 10)
+                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
+                        else
+                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                        return true;
+                    }
 
-                        if (!useBankBuyPrice && sellToMerchant)
+                    if (sellAll)
+                    {
+                        var character = MyAPIGateway.Session.Player.GetCharacter();
+                        // TODO: may have to recheck that character is not null.
+                        var inventoryOwnwer = (IMyInventoryOwner)character;
+                        var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
+                        sellQuantity = (decimal)inventory.GetItemAmount(content.GetId());
+                    }
+
+                    // TODO: add items into holding as part of the sell message, from container Id: inventory.Owner.EntityId.
+                    MessageSell.SendMessage(buyerName, sellQuantity, content.TypeId.ToString(), content.SubtypeName, sellPrice, useMarketBuyPrice, sellToMerchant, offerToMarket);
+
+                    //    MyAPIGateway.Utilities.ShowMessage("SELL", reply);
+                    return true;
+                }
+
+
+                switch (split.Length)
+                {
+                    case 1: //ie /sell
+                        MyAPIGateway.Utilities.ShowMessage("SELL", "/sell #1 #2 #3 #4");
+                        MyAPIGateway.Utilities.ShowMessage("SELL", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional where to sell to");
+                        return true;
+                    case 2: //ie /sell all or /sell cancel or /sell accept or /sell deny
+                        if (split[1].Equals("cancel", StringComparison.InvariantCultureIgnoreCase))
                         {
-                            // A price was specified, we actually intend to offer the item for sale at a set price to the market, not the bank.
-                            offerToMarket = true;
-                            sellToMerchant = false;
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "Cancel Not yet implemented in this release");
+                            return true;
+                        }
+                        if (split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "all not yet implemented - sell all carried items");
+                            return true;
+                        }
+                        if (split[1].Equals("accept", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "accept not yet implemented");
+                            return true;
+                        }
+                        if (split[1].Equals("deny", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "deny not yet implemented");
+                            return true;
+                        }
+                        return false;
+                    default: //must be more than 2
+                        //ie /sell all uranium || /sell 1 uranium || /sell 1 uranium 50 || /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
+                        //need an item search sub for this bit to compliment the regex and for neatness
+                        //if (split[3] == null) split[3]= "NPC";
+                        if (split.Length == 3 && ((decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)))) //eg /sell 3 iron
+                        {
+                            //sellqty is now split[1] as decimal -
+                            if (sellQuantity == 0 && split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                //in this case try parse failed but "all" matched..
+                                //if split[1] = all then we would need to sell every specified item the player is carrying
+                                //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
+                            }
+
+                            if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
+                            //sell price is set by price book in this scenario, and we assume we are selling to the NPC market
+                            buyerName = EconomyConsts.NpcMerchantName;
+                        }
+                        else
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty wasnt valid?");
+                            return false;
                         }
 
-                        MyObjectBuilder_Base content = null;
+                        //eg /sell 3 iron 50
+                        if (split.Length == 4 && (decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) && decimal.TryParse(split[3], out sellPrice))
+                        {
+                            //sellqty is now split[1] as decimal
+                            if (sellQuantity == 0 && split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                //in this case try parse failed but "all" matched..
+                                //if split[1] = all then we would need to sell every specified item the player is carrying
+                                //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
+                            }
+                            if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
+                            //sellprice is now split[3], and we assume we are posting an offer to the stockmarket not selling blindly to npc
+                            buyerName = "OFFER";
+                        }
+                        else
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt valid?");
+                            return false;
+                        }
+
+                        //eg /sell 3 iron 50 fred
+                        if (split.Length == 5 && (decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) && decimal.TryParse(split[3], out sellPrice))
+                        {
+                            //sellqty is now split[1] as decimal
+                            if (sellQuantity == 0 && split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                //in this case try parse failed but "all" matched..
+                                //if split[1] = all then we would need to sell every specified item the player is carrying
+                                //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
+                            }
+                            if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
+                            //sellprice is now split[3]
+                            buyerName = split[4];
+                            //this scenario we assume we sell to a player
+                        }
+                        else
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt valid?");
+                            return false;
+                        }
+
+                        //at this point we should have enough information to make a sale
+                        string reply = "Debug: Selling " + sellQuantity + "x " + itemName + " to " + buyerName + " for " + (sellQuantity * sellPrice);
+                        MyAPIGateway.Utilities.ShowMessage("SELL", reply);
+                        //---------  now this bit of code is interesting we get id of item
+                        MyObjectBuilder_Base content;
                         string[] options;
                         // Search for the item and find one match only, either by exact name or partial name.
                         if (!Support.FindPhysicalParts(itemName, out content, out options))
                         {
                             if (options.Length == 0)
                                 MyAPIGateway.Utilities.ShowMessage("SELL", "Item name not found.");
-                            else if (options.Length > 10)
-                                MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
                             else
                                 MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
                             return true;
                         }
+                        reply = content.TypeId.ToString() + " - " + content.SubtypeName + " - " + MarketManager.GetDisplayName(content.TypeId.ToString(), content.SubtypeName);
+                        MyAPIGateway.Utilities.ShowMessage("SELL", reply);
+                        //---------
 
-                        if (sellAll)
+                        if (buyerName != EconomyConsts.NpcMerchantName && buyerName != "OFFER")
                         {
-                            var character = MyAPIGateway.Session.Player.GetCharacter();
-                            // TODO: may have to recheck that character is not null.
-                            var inventoryOwnwer = (IMyInventoryOwner)character;
-                            var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
-                            sellQuantity = (decimal)inventory.GetItemAmount(content.GetId());
+                            //must be selling to a player (or faction ?)
+                            //check the item to sell is a valid product, do usual qty type checks etc
+                            //check the player / faction exists etc etc
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We are selling to a player send request prompt or if it is a faction check they are trading this item");
                         }
-
-                        // TODO: add items into holding as part of the sell message, from container Id: inventory.Owner.EntityId.
-                        MessageSell.SendMessage(buyerName, sellQuantity, content.TypeId.ToString(), content.SubtypeName, sellPrice, useBankBuyPrice, sellToMerchant, offerToMarket, false);
-
-                        //    MyAPIGateway.Utilities.ShowMessage("SELL", reply);
+                        else
+                        {
+                            if (buyerName == EconomyConsts.NpcMerchantName) { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be selling to NPC - skip prompts sell immediately at price book price"); }
+                            if (buyerName == "OFFER") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be posting a sell offer to stockmarket - skip prompts post offer UNLESS we match a buy offer at the same price then process that"); }
+                        }
                         return true;
-                    }
-
-
-                    switch (split.Length)
-                    {
-                        case 1: //ie /sell
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "/sell #1 #2 #3 #4");
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional where to sell to");
-                            return true;
-                        case 2: //ie /sell all or /sell cancel or /sell accept or /sell deny
-                            if (split[1].Equals("cancel", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "Cancel Not yet implemented in this release"); return true; }
-                            if (split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "all not yet implemented - sell all carried items"); return true; }
-                            if (split[1].Equals("accept", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "accept not yet implemented"); return true; }
-                            if (split[1].Equals("deny", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SELL", "deny not yet implemented"); return true; }
-                            return false;
-                        default: //must be more than 2
-                            //ie /sell all uranium || /sell 1 uranium || /sell 1 uranium 50 || /sell 1 uranium 50 bob to offer 1 uranium to bob for 50
-                            //need an item search sub for this bit to compliment the regex and for neatness
-                            //if (split[3] == null) split[3]= "NPC";
-                            if (split.Length == 3 && ((decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))))//eg /sell 3 iron
-                            {   //sellqty is now split[1] as decimal -
-                                if (sellQuantity == 0 && split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
-                                {  //in this case try parse failed but "all" matched..
-                                    //if split[1] = all then we would need to sell every specified item the player is carrying
-                                    //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
-                                }
-
-                                if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
-                                //sell price is set by price book in this scenario, and we assume we are selling to the NPC market
-                                buyerName = EconomyConsts.NpcMerchantName;
-                            }
-                            else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty wasnt valid?"); return false; }
-
-                            //eg /sell 3 iron 50
-                            if (split.Length == 4 && (decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) && decimal.TryParse(split[3], out sellPrice))
-                            {   //sellqty is now split[1] as decimal
-                                if (sellQuantity == 0 && split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
-                                {  //in this case try parse failed but "all" matched..
-                                    //if split[1] = all then we would need to sell every specified item the player is carrying
-                                    //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
-                                }
-                                if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
-                                //sellprice is now split[3], and we assume we are posting an offer to the stockmarket not selling blindly to npc
-                                buyerName = "OFFER";
-                            }
-                            else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt valid?"); return false; }
-
-                            //eg /sell 3 iron 50 fred
-                            if (split.Length == 5 && (decimal.TryParse(split[1], out sellQuantity) || split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase)) && decimal.TryParse(split[3], out sellPrice))
-                            {   //sellqty is now split[1] as decimal
-                                if (sellQuantity == 0 && split[1].Equals("all", StringComparison.InvariantCultureIgnoreCase))
-                                {  //in this case try parse failed but "all" matched..
-                                    //if split[1] = all then we would need to sell every specified item the player is carrying
-                                    //sellQuantity = TotalPlayerCarriedQuantityOf(match.Groups["item"].Value);
-                                }
-                                if (string.IsNullOrEmpty(itemName)) { itemName = split[2]; } //assume our regex match failed but we somehow fell here in the split check - maybe be unnecessary
-                                //sellprice is now split[3]
-                                buyerName = split[4];
-                                //this scenario we assume we sell to a player
-                            }
-                            else { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: qty or price wasnt valid?"); return false; }
-
-                            //at this point we should have enough information to make a sale
-                            string reply = "Debug: Selling " + sellQuantity + "x " + itemName + " to " + buyerName + " for " + (sellQuantity * sellPrice);
-                            MyAPIGateway.Utilities.ShowMessage("SELL", reply);
-                            //---------  now this bit of code is interesting we get id of item
-                            MyObjectBuilder_Base content;
-                            string[] options;
-                            // Search for the item and find one match only, either by exact name or partial name.
-                            if (!Support.FindPhysicalParts(itemName, out content, out options))
-                            {
-                                if (options.Length == 0)
-                                    MyAPIGateway.Utilities.ShowMessage("SELL", "Item name not found.");
-                                else
-                                    MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
-                                return true;
-                            }
-                            reply = content.TypeId.ToString() + " - " + content.SubtypeName + " - " + MarketManager.GetDisplayName(content.TypeId.ToString(), content.SubtypeName);
-                            MyAPIGateway.Utilities.ShowMessage("SELL", reply);
-                            //---------
-
-                            if (buyerName != EconomyConsts.NpcMerchantName && buyerName != "OFFER")
-                            { //must be selling to a player (or faction ?)
-                                //check the item to sell is a valid product, do usual qty type checks etc
-                                //check the player / faction exists etc etc
-                                MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We are selling to a player send request prompt or if it is a faction check they are trading this item");
-                            }
-                            else
-                            {
-                                if (buyerName == EconomyConsts.NpcMerchantName) { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be selling to NPC - skip prompts sell immediately at price book price"); }
-                                if (buyerName == "OFFER") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be posting a sell offer to stockmarket - skip prompts post offer UNLESS we match a buy offer at the same price then process that"); }
-                            }
-                            return true;
-                    }
                 }
-                else { MyAPIGateway.Utilities.ShowMessage("SELL", "Nothing/Nobody nearby to trade with!"); return true; }
+
+                MyAPIGateway.Utilities.ShowMessage("SELL", "Nothing/Nobody nearby to trade with!");
+                return true;
             }
 
             // seen command

@@ -204,7 +204,7 @@
                 accountToBuy.BankBalance -= transactionAmount;
                 accountToBuy.Date = DateTime.Now;
 
-                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "{1} units bought. Transaction complete for {0}", transactionAmount, ItemQuantity);
+                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "{1} units purchased. Transaction complete for {0}", transactionAmount, ItemQuantity);
                 return;
             }
             else if (FindOnMarket)
@@ -222,9 +222,16 @@
                     return;
                 }
 
-                // check if paying player is online?
-                var player = MyAPIGateway.Players.FindPlayerBySteamId(accountToSell.SteamId);
-                if (player == null)
+                // check if selling player is online and in range?
+                var payingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(accountToSell.SteamId);
+
+                if (EconomyConsts.LimitedRange && !Support.RangeCheck(buyingPlayer, payingPlayer))
+                {
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you are not in range of that player!");
+                    return;
+                }
+
+                if (payingPlayer == null)
                 {
                     // TODO: other player offline.
 

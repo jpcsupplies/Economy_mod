@@ -1,11 +1,12 @@
 ﻿namespace Economy.scripts
 {
-    using VRage;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
+    using Sandbox.ModAPI;
+    using VRage;
     using VRage.ObjectBuilders;
 
     public static class Support
@@ -195,6 +196,21 @@
             objectBuilder = null;
             options = new string[0];
             return false;
+        }
+
+        /// <summary>
+        /// check the seller is in range of a valid trade region or player
+        /// </summary>
+        /// <param name="player1"></param>
+        /// <param name="player2"></param>
+        /// <returns></returns>
+        public static bool RangeCheck(IMyPlayer player1, IMyPlayer player2)
+        {
+            //if (limited range setting is false or My location works out To be within 2500 of a valid trade area)
+            //lookup the location of target name and compare with location of seller
+            //there has to be an easy way to do this, the GPSs use it..
+            // TODO: implement.
+            return true;
         }
     }
 }
