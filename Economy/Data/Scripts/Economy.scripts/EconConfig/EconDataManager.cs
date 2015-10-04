@@ -109,9 +109,9 @@ namespace Economy.scripts.EconConfig
     <MarketStruct>
       <TypeId>MyObjectBuilder_Component</TypeId>
       <SubtypeName>MetalGrid</SubtypeName>
-      <Quantity>58.72</Quantity>
+      <Quantity>1000</Quantity>
       <SellPrice>52.19</SellPrice>
-      <BuyPrice>1000</BuyPrice>
+      <BuyPrice>58.72</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
     <MarketStruct>
