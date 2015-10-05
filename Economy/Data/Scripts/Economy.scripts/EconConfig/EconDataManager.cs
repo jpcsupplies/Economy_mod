@@ -78,7 +78,7 @@ namespace Economy.scripts.EconConfig
       <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
       <SubtypeName>NATO_5p56x45mm</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>2.35</SellPrice>
+      <SellPrice>102.35</SellPrice>
       <BuyPrice>2.09</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
@@ -86,7 +86,7 @@ namespace Economy.scripts.EconConfig
       <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
       <SubtypeName>NATO_25x184mm</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>84.78</SellPrice>
+      <SellPrice>184.78</SellPrice>
       <BuyPrice>75.36</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
@@ -94,7 +94,7 @@ namespace Economy.scripts.EconConfig
       <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
       <SubtypeName>Missile200mm</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>59.10 </SellPrice>
+      <SellPrice>159.10 </SellPrice>
       <BuyPrice>52.54</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
@@ -238,7 +238,7 @@ namespace Economy.scripts.EconConfig
       <TypeId>MyObjectBuilder_Component</TypeId>
       <SubtypeName>Explosives</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>46.38</SellPrice>
+      <SellPrice>146.38</SellPrice>
       <BuyPrice>41.23</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
@@ -374,7 +374,7 @@ namespace Economy.scripts.EconConfig
       <TypeId>MyObjectBuilder_Ingot</TypeId>
       <SubtypeName>Magnesium</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>12.30</SellPrice>
+      <SellPrice>112.30</SellPrice>
       <BuyPrice>10.93</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
@@ -422,7 +422,7 @@ namespace Economy.scripts.EconConfig
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>AutomaticRifleItem</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>7.35</SellPrice>
+      <SellPrice>107.35</SellPrice>
       <BuyPrice>6.53</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
