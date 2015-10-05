@@ -117,7 +117,7 @@
 
             // Who are we selling to?
             BankAccountStruct accountToBuy;
-            if (SellToMerchant) // && (merchant has enough money  || !EconomyConsts.LimitedSupply)
+            if (SellToMerchant) 
                 accountToBuy = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
             else
                 accountToBuy = AccountManager.FindAccount(ToUserName);
@@ -193,19 +193,25 @@
             if (!payingPlayer.IsAdmin())
                 transactionAmount = Math.Abs(transactionAmount);
 
-            if (SellToMerchant)
+            if (SellToMerchant)// && (merchant has enough money  || !EconomyConsts.LimitedSupply)
+                //this is also a quick fix ideally npc should buy what it can afford and the rest is posted as a sell offer
             {
-                // here we look up item price and transfer items and money as appropriate
-                inventory.RemoveItemsOfType(amount, definition.Id);
-                marketItem.Quantity += ItemQuantity; // increment Market content.
+                if (accountToBuy.BankBalance >= transactionAmount || !EconomyConsts.LimitedSupply)
+                {
+                    // here we look up item price and transfer items and money as appropriate
+                    inventory.RemoveItemsOfType(amount, definition.Id);
+                    marketItem.Quantity += ItemQuantity; // increment Market content.
 
-                accountToBuy.BankBalance -= transactionAmount;
-                accountToBuy.Date = DateTime.Now;
+                    accountToBuy.BankBalance -= transactionAmount;
+                    accountToBuy.Date = DateTime.Now;
 
-                accountToSell.BankBalance += transactionAmount;
-                accountToSell.Date = DateTime.Now;
+                    accountToSell.BankBalance += transactionAmount;
+                    accountToSell.Date = DateTime.Now;
 
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "{1} units of '{2}' sold. Transaction complete for {0}", transactionAmount, ItemQuantity, definition.GetDisplayName());
+            
+                }
+                else
+                {  MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "NPC can't afford {0} worth of {2} ({1} units) NPC only has {3} funds!", transactionAmount, ItemQuantity, definition.GetDisplayName(), accountToBuy.BankBalance);  }
                 return;
             }
             else if (OfferToMarket)

@@ -29,7 +29,7 @@
         /// <remarks>This will be a bool that configures if buying and selling from 0.0.0 trade region 
         /// should be unlimited supply of goods and funds or limited to what has been bought, sold and 
         /// earn by the NPC</remarks>
-        // public const bool LimitedSupply = True;
+        public const bool LimitedSupply = true;
 
         /// <summary>
         /// The internal id we used to identify the Merchant's server account.
