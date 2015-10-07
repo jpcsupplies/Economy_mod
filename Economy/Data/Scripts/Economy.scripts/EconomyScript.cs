@@ -596,7 +596,7 @@ namespace Economy.scripts
                 {
                     //did we just type ehelp? show what else they can get help on
                     //might be better to make a more detailed help reply here using mission window later on
-                    MyAPIGateway.Utilities.ShowMessage("help", "Commands: help, buy, sell, bal, pay, seen");
+                    MyAPIGateway.Utilities.ShowMessage("help", "Commands: ehelp, buy, sell, bal, pay, seen");
                     if (MyAPIGateway.Session.Player.IsAdmin())
                     {
                         MyAPIGateway.Utilities.ShowMessage("admin", "Commands: accounts, bal player, reset, pay player +/-any_amount");
