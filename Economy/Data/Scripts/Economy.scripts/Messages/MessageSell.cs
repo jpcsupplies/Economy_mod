@@ -207,7 +207,7 @@
 
                     accountToSell.BankBalance += transactionAmount;
                     accountToSell.Date = DateTime.Now;
-
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName()); 
             
                 }
                 else
