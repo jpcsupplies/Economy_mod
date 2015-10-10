@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using Messages;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using VRage;
@@ -126,5 +127,79 @@
         }
 
         #endregion
+
+        public static void CreateSellOrder(ulong sellerId, string goodsTypeId, string goodsSubtypeName, decimal quantity, decimal price)
+        {
+            var order = new OrderBookStruct
+            {
+                Created = DateTime.Now,
+                TraderId = sellerId,
+                TypeId = goodsTypeId,
+                SubtypeName = goodsSubtypeName,
+                TradeState = TradeState.Sell,
+                Quantity = quantity,
+                Price = price,
+                OptionalId = ""
+            };
+            EconomyScript.Instance.Data.OrderBook.Add(order);
+        }
+
+        public static void CreateTradeOffer(ulong sellerId, string goodsTypeId, string goodsSubtypeName, decimal quantity, decimal price, ulong targetPlayer)
+        {
+            var order = new OrderBookStruct
+            {
+                Created = DateTime.Now,
+                TraderId = sellerId,
+                TypeId = goodsTypeId,
+                SubtypeName = goodsSubtypeName,
+                TradeState = TradeState.SellDirectPlayer,
+                Quantity = quantity,
+                Price = price,
+                OptionalId = targetPlayer.ToString()
+            };
+
+            EconomyScript.Instance.Data.OrderBook.Add(order);
+        }
+
+        public static void CheckTradeTimeouts()
+        {
+            var processingTime = DateTime.Now;
+            var expiration = new TimeSpan(0, 5, 0);
+
+            if (EconomyScript.Instance.Data == null || EconomyScript.Instance.Data.OrderBook.Count == 0)
+                return;
+
+            var cancellations = EconomyScript.Instance.Data.OrderBook.Where(order => processingTime - order.Created > expiration
+            && (order.TradeState == TradeState.Sell || order.TradeState == TradeState.SellDirectPlayer)).ToArray();
+            if (cancellations.Length == 0)
+                return;
+
+            EconomyScript.Instance.ServerLogger.Write("CheckTradeTimeouts: {0} cancellations", cancellations.Length);
+
+            foreach (var order in cancellations)
+            {
+                switch (order.TradeState)
+                {
+                    case TradeState.Sell:
+                        // Change the TradeState first, to prevent other calls into this.
+                        order.TradeState = TradeState.SellTimedout;
+                        MessageClientTextMessage.SendMessage(order.TraderId, "SELL", "Your offer has timed out. Type '/sell collect' to collect your goods.");
+                        break;
+
+                    case TradeState.SellDirectPlayer:
+                        // Change the TradeState first, to prevent other calls into this.
+                        order.TradeState = TradeState.SellTimedout;
+                        MessageClientTextMessage.SendMessage(order.TraderId, "SELL", "Your offer has timed out. Type '/sell collect' to collect your goods.");
+
+                        ulong tradePartner;
+                        if (ulong.TryParse(order.OptionalId, out tradePartner))
+                        {
+                            var sellingAccount = EconomyScript.Instance.Data.Accounts.First(a => a.SteamId == order.TraderId);
+                            MessageClientTextMessage.SendMessage(tradePartner, "SELL", "The offer from {0} has now expired.", sellingAccount.NickName);
+                        }
+                        break;
+                }
+            }
+        }
     }
 }

@@ -117,7 +117,7 @@
 
             // Who are we selling to?
             BankAccountStruct accountToBuy;
-            if (SellToMerchant) 
+            if (SellToMerchant)
                 accountToBuy = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
             else
                 accountToBuy = AccountManager.FindAccount(ToUserName);
@@ -207,11 +207,12 @@
 
                     accountToSell.BankBalance += transactionAmount;
                     accountToSell.Date = DateTime.Now;
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName()); 
-            
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName());
                 }
                 else
-                {  MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "NPC can't afford {0} worth of {2} ({1} units) NPC only has {3} funds!", transactionAmount, ItemQuantity, definition.GetDisplayName(), accountToBuy.BankBalance);  }
+                {
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "NPC can't afford {0} worth of {2} ({1} units) NPC only has {3} funds!", transactionAmount, ItemQuantity, definition.GetDisplayName(), accountToBuy.BankBalance);
+                }
                 return;
             }
             else if (OfferToMarket)
@@ -225,8 +226,9 @@
                 // is it a player then?             
                 if (accountToBuy.SteamId == payingPlayer.SteamUserId)
                 {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, you cannot sell to yourself!");
-                    return;
+                    // commented out for testing with myself.
+                    //MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, you cannot sell to yourself!");
+                    //return;
                 }
 
                 // check if buying player is online and in range?
@@ -238,16 +240,41 @@
                     return;
                 }
 
+
+
+
+                // write to Trade offer table.
+                MarketManager.CreateTradeOffer(SenderSteamId, ItemTypeId, ItemSubTypeName, ItemQuantity, transactionAmount, accountToBuy.SteamId);
+
+                // remove items from inventory.
+                inventory.RemoveItemsOfType(amount, definition.Id);
+
+                // if other player online, send message.
                 if (buyingPlayer == null)
                 {
                     // TODO: other player offline.
-
+                    // TODO: we need a way to queue up messages.
+                    // While you were gone....
+                    // You missed an offer for 4000Kg of Gold for 20,000.
                 }
                 else
                 {
                     // TODO: other player is online.
-
+                    MessageClientTextMessage.SendMessage(accountToBuy.SteamId, "SELL", 
+                        "You have received an offer from {0} to buy {1} {2} at price {3} - type '/sell accept' to accept offer (or '/sell deny' to reject and return ore to seller)", 
+                        SenderDisplayName, ItemQuantity, definition.GetDisplayName(), transactionAmount);
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Your offer has been sent.");
                 }
+                // send message to seller to confirm action, "Your Trade offer has been submitted, and the goods removed from you inventory."
+
+                // Later actions..
+                // https://github.com/jpcsupplies/Economy_mod/issues/31
+                // https://github.com/jpcsupplies/Economy_mod/issues/46
+                // "/sell cancel"  to cancel trade offer. Did you mistype a number?  
+                // Returned goods need to be queued.
+                // if trade offer rejected, message back "Your Trade offer of xxx to yyy has been rejected."  if first item in queue, "Type '/return' to receive your goods back."
+                // if trade offer times out, message back "Your Trade offer of xxx to yyy has timed."  if first item in queue, "Type '/return' to receive your goods back."
+                // if trade offer accepted, finish funds trasfer. message back "Your Trade offer of xxx to yyy has been accepted. You have recieved zzzz"
             }
 
             // this is a fall through from the above conditions not yet complete.

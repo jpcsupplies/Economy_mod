@@ -61,6 +61,7 @@ namespace Economy.scripts
         private bool _isClientRegistered;
         private bool _isServerRegistered;
         private bool _delayedConnectionRequest;
+        private Timer _timerEvents;
 
         private readonly Action<byte[]> _messageHandler = new Action<byte[]>(HandleMessage);
 
@@ -164,6 +165,12 @@ namespace Economy.scripts
 
             Config = EconDataManager.LoadConfig(); // Load config first.
             Data = EconDataManager.LoadData(Config.DefaultPrices);
+
+            // start the timer last, as all data should be loaded before this point.
+            ServerLogger.Write("Attaching Event timer.");
+            _timerEvents = new Timer(1000);
+            _timerEvents.Elapsed += TimerEventsOnElapsed;
+            _timerEvents.Start();
         }
 
         #endregion
@@ -199,6 +206,14 @@ namespace Economy.scripts
             {
                 ServerLogger.Write("UnregisterMessageHandler");
                 MyAPIGateway.Multiplayer.UnregisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
+
+                if (_timerEvents != null)
+                {
+                    ServerLogger.Write("Stopping Event timer.");
+                    _timerEvents.Stop();
+                    _timerEvents.Elapsed -= TimerEventsOnElapsed;
+                    _timerEvents = null;
+                }
 
                 Data = null;
 
@@ -287,6 +302,16 @@ namespace Economy.scripts
         void DelayedConnectionRequestTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             _delayedConnectionRequest = true;
+        }
+
+        private void TimerEventsOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
+        {
+            // DO NOT SET ANY IN GAME API CALLS HERE. AT ALL!
+            MyAPIGateway.Utilities.InvokeOnGameThread(delegate ()
+            {
+                // Any processing needs to occur in here, as it will be on the main thread, and hopefully thread safe.
+                MarketManager.CheckTradeTimeouts();
+            });
         }
 
         #endregion
@@ -486,10 +511,6 @@ namespace Economy.scripts
 
                 switch (split.Length)
                 {
-                    case 1: //ie /sell
-                        MyAPIGateway.Utilities.ShowMessage("SELL", "/sell #1 #2 #3 #4");
-                        MyAPIGateway.Utilities.ShowMessage("SELL", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional where to sell to");
-                        return true;
                         // everything below here is not used but kept for reference for later functions
                     case 2: //ie /sell all or /sell cancel or /sell accept or /sell deny
                         if (split[1].Equals("cancel", StringComparison.InvariantCultureIgnoreCase))
@@ -508,7 +529,7 @@ namespace Economy.scripts
                             return true;
                         }
                         return false;
-                    default: //must be more than 2 and invalid
+                    //default: //must be more than 2 and invalid
 /*                        if (buyerName != EconomyConsts.NpcMerchantName && buyerName != "OFFER")
                         {
                             //must be selling to a player (or faction ?)
@@ -521,10 +542,11 @@ namespace Economy.scripts
                             if (buyerName == EconomyConsts.NpcMerchantName) { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be selling to NPC - skip prompts sell immediately at price book price"); }
                             if (buyerName == "OFFER") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be posting a sell offer to stockmarket - skip prompts post offer UNLESS we match a buy offer at the same price then process that"); }
                         }*/
-                        return false; 
+                        //return false; 
                 }
 
-                MyAPIGateway.Utilities.ShowMessage("SELL", "Nothing/Nobody nearby to trade with!");
+                MyAPIGateway.Utilities.ShowMessage("SELL", "/sell #1 #2 #3 #4");
+                MyAPIGateway.Utilities.ShowMessage("SELL", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional where to sell to");
                 return true;
             }
 

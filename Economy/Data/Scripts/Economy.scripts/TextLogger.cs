@@ -101,6 +101,7 @@
 
         public void Terminate()
         {
+            _isInitialized = false;
             if (_logWriter != null)
             {
                 _logWriter.Flush();

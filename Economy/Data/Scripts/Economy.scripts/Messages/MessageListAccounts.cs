@@ -25,6 +25,8 @@
                 foreach (var account in EconomyScript.Instance.Data.Accounts.OrderBy(s => s.NickName))
                 {
                     description.AppendFormat("#{0}: {1} : {2} : {3}\r\n", index++, account.NickName, account.BankBalance, account.Date);
+
+                    // TODO: https://github.com/jpcsupplies/Economy_mod/issues/54
                 }
 
                 MessageClientDialogMessage.SendMessage(SenderSteamId, "List Accounts",

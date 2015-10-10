@@ -1,10 +1,9 @@
-﻿using System.Linq;
-
-namespace Economy.scripts.EconConfig
+﻿namespace Economy.scripts.EconConfig
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using Sandbox.ModAPI;
 
     public static class EconDataManager
@@ -641,6 +640,7 @@ namespace Economy.scripts.EconConfig
             EconDataStruct data = new EconDataStruct();
             data.Accounts = new List<BankAccountStruct>();
             data.MarketItems = new List<MarketStruct>();
+            data.OrderBook = new List<OrderBookStruct>();
             return data;
         }
 

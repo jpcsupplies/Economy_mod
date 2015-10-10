@@ -27,6 +27,8 @@
                 reply = "Player not found";
             else
                 reply = "Player " + account.NickName + " Last seen: " + account.Date;
+                //reply = string.Format("Player {0} Last seen: {1:%d} days {1:hh\\:mm\\:ss}", account.NickName, (account.Date - DateTime.Now));
+            // TODO: https://github.com/jpcsupplies/Economy_mod/issues/54
 
             MessageClientTextMessage.SendMessage(SenderSteamId, "SEEN", reply);
 

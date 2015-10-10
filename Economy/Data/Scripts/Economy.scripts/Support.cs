@@ -7,7 +7,9 @@
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using VRage;
+    using VRage.ModAPI;
     using VRage.ObjectBuilders;
+    using VRageMath;
 
     public static class Support
     {
@@ -209,8 +211,27 @@
             //if (limited range setting is false or My location works out To be within 2500 of a valid trade area)
             //lookup the location of target name and compare with location of seller
             //there has to be an easy way to do this, the GPSs use it..
-            // TODO: implement.
-            return true;
+            // TODO: implement. https://github.com/jpcsupplies/Economy_mod/issues/49
+
+            var character1 = player1.GetCharacter();
+            var character2 = player2.GetCharacter();
+
+            if (character1 == null || character2 == null)
+                // one player or the other doesn't exist in game.
+                return false;
+
+            Vector3D position1 = ((IMyEntity)character1).GetPosition();
+            Vector3D position2 = ((IMyEntity)character2).GetPosition();
+
+            // TODO: check broadcast antenna. There doesn't appear to be any accessible API to help at this stage.
+            // MyAntennaSystem.GetPlayerRelayedBroadcasters(MyCharacter playerCharacter, MyEntity interactedEntityRepresentative, HashSet<MyDataBroadcaster> output)
+            // MyAntennaSystem.CheckConnection(MyIdentity sender, MyIdentity receiver)
+            // MySyncCharacter.CheckPlayerConnection(ulong senderSteamId, ulong receiverSteamId)
+
+            var distance = Vector3D.Distance(position1, position2);
+
+            // so did it come within our default range
+            return distance <= 2500;
         }
     }
 }

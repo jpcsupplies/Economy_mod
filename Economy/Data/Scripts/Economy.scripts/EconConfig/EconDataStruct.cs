@@ -7,5 +7,7 @@
         public List<BankAccountStruct> Accounts;
 
         public List<MarketStruct> MarketItems;
+
+        public List<OrderBookStruct> OrderBook;
     }
 }
