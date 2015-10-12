@@ -119,7 +119,7 @@
             }
 
             // prefix the search term with 'ingot' to find this ingot name.
-            if (itemNames.Length > 0 && itemNames[0].Equals("ingot", StringComparison.InvariantCultureIgnoreCase))
+            if (itemNames.Length > 1 && itemNames[0].Equals("ingot", StringComparison.InvariantCultureIgnoreCase))
             {
                 var findName = itemName.Substring(6).Trim();
 
