@@ -19,6 +19,7 @@ namespace Economy.scripts
     using System.Threading.Tasks;
     using System.Timers;
     using Economy.scripts.EconConfig;
+    using Economy.scripts.Management;
     using Economy.scripts.Messages;
     using Sandbox.Common;
     using Sandbox.Common.Components;
@@ -311,6 +312,7 @@ namespace Economy.scripts
             {
                 // Any processing needs to occur in here, as it will be on the main thread, and hopefully thread safe.
                 MarketManager.CheckTradeTimeouts();
+                LcdManager.UpdateLcds();
             });
         }
 
