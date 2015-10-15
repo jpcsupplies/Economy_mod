@@ -3,14 +3,11 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
-    using EconConfig;
     using Economy.scripts;
-    using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Ingame;
-    using VRage.ModAPI;
+    using Sandbox.ModAPI.Interfaces;
     using VRage.ObjectBuilders;
     using VRageMath;
 
@@ -74,8 +71,11 @@
                 }
             }
 
-            foreach (var item in updatelist)
-                ProcessLcdBlock(item);
+            foreach (var textPanel in updatelist)
+            {
+                var interval = Math.Max(1f, textPanel.GetValueFloat("ChangeIntervalSlider"));
+                ProcessLcdBlock(textPanel);
+            }
 
             //var time2 = DateTime.Now - start2;
 
@@ -109,7 +109,7 @@
 
             bool showHelp = !showAll && !showOre && !showIngot && !showComponent & !showAmmo;
 
-            var writer = new TextPanelWriter(textPanel);
+            var writer = TextPanelWriter.Create(textPanel);
 
             if (showTest)
             {
@@ -165,7 +165,15 @@
 
         private static void Test(TextPanelWriter writer)
         {
-            writer.AddPublicLine(string.Format("'{0}' '{1}' '{2}'", writer.FontSize, writer.WidthMod, writer.DisplayLines));
+            //var lines = (int)((writer.DisplayLines / 2f) - 0.5f);
+            //for (int i = 0; i < lines; i++)
+            //    writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "|");
+            //writer.AddPublicFill("«", '-', "»");
+            //for (int i = 0; i < lines; i++)
+            //    writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "|");
+            //return;
+
+            writer.AddPublicLine(string.Format("'{0}' '{1}' '{2}'", writer.FontSize, writer.WidthModifier, writer.DisplayLines));
 
             Testline1(writer, "                |");
             Testline1(writer, "!!!!!!!!!!!!!!!!|");

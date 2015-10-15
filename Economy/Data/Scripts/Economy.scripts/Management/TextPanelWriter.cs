@@ -1,8 +1,8 @@
 ﻿namespace Economy.scripts.Management
 {
+    // Avoid using Linq if possible, then this can be copied into an Ingame Programmable block script.
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Text;
     using Sandbox.ModAPI.Ingame;
     using Sandbox.ModAPI.Interfaces;
@@ -33,17 +33,36 @@
         // AdvanceWidth is defined as Byte in VRageRender.MyFont.
         private static readonly Dictionary<char, byte> FontCharWidth = new Dictionary<char, byte>();
 
+        private static readonly Dictionary<IMyTextPanel, TextPanelWriter> TextPanelWriterCache = new Dictionary<IMyTextPanel, TextPanelWriter>();
+
         #endregion
 
         #region ctor
 
-        public TextPanelWriter(IMyTextPanel panel)
+        /// <summary>
+        /// This will find an existing TextPanelWriter for the specified IMyTextPanel, or create one if one doesn't already exist.
+        /// </summary>
+        public static TextPanelWriter Create(IMyTextPanel textPanel)
+        {
+            TextPanelWriter writer;
+            if (TextPanelWriterCache.TryGetValue(textPanel, out writer))
+            {
+                writer.Clear();
+                return writer;
+            }
+
+            writer = new TextPanelWriter(textPanel);
+            TextPanelWriterCache.Add(textPanel, writer);
+            return writer;
+        }
+
+        private TextPanelWriter(IMyTextPanel panel)
         {
             _panel = panel;
-            FontSize = _panel.GetValueFloat("FontSize");
             _isWide = _panel.DefinitionDisplayNameText.Contains("Wide") || _panel.DefinitionDisplayNameText == "Computer Monitor";
             _publicString = new StringBuilder();
             _privateString = new StringBuilder();
+            Clear();
         }
 
         static TextPanelWriter()
@@ -53,11 +72,26 @@
             ElipseSize = MeasureString(Elipse);
         }
 
+        // TODO: needs to be called routinely at long intervals, to clean up the cache.
+        private static void CleanupCache()
+        {
+            var list = new List<IMyTextPanel>();
+            foreach (var kvp in TextPanelWriterCache)
+            {
+                if (kvp.Key.Closed)
+                    list.Add(kvp.Key);
+            }
+
+            foreach (var item in list)
+                TextPanelWriterCache.Remove(item);
+        }
+
+
         #endregion
 
         #region properties
 
-        public float WidthMod
+        public float WidthModifier
         {
             get { return (_isWide ? 2f : 1f) / FontSize; }
         }
@@ -71,7 +105,7 @@
 
         #endregion
 
-        #region public text
+        #region Set Public text
 
         public void AddPublicText(string text, params object[] args)
         {
@@ -90,7 +124,7 @@
 
         public void AddPublicLeftTrim(float desiredWidth, string text, params object[] args)
         {
-            _publicString.Append(GetStringTrimmed(desiredWidth * WidthMod, StringFormatter(text, args)));
+            _publicString.Append(GetStringTrimmed(desiredWidth * WidthModifier, StringFormatter(text, args)));
         }
 
         public void AddPublicRightText(float rightEdgePosition, string text, params object[] args)
@@ -112,6 +146,12 @@
         public void AddPublicCenterLine(float centerPosition, string text, params object[] args)
         {
             AddCenterAlign(_publicString, centerPosition, StringFormatter(text, args));
+            _publicString.AppendLine();
+        }
+
+        public void AddPublicFill(string left, char fill, string right)
+        {
+            AddFillText(_publicString, left, fill, right);
             _publicString.AppendLine();
         }
 
@@ -141,7 +181,7 @@
 
         #endregion
 
-        #region private text
+        #region Set Private text
 
         public void AddPrivateText(string text, params object[] args)
         {
@@ -178,10 +218,34 @@
 
         #endregion
 
+        #region set image
+
+        public void UpdateImage(float interval, List<string> images)
+        {
+            _panel.ClearImagesFromSelection();
+            _panel.ShowPublicTextOnScreen();
+            _panel.SetValueFloat("ChangeIntervalSlider", interval);
+            _panel.AddImagesToSelection(images, true); // This truely acts weird.
+            _panel.ShowTextureOnScreen();
+        }
+
+        #endregion
+
+        #region methods
+
+        public void Clear()
+        {
+            FontSize = _panel.GetValueFloat("FontSize");
+            _publicString.Clear();
+            _privateString.Clear();
+        }
+
         public void SetFontSize(float size)
         {
             FontSize = size;
         }
+
+        #endregion
 
         #region panel helper methods
 
@@ -204,7 +268,7 @@
         {
             var curWidth = MeasureString(LastLine(stringBuilder));
             float textWidth = MeasureString(text);
-            rightEdgePosition *= WidthMod;
+            rightEdgePosition *= WidthModifier;
             rightEdgePosition -= curWidth;
 
             if (rightEdgePosition < textWidth)
@@ -223,7 +287,7 @@
         {
             var curWidth = MeasureString(LastLine(stringBuilder));
             float textWidth = MeasureString(text);
-            centerPosition *= WidthMod;
+            centerPosition *= WidthModifier;
             centerPosition -= curWidth;
 
             if (centerPosition < textWidth / 2)
@@ -236,6 +300,16 @@
             int fillchars = (int)Math.Round(centerPosition / (Spacing + WhitespaceWidth), MidpointRounding.AwayFromZero);
             string filler = new string(' ', fillchars);
             stringBuilder.Append(filler + text);
+        }
+
+        private void AddFillText(StringBuilder stringBuilder, string left, char fill, string right)
+        {
+            var curWidth = MeasureString(LastLine(stringBuilder)) + MeasureString(left) + MeasureString(right);
+            var fillSpace = (LcdLineWidth - curWidth) * WidthModifier;
+            var fillWidth = MeasureChar(fill);
+            int fillchars = (int)Math.Round(fillSpace / (Spacing + fillWidth), MidpointRounding.AwayFromZero);
+            string filler = new string(fill, fillchars);
+            stringBuilder.Append(left + filler + right);
         }
 
         public static string GetStringTrimmed(float desiredWidth, string text)
@@ -299,7 +373,7 @@
 
         private static void BuildFontWidthCatalog()
         {
-            // This is commented out, as it's only used to generate the 
+            // This is commented out, as it's only used to generate the LoadCharWidths() content.
 
             //var definition = @"C:\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Content\Fonts\white\FontData.xml";
 
@@ -363,7 +437,7 @@
 
         #region character helper methods
 
-        private static byte GetCharSize(char c)
+        private static byte MeasureChar(char c)
         {
             byte width;
             if (!FontCharWidth.TryGetValue(c, out width))
@@ -374,7 +448,9 @@
         // Derived from VRageRender.MyFont.MeasureString
         public static int MeasureString(string str)
         {
-            int sum = str.Sum(t => GetCharSize(t));
+            int sum = 0;
+            for (int i = 0; i < str.Length; i++)
+                sum += MeasureChar(str[i]);
 
             //  Spacing is applied to every character, except the last.
             sum += Spacing * (str.Length > 1 ? str.Length - 1 : 0);
