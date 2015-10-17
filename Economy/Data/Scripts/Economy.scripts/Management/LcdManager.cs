@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Economy.scripts;
+    using EconConfig;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Ingame;
@@ -133,18 +134,12 @@
             writer.AddPublicRightText(buyColumn, "Buy");
             writer.AddPublicRightLine(sellColumn, "Sell »");
 
+            // Build a list of the items, so we can get the name so we can the sort the items by name.
+            var list = new Dictionary<MarketStruct, string>();
             foreach (var marketItem in EconomyScript.Instance.Data.MarketItems)
             {
                 if (marketItem.IsBlacklisted)
                     continue;
-
-                MyPhysicalItemDefinition definition = null;
-                MyObjectBuilderType result;
-                if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
-                {
-                    var id = new MyDefinitionId(result, marketItem.SubtypeName);
-                    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
-                }
 
                 if (showAll ||
                     (showOre && marketItem.TypeId == "MyObjectBuilder_Ore") ||
@@ -152,12 +147,24 @@
                     (showComponent && marketItem.TypeId == "MyObjectBuilder_Component") ||
                     (showAmmo && marketItem.TypeId == "MyObjectBuilder_AmmoMagazine"))
                 {
-                    var name = definition == null ? marketItem.TypeId + "/" + marketItem.SubtypeName : definition.GetDisplayName();
-                    writer.AddPublicLeftTrim(buyColumn - 120, name);
-                    writer.AddPublicRightText(buyColumn, marketItem.BuyPrice.ToString("0.00"));
-                    writer.AddPublicRightText(sellColumn, marketItem.SellPrice.ToString("0.00"));
-                    writer.AddPublicLine();
+                    MyPhysicalItemDefinition definition = null;
+                    MyObjectBuilderType result;
+                    if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
+                    {
+                        var id = new MyDefinitionId(result, marketItem.SubtypeName);
+                        MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
+                    }
+
+                    list.Add(marketItem, definition == null ? marketItem.TypeId + "/" + marketItem.SubtypeName : definition.GetDisplayName());
                 }
+            }
+
+            foreach (var kvp in list.OrderBy(k => k.Value))
+            {
+                writer.AddPublicLeftTrim(buyColumn - 120, kvp.Value);
+                writer.AddPublicRightText(buyColumn, kvp.Key.BuyPrice.ToString("0.00"));
+                writer.AddPublicRightText(sellColumn, kvp.Key.SellPrice.ToString("0.00"));
+                writer.AddPublicLine();
             }
 
             writer.UpdatePublic();
