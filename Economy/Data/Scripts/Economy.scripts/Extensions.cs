@@ -168,5 +168,21 @@ namespace Economy.scripts
             entities.ForEach(item => MyAPIGateway.Entities.CreateFromObjectBuilderAndAdd(item));
             MyAPIGateway.Multiplayer.SendEntitiesCreated(entities);
         }
+
+        public static IMyInventory GetPlayerInventory(this IMyPlayer player)
+        {
+            var character = player.GetCharacter();
+            if (character == null)
+                return null;
+            return character.GetPlayerInventory();
+        }
+
+        public static IMyInventory GetPlayerInventory(this IMyCharacter character)
+        {
+            if (character == null)
+                return null;
+            var inventoryOwnwer = (Sandbox.ModAPI.Interfaces.IMyInventoryOwner)character;
+            return (IMyInventory)inventoryOwnwer.GetInventory(0);
+        }
     }
 }

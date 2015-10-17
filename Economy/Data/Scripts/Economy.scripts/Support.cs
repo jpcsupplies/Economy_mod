@@ -233,5 +233,45 @@
             // so did it come within our default range
             return distance <= 2500;
         }
+
+
+        public static bool InventoryAdd(IMyInventory inventory, MyFixedPoint amount, MyDefinitionId definitionId)
+        {
+            var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
+            MyObjectBuilder_InventoryItem inventoryItem = new MyObjectBuilder_InventoryItem { Amount = amount, Content = content };
+
+            if (inventory.CanItemsBeAdded(inventoryItem.Amount, definitionId))
+            {
+                inventory.AddItems(inventoryItem.Amount, (MyObjectBuilder_PhysicalObject)inventoryItem.Content, -1);
+                return true;
+            }
+
+            // Inventory full. Could not add the item.
+            return false;
+        }
+
+        public static void InventoryDrop(IMyEntity entity, MyFixedPoint amount, MyDefinitionId definitionId)
+        {
+            Vector3D position;
+
+            if (entity is IMyCharacter)
+                position = entity.WorldMatrix.Translation + entity.WorldMatrix.Forward * 1.5f + entity.WorldMatrix.Up * 1.5f; // Spawn item 1.5m in front of player.
+            else
+                position = entity.WorldMatrix.Translation + entity.WorldMatrix.Forward * 1.5f; // Spawn item 1.5m in front of player in cockpit.
+
+            MyObjectBuilder_FloatingObject floatingBuilder = new MyObjectBuilder_FloatingObject();
+            var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
+            floatingBuilder.Item = new MyObjectBuilder_InventoryItem() { Amount = amount, Content = content };
+            floatingBuilder.PersistentFlags = MyPersistentEntityFlags2.InScene; // Very important
+
+            floatingBuilder.PositionAndOrientation = new MyPositionAndOrientation()
+            {
+                Position = position,
+                Forward = entity.WorldMatrix.Forward.ToSerializableVector3(),
+                Up = entity.WorldMatrix.Up.ToSerializableVector3(),
+            };
+
+            floatingBuilder.CreateAndSyncEntity();
+        }
     }
 }

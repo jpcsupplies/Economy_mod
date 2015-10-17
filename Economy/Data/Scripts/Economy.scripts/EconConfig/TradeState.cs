@@ -41,6 +41,11 @@
         SellOffer,
 
         /// <summary>
+        /// The Sell was accepted, and the items held for collection.
+        /// </summary>
+        SellAccepted,
+
+        /// <summary>
         /// The Sell was rejected, and the items held for return.
         /// </summary>
         SellRejected,

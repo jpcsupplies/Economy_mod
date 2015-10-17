@@ -52,6 +52,11 @@
             return null;
         }
 
+        public static BankAccountStruct FindAccount(ulong steamId)
+        {
+            return EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == steamId);
+        }
+
         public static BankAccountStruct CreateNewDefaultAccount(ulong steamId, string nickName, int language)
         {
             var create = DateTime.Now; // Keeps the Date and OpenedDate at the same millisecond on creation.

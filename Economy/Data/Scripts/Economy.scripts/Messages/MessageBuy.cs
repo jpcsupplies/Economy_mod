@@ -12,7 +12,6 @@
     using VRage;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
-    using VRageMath;
 
     /// <summary>
     /// this is to do the actual work of checking and moving the goods.
@@ -116,7 +115,7 @@
             // Who are we buying to?
             BankAccountStruct accountToSell;
             if (BuyFromMerchant)
-                accountToSell = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
+                accountToSell = AccountManager.FindAccount(EconomyConsts.NpcMerchantId);
             else
                 accountToSell = AccountManager.FindAccount(FromUserName);
 
@@ -198,9 +197,9 @@
                     var inventoryOwnwer = (IMyInventoryOwner)character;
                     var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
                     MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
-                    if (!InventoryAdd(inventory, amount, definition.Id))
+                    if (!Support.InventoryAdd(inventory, amount, definition.Id))
                     {
-                        InventoryDrop(inventory, amount, definition.Id, (IMyEntity)character);
+                        Support.InventoryDrop((IMyEntity)character, amount, definition.Id);
                     }
 
                     //EconomyConsts.LimitedSupply
@@ -254,45 +253,6 @@
 
             // this is a fall through from the above conditions not yet complete.
             MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Not yet complete.");
-        }
-
-        private bool InventoryAdd(Sandbox.ModAPI.IMyInventory inventory, MyFixedPoint amount, MyDefinitionId definitionId)
-        {
-            var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
-            MyObjectBuilder_InventoryItem inventoryItem = new MyObjectBuilder_InventoryItem { Amount = amount, Content = content };
-
-            if (inventory.CanItemsBeAdded(inventoryItem.Amount, definitionId))
-            {
-                inventory.AddItems(inventoryItem.Amount, (MyObjectBuilder_PhysicalObject)inventoryItem.Content, -1);
-                return true;
-            }
-
-            // Inventory full. Could not add the item.
-            return false;
-        }
-
-        private void InventoryDrop(Sandbox.ModAPI.IMyInventory inventory, MyFixedPoint amount, MyDefinitionId definitionId, IMyEntity entity)
-        {
-            Vector3D position;
-
-            if (entity is IMyCharacter)
-                position = entity.WorldMatrix.Translation + entity.WorldMatrix.Forward * 1.5f + entity.WorldMatrix.Up * 1.5f; // Spawn item 1.5m in front of player.
-            else
-                position = entity.WorldMatrix.Translation + entity.WorldMatrix.Forward * 1.5f; // Spawn item 1.5m in front of player in cockpit.
-
-            MyObjectBuilder_FloatingObject floatingBuilder = new MyObjectBuilder_FloatingObject();
-            var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
-            floatingBuilder.Item = new MyObjectBuilder_InventoryItem() { Amount = amount, Content = content };
-            floatingBuilder.PersistentFlags = MyPersistentEntityFlags2.InScene; // Very important
-
-            floatingBuilder.PositionAndOrientation = new MyPositionAndOrientation()
-            {
-                Position = position,
-                Forward = entity.WorldMatrix.Forward.ToSerializableVector3(),
-                Up = entity.WorldMatrix.Up.ToSerializableVector3(),
-            };
-
-            floatingBuilder.CreateAndSyncEntity();
         }
     }
 }

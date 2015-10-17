@@ -504,9 +504,7 @@ namespace Economy.scripts
                     }
 
                     // TODO: add items into holding as part of the sell message, from container Id: inventory.Owner.EntityId.
-                    MessageSell.SendMessage(buyerName, sellQuantity, content.TypeId.ToString(), content.SubtypeName, sellPrice, useMarketBuyPrice, sellToMerchant, offerToMarket);
-
-                    //    MyAPIGateway.Utilities.ShowMessage("SELL", reply);
+                    MessageSell.SendSellMessage(buyerName, sellQuantity, content.TypeId.ToString(), content.SubtypeName, sellPrice, useMarketBuyPrice, sellToMerchant, offerToMarket);
                     return true;
                 }
 
@@ -517,21 +515,27 @@ namespace Economy.scripts
                     case 2: //ie /sell all or /sell cancel or /sell accept or /sell deny
                         if (split[1].Equals("cancel", StringComparison.InvariantCultureIgnoreCase))
                         {
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "Cancel Not yet implemented in this release");
+                            MessageSell.SendCancelMessage();
                             return true;
                         }
                         if (split[1].Equals("accept", StringComparison.InvariantCultureIgnoreCase))
                         {
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "accept not yet implemented");
+                            MessageSell.SendAcceptMessage();
                             return true;
                         }
                         if (split[1].Equals("deny", StringComparison.InvariantCultureIgnoreCase))
                         {
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "deny not yet implemented");
+                            MessageSell.SendDenyMessage();
                             return true;
                         }
-                        return false;
-                    //default: //must be more than 2 and invalid
+                        if (split[1].Equals("collect", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            MessageSell.SendCollectMessage();
+                            return true;
+                        }
+                        //return false;
+                        break;
+                        //default: //must be more than 2 and invalid
 /*                        if (buyerName != EconomyConsts.NpcMerchantName && buyerName != "OFFER")
                         {
                             //must be selling to a player (or faction ?)
