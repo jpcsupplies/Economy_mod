@@ -42,6 +42,11 @@
         public const string NpcMerchantName = "NPC";
 
         /// <summary>
+        /// The default value for timeouts.
+        /// </summary>
+        public const double TradeTimeoutMinutes = 2;
+
+        /// <summary>
         /// Should the NPC market be randomly restocked with simulated trade traffic
         /// </summary>
         /// <remarks>This is a bool which enables or disables the behavior that when an NPC resource is 

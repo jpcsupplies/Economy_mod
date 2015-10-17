@@ -92,6 +92,11 @@
                     }
                 }
             }
+
+            // TODO: get Gas Property Items.  MyObjectBuilder_GasProperties
+            //var gasItems = MyDefinitionManager.Static.GetGas???;
+
+
         }
 
         /// <summary>
@@ -164,7 +169,7 @@
         public static void CheckTradeTimeouts()
         {
             var processingTime = DateTime.Now;
-            var expiration = new TimeSpan(0, 5, 0);
+            var expiration = TimeSpan.FromMinutes(EconomyConsts.TradeTimeoutMinutes);
 
             if (EconomyScript.Instance.Data == null || EconomyScript.Instance.Data.OrderBook.Count == 0)
                 return;
