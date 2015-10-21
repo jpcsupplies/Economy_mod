@@ -169,6 +169,19 @@ namespace Economy.scripts
             MyAPIGateway.Multiplayer.SendEntitiesCreated(entities);
         }
 
+        public static MyPhysicalItemDefinition GetDefintion(this MyDefinitionManager definitionManager, string typeId, string subtypeName)
+        {
+            MyPhysicalItemDefinition definition = null;
+            MyObjectBuilderType result;
+            if (MyObjectBuilderType.TryParse(typeId, out result))
+            {
+                var id = new MyDefinitionId(result, subtypeName);
+                MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
+            }
+
+            return definition;
+        }
+
         public static IMyInventory GetPlayerInventory(this IMyPlayer player)
         {
             var character = player.GetCharacter();

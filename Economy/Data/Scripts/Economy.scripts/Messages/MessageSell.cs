@@ -269,16 +269,15 @@
                             return;
                         }
 
-                        // write to Trade offer table.
-                        MarketManager.CreateTradeOffer(SenderSteamId, ItemTypeId, ItemSubTypeName, ItemQuantity, transactionAmount, accountToBuy.SteamId);
-
-                        // remove items from inventory.
-                        inventory.RemoveItemsOfType(amount, definition.Id);
 
                         // if other player online, send message.
                         if (buyingPlayer == null)
                         {
                             // TODO: other player offline.
+
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You cannot sell to offline players at this time.");
+                            return;
+
                             // TODO: we need a way to queue up messages.
                             // While you were gone....
                             // You missed an offer for 4000Kg of Gold for 20,000.
@@ -286,9 +285,18 @@
                         else
                         {
                             // The other player is online.
+
+                            // write to Trade offer table.
+                            MarketManager.CreateTradeOffer(SenderSteamId, ItemTypeId, ItemSubTypeName, ItemQuantity, transactionAmount, accountToBuy.SteamId);
+
+                            // remove items from inventory.
+                            inventory.RemoveItemsOfType(amount, definition.Id);
+
                             MessageClientTextMessage.SendMessage(accountToBuy.SteamId, "SELL",
                                 "You have received an offer from {0} to buy {1} {2} at price {3} - type '/sell accept' to accept offer (or '/sell deny' to reject and return ore to seller)",
                                 SenderDisplayName, ItemQuantity, definition.GetDisplayName(), transactionAmount);
+
+                            // TODO: Improve the message here, to say who were are trading to, and that the item is gone from inventory.
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Your offer has been sent.");
 
                             return;
@@ -332,7 +340,7 @@
                             return;
                         }
 
-                        var accountToSell = AccountManager.FindAccount(SenderSteamId);
+                        var accountToSell = AccountManager.FindAccount(order.TraderId);
 
                         // rebalance accounts.
                         accountToBuy.BankBalance -= transactionAmount;
@@ -343,9 +351,35 @@
 
                         order.TradeState = TradeState.SellAccepted;
 
+                        var definition = MyDefinitionManager.Static.GetDefintion(order.TypeId, order.SubtypeName);
+
+                        if (definition == null)
+                        {
+                            // Someone hacking, and passing bad data?
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
+
+                            // trade has been finalized, so we can exit safely.
+                            return;
+                        }
+
                         // TODO: Improve the messages.
-                        MessageClientTextMessage.SendMessage(accountToSell.SteamId, "SELL", "You just sold {0} worth of {2} ({1} units)", transactionAmount, ItemQuantity, "xxx"); // definition.GetDisplayName());
-                        MessageClientTextMessage.SendMessage(accountToBuy.SteamId, "SELL", "You just purchased {0} worth of {2} ({1} units)", transactionAmount, ItemQuantity, "xxx"); // definition.GetDisplayName());
+                        MessageClientTextMessage.SendMessage(accountToSell.SteamId, "SELL", "You just sold {0} worth of {2} ({1} units)", transactionAmount, order.Quantity, definition.GetDisplayName());
+
+                        var collectingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
+                        var inventory = collectingPlayer.GetPlayerInventory();
+                        bool hasAddedToInventory = true;
+
+                        if (inventory != null)
+                        {
+                            MyFixedPoint amount = (MyFixedPoint)order.Quantity;
+                            hasAddedToInventory = Support.InventoryAdd(inventory, amount, definition.Id);
+                        }
+
+                        if (hasAddedToInventory)
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} worth of {2} ({1} units) which are now in your inventory.", transactionAmount, order.Quantity, definition.GetDisplayName());
+                        else
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} worth of {2} ({1} units). Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName());
+
                         return;
                     }
 
@@ -375,7 +409,7 @@
                         }
 
                         // TODO: this is just for debugging....
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "DEBUG", "{0} order to be collected.", collectableOrders.Length);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are collecting items from {0} order/s.", collectableOrders.Length);
 
                         foreach (var order in collectableOrders)
                         {
@@ -390,7 +424,7 @@
                             if (definition == null)
                             {
                                 // Someone hacking, and passing bad data?
-                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you specified doesn't exist!");
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
                                 return;
                             }
 
