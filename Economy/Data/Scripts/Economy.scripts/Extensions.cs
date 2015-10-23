@@ -169,7 +169,7 @@ namespace Economy.scripts
             MyAPIGateway.Multiplayer.SendEntitiesCreated(entities);
         }
 
-        public static MyPhysicalItemDefinition GetDefintion(this MyDefinitionManager definitionManager, string typeId, string subtypeName)
+        public static MyPhysicalItemDefinition GetDefinition(this MyDefinitionManager definitionManager, string typeId, string subtypeName)
         {
             MyPhysicalItemDefinition definition = null;
             MyObjectBuilderType result;
@@ -194,8 +194,7 @@ namespace Economy.scripts
         {
             if (character == null)
                 return null;
-            var inventoryOwnwer = (Sandbox.ModAPI.Interfaces.IMyInventoryOwner)character;
-            return (IMyInventory)inventoryOwnwer.GetInventory(0);
+            return ((Sandbox.Game.Entities.MyEntity)character).GetInventory();
         }
     }
 }

@@ -194,8 +194,7 @@
                 {
                     marketItem.Quantity -= ItemQuantity; // reduce Market content.
 
-                    var inventoryOwnwer = (IMyInventoryOwner)character;
-                    var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
+                    var inventory = character.GetPlayerInventory();
                     MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
                     if (!Support.InventoryAdd(inventory, amount, definition.Id))
                     {

@@ -492,8 +492,7 @@ namespace Economy.scripts
                     {
                         var character = MyAPIGateway.Session.Player.GetCharacter();
                         // TODO: may have to recheck that character is not null.
-                        var inventoryOwnwer = (IMyInventoryOwner)character;
-                        var inventory = (Sandbox.ModAPI.IMyInventory)inventoryOwnwer.GetInventory(0);
+                        var inventory = character.GetPlayerInventory();
                         sellQuantity = (decimal)inventory.GetItemAmount(content.GetId());
 
                         if (sellQuantity == 0)

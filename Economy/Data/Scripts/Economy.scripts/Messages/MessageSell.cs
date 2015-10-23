@@ -351,7 +351,7 @@
 
                         order.TradeState = TradeState.SellAccepted;
 
-                        var definition = MyDefinitionManager.Static.GetDefintion(order.TypeId, order.SubtypeName);
+                        var definition = MyDefinitionManager.Static.GetDefinition(order.TypeId, order.SubtypeName);
 
                         if (definition == null)
                         {

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Sandbox.Common.ObjectBuilders;
+    using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using VRage;
@@ -234,10 +235,14 @@
             return distance <= 2500;
         }
 
-
         public static bool InventoryAdd(IMyInventory inventory, MyFixedPoint amount, MyDefinitionId definitionId)
         {
             var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
+
+            var gasContainer = content as MyObjectBuilder_GasContainerObject;
+            if (gasContainer != null)
+                gasContainer.GasLevel = 1f;
+
             MyObjectBuilder_InventoryItem inventoryItem = new MyObjectBuilder_InventoryItem { Amount = amount, Content = content };
 
             if (inventory.CanItemsBeAdded(inventoryItem.Amount, definitionId))
@@ -261,6 +266,11 @@
 
             MyObjectBuilder_FloatingObject floatingBuilder = new MyObjectBuilder_FloatingObject();
             var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
+
+            var gasContainer = content as MyObjectBuilder_GasContainerObject;
+            if (gasContainer != null)
+                gasContainer.GasLevel = 1f;
+
             floatingBuilder.Item = new MyObjectBuilder_InventoryItem() { Amount = amount, Content = content };
             floatingBuilder.PersistentFlags = MyPersistentEntityFlags2.InScene; // Very important
 
