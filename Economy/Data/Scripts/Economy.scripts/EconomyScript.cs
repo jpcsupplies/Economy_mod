@@ -455,7 +455,7 @@ namespace Economy.scripts
                 }
 
 
-                MyAPIGateway.Utilities.ShowMessage("SET", "/sell #1 #2 0 0");
+                MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2 0 0");
                 MyAPIGateway.Utilities.ShowMessage("SET", "#1 is quantity, #2 is item");
                 return true;
             }
