@@ -72,12 +72,12 @@
             #region Default prices in raw Xml.
 
             const string xmlText = @"<MarketConfig>
-  <MarketItems>
+<MarketItems>
     <MarketStruct>
       <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
       <SubtypeName>NATO_5p56x45mm</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>102.35</SellPrice>
+      <SellPrice>2.35</SellPrice>
       <BuyPrice>2.09</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
@@ -85,7 +85,7 @@
       <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
       <SubtypeName>NATO_25x184mm</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>184.78</SellPrice>
+      <SellPrice>84.78</SellPrice>
       <BuyPrice>75.36</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
@@ -93,7 +93,7 @@
       <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
       <SubtypeName>Missile200mm</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>159.10 </SellPrice>
+      <SellPrice>59.10 </SellPrice>
       <BuyPrice>52.54</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
@@ -237,7 +237,7 @@
       <TypeId>MyObjectBuilder_Component</TypeId>
       <SubtypeName>Explosives</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>146.38</SellPrice>
+      <SellPrice>46.38</SellPrice>
       <BuyPrice>41.23</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
@@ -373,7 +373,7 @@
       <TypeId>MyObjectBuilder_Ingot</TypeId>
       <SubtypeName>Magnesium</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>112.30</SellPrice>
+      <SellPrice>12.30</SellPrice>
       <BuyPrice>10.93</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
@@ -421,7 +421,7 @@
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>AutomaticRifleItem</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>107.35</SellPrice>
+      <SellPrice>7.35</SellPrice>
       <BuyPrice>6.53</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketStruct>
@@ -476,7 +476,7 @@
     <MarketStruct>
       <TypeId>MyObjectBuilder_Ore</TypeId>
       <SubtypeName>Ice</SubtypeName>
-      <Quantity>1000</Quantity>
+      <Quantity>10000</Quantity>
       <SellPrice>11.57</SellPrice>
       <BuyPrice>10.29</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
@@ -493,8 +493,144 @@
       <TypeId>MyObjectBuilder_GasContainerObject</TypeId>
       <SubtypeName>HydrogenBottle</SubtypeName>
       <Quantity>100</Quantity>
+      <SellPrice>261.99</SellPrice>
+      <BuyPrice>232.88</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_Component</TypeId>
+      <SubtypeName>Superconductor</SubtypeName>
+      <Quantity>1000</Quantity>
+      <SellPrice>180.84</SellPrice>
+      <BuyPrice>160.75</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>DesertTree</SubtypeName>
+      <Quantity>0</Quantity>
       <SellPrice>1</SellPrice>
-      <BuyPrice>0.89</BuyPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>DesertTreeDead</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>LeafTree</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>PineTree</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>PineTreeSnow</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>LeafTreeMedium</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>DesertTreeMedium</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>DesertTreeDeadMedium</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>true</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>PineTreeSnowMedium</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>DeadBushMedium</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>DesertBushMedium</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>LeafBushMedium_var1</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>LeafBushMedium_var2</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>PineBushMedium</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketStruct>
+    <MarketStruct>
+      <TypeId>MyObjectBuilder_TreeObject</TypeId>
+      <SubtypeName>SnowPineBushMedium</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
       <IsBlacklisted>true</IsBlacklisted>
     </MarketStruct>
   </MarketItems>

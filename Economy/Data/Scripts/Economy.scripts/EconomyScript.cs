@@ -422,6 +422,44 @@ namespace Economy.scripts
                 return true;
             }
 
+            // set command - to allow an admin to set the on hand stock of a specified item - it's a dirty hack tho
+            // This wont actually work as the regex conditions are invalid, and the messagesell script will reject these
+            //options.   Usage /set <qty> "item name"   must be admin
+            //set will also be used for other functions later such as allowing staff to toggle
+            //settings like limited or unlimited stock, range checks, currency name, buy or sell prices etc
+            if (split[0].Equals("/set", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
+            {
+                decimal sellQuantity = 0;
+                string itemName = "";
+                match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    itemName = match.Groups["item"].Value.Trim();
+                     MyObjectBuilder_Base content = null;
+                    string[] options;
+                    // Search for the item and find one match only, either by exact name or partial name.
+                    if (!Support.FindPhysicalParts(itemName, out content, out options))
+                    {
+                        if (options.Length == 0)
+                            MyAPIGateway.Utilities.ShowMessage("SET", "Item name not found.");
+                        else if (options.Length > 10)
+                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
+                        else
+                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                        return true;
+                    }
+                    
+                    // TODO: add items into holding as part of the sell message, from container Id: inventory.Owner.EntityId.
+                    MessageSell.SendSellMessage("_NPC", sellQuantity, content.TypeId.ToString(), content.SubtypeName, 0, true, true,false);
+                    return true;
+                }
+
+
+                MyAPIGateway.Utilities.ShowMessage("SET", "/sell #1 #2 0 0");
+                MyAPIGateway.Utilities.ShowMessage("SET", "#1 is quantity, #2 is item");
+                return true;
+            }
+
             // sell command
             if (split[0].Equals("/sell", StringComparison.InvariantCultureIgnoreCase))
             {
