@@ -482,8 +482,8 @@
       <TypeId>MyObjectBuilder_Ore</TypeId>
       <SubtypeName>Ice</SubtypeName>
       <Quantity>10000</Quantity>
-      <SellPrice>11.57</SellPrice>
-      <BuyPrice>10.29</BuyPrice>
+      <SellPrice>3.37</SellPrice>
+      <BuyPrice>2.99</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
