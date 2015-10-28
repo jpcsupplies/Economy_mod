@@ -1,5 +1,5 @@
 ﻿/*
- *  Economy Mod V(TBA) 
+ *  Economy Mod V1.0A 
  *  by PhoenixX (JPC Dev), Tangentspy, Screaming Angels
  *  For use with Space Engineers Game
  *  Refer to github issues or steam/git dev guide/wiki or the team notes
@@ -48,6 +48,15 @@ namespace Economy.scripts
         /// samples(optional): /sell all iron (price) (player/faction) || /sell 10 iron (price) (player/faction) || /sell accept || /sell deny || /sell cancel
         /// </summary>
         const string SellPattern = @"(?<command>/sell)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<qtyall>ALL))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
+
+        //set is for admins to configure things like on hand, npc market pricing, toggle blacklist, turn on limited or unlimited stock mode
+        //set their currency name, player default starting balance, enable or diable limited range mode, and set default trade range
+        //at the moment all it does is set the on hand figures -
+        //possible examples /set limitedsupply true,  /set limitedrange true, /set 1000 metal, /set starting 200, /set blacklist organic false, /set traderange 1000, /set currency credits
+        // /set reset etc  the syntax may not be exactly as above these are just hypothetical examples
+        // see https://github.com/jpcsupplies/Economy_mod/issues/66
+        //current functionality is just to alter the market on hand of a single item, eg /set 10000 ice
+        const string SetPattern = @"(?<command>/set)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<qtyall>ALL))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
 
         /// <summary>
         ///  buy pattern no "all" required.   reusing sell  
@@ -404,10 +413,11 @@ namespace Economy.scripts
             {
                 decimal sellQuantity = 0;
                 string itemName = "";
-                match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
+                match = Regex.Match(messageText, SetPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     itemName = match.Groups["item"].Value.Trim();
+                    sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
                     MyObjectBuilder_Base content = null;
                     string[] options;
                     // Search for the item and find one match only, either by exact name or partial name.
@@ -422,10 +432,11 @@ namespace Economy.scripts
                         return true;
                     }
 
-                    // TODO: extra security to prevent a player named _NPC messing with market
+                    MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2");
+
                     MessageSell.SendSellMessage("_NPC", sellQuantity, content.TypeId.ToString(), content.SubtypeName, 0, true, true, false);
                     return true;
-                }
+                } 
 
 
                 MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2");

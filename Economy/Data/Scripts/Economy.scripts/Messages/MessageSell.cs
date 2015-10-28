@@ -153,6 +153,7 @@
                         else
                             accountToBuy = AccountManager.FindAccount(ToUserName);
 
+
                         if (accountToBuy == null && ToUserName != "_NPC") //_NPC indicates if we skip here to set on hand
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, player does not exist or have an account!");
@@ -254,7 +255,7 @@
                                     marketItem.Quantity = ItemQuantity;
                                     accountToBuy.Date = DateTime.Now;
                                     accountToSell.Date = DateTime.Now;
-                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "You just set {1} stock on hand to {0} units)",  ItemQuantity, definition.GetDisplayName());
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "You just set {1} stock on hand to {0} units",  ItemQuantity, definition.GetDisplayName());
                                 }
                             }
                             else
