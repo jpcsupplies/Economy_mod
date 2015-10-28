@@ -9,18 +9,21 @@
     public class MessageMarketItemValue : MessageBase
     {
         [ProtoMember(1)]
-        public string TypeId;
+        public ulong MarketId;
 
         [ProtoMember(2)]
-        public string SubtypeName;
+        public string TypeId;
 
         [ProtoMember(3)]
+        public string SubtypeName;
+
+        [ProtoMember(4)]
         public decimal Quantity;
 
         /// <summary>
         /// The localized Display Name from the Client to be sent back if the processing succeeds.
         /// </summary>
-        [ProtoMember(4)]
+        [ProtoMember(5)]
         public string DisplayName;
 
         public override void ProcessClient()
@@ -34,8 +37,15 @@
             AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
             EconomyScript.Instance.ServerLogger.Write("Value Request for '{0}:{1}' from '{2}'", TypeId, SubtypeName, SenderSteamId);
 
+            var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.MarketId == MarketId);
+            if (market == null)
+            {
+                MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", "That market does not exist.");
+                return;
+            }
+
             // TypeId and SubtypeName are both Case sensitive. Do not Ignore case when comparing these.
-            var item = EconomyScript.Instance.Data.MarketItems.FirstOrDefault(e => e.TypeId == TypeId && e.SubtypeName == SubtypeName);
+            var item = market.MarketItems.FirstOrDefault(e => e.TypeId == TypeId && e.SubtypeName == SubtypeName);
             if (item == null)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", "Sorry, the items you are trying to value doesn't have a market entry!");
@@ -63,9 +73,9 @@
             MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", reply);
         }
 
-        public static void SendMessage(string typeId, string subtypeName, decimal quantity, string displayName)
+        public static void SendMessage(ulong marketId, string typeId, string subtypeName, decimal quantity, string displayName)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketItemValue { TypeId = typeId, SubtypeName = subtypeName, Quantity = quantity, DisplayName = displayName });
+            ConnectionHelper.SendMessageToServer(new MessageMarketItemValue { MarketId = marketId, TypeId = typeId, SubtypeName = subtypeName, Quantity = quantity, DisplayName = displayName });
         }
     }
 }

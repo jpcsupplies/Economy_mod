@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Economy.scripts;
-    using EconConfig;
+    using Economy.scripts.EconStructures;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Ingame;
@@ -135,36 +135,46 @@
             writer.AddPublicRightLine(sellColumn, "Sell »");
 
             // Build a list of the items, so we can get the name so we can the sort the items by name.
-            var list = new Dictionary<MarketStruct, string>();
-            foreach (var marketItem in EconomyScript.Instance.Data.MarketItems)
+            var list = new Dictionary<MarketItemStruct, string>();
+
+            // TODO: this is hardcoded to the NPC merchant for the moment. Later this needs to be configurable.
+            var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.MarketId == EconomyConsts.NpcMerchantId);
+            if (market == null)
             {
-                if (marketItem.IsBlacklisted)
-                    continue;
-
-                if (showAll ||
-                    (showOre && marketItem.TypeId == "MyObjectBuilder_Ore") ||
-                    (showIngot && marketItem.TypeId == "MyObjectBuilder_Ingot") ||
-                    (showComponent && marketItem.TypeId == "MyObjectBuilder_Component") ||
-                    (showAmmo && marketItem.TypeId == "MyObjectBuilder_AmmoMagazine"))
-                {
-                    MyPhysicalItemDefinition definition = null;
-                    MyObjectBuilderType result;
-                    if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
-                    {
-                        var id = new MyDefinitionId(result, marketItem.SubtypeName);
-                        MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
-                    }
-
-                    list.Add(marketItem, definition == null ? marketItem.TypeId + "/" + marketItem.SubtypeName : definition.GetDisplayName());
-                }
+                writer.AddPublicLine("Market not found");
             }
-
-            foreach (var kvp in list.OrderBy(k => k.Value))
+            else
             {
-                writer.AddPublicLeftTrim(buyColumn - 120, kvp.Value);
-                writer.AddPublicRightText(buyColumn, kvp.Key.BuyPrice.ToString("0.00"));
-                writer.AddPublicRightText(sellColumn, kvp.Key.SellPrice.ToString("0.00"));
-                writer.AddPublicLine();
+                foreach (var marketItem in market.MarketItems)
+                {
+                    if (marketItem.IsBlacklisted)
+                        continue;
+
+                    if (showAll ||
+                        (showOre && marketItem.TypeId == "MyObjectBuilder_Ore") ||
+                        (showIngot && marketItem.TypeId == "MyObjectBuilder_Ingot") ||
+                        (showComponent && marketItem.TypeId == "MyObjectBuilder_Component") ||
+                        (showAmmo && marketItem.TypeId == "MyObjectBuilder_AmmoMagazine"))
+                    {
+                        MyPhysicalItemDefinition definition = null;
+                        MyObjectBuilderType result;
+                        if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
+                        {
+                            var id = new MyDefinitionId(result, marketItem.SubtypeName);
+                            MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
+                        }
+
+                        list.Add(marketItem, definition == null ? marketItem.TypeId + "/" + marketItem.SubtypeName : definition.GetDisplayName());
+                    }
+                }
+
+                foreach (var kvp in list.OrderBy(k => k.Value))
+                {
+                    writer.AddPublicLeftTrim(buyColumn - 120, kvp.Value);
+                    writer.AddPublicRightText(buyColumn, kvp.Key.BuyPrice.ToString("0.00"));
+                    writer.AddPublicRightText(sellColumn, kvp.Key.SellPrice.ToString("0.00"));
+                    writer.AddPublicLine();
+                }
             }
 
             writer.UpdatePublic();

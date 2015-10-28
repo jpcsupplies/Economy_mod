@@ -67,21 +67,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EconConfig\AccountManager.cs" />
-    <Compile Include="EconConfig\EconConfigStruct.cs" />
+    <Compile Include="EconStructures\EconConfigStruct.cs" />
     <Compile Include="EconConfig\EconDataManager.cs" />
-    <Compile Include="EconConfig\EconDataStruct.cs" />
+    <Compile Include="EconStructures\EconDataStruct.cs" />
     <Compile Include="EconConfig\MarketManager.cs" />
-    <Compile Include="EconConfig\OrderBookStruct.cs" />
-    <Compile Include="EconConfig\MarketStruct.cs" />
-    <Compile Include="EconConfig\BankConfig.cs" />
-    <Compile Include="EconConfig\BankManagement.cs" />
-    <Compile Include="EconConfig\MarketConfig.cs" />
+    <Compile Include="EconStructures\OrderBookStruct.cs" />
+    <Compile Include="EconStructures\MarketItemStruct.cs" />
+    <Compile Include="EconStructures\BankStruct.cs" />
+    <Compile Include="EconStructures\MarketStruct.cs" />
     <Compile Include="ConnectionHelper.cs" />
     <Compile Include="EconConfig\SellAction.cs" />
-    <Compile Include="EconConfig\TradeState.cs" />
+    <Compile Include="EconStructures\MarketZoneType.cs" />
+    <Compile Include="EconStructures\TradeState.cs" />
     <Compile Include="EconomyConsts.cs" />
     <Compile Include="EconomyScript.cs" />
-    <Compile Include="EconConfig\BankAccountStruct.cs" />
+    <Compile Include="EconStructures\BankAccountStruct.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="EconConfig\NpcMerchantManager.cs" />
     <Compile Include="Management\LcdManager.cs" />

@@ -1,7 +1,9 @@
-﻿namespace Economy.scripts.EconConfig
+﻿namespace Economy.scripts.EconStructures
 {
     using System;
+    using System.Xml.Serialization;
 
+    [XmlType("OrderBook")]
     public class OrderBookStruct
     {
         /// <summary>

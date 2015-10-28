@@ -4,11 +4,11 @@
     using System.Linq;
     using EconConfig;
     using Economy.scripts;
+    using Economy.scripts.EconStructures;
     using ProtoBuf;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
-    using Sandbox.ModAPI.Interfaces;
     using VRage;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
@@ -125,7 +125,15 @@
                 return;
             }
 
-            var marketItem = EconomyScript.Instance.Data.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
+            // TODO: this is hardcoded to the NPC merchant for the moment. Later this needs to be configurable.
+            var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.MarketId == EconomyConsts.NpcMerchantId);
+            if (market == null)
+            {
+                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the market you are accessing does not exist!");
+                return;
+            }
+
+            var marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
             if (marketItem == null)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the items you are trying to buy doesn't have a market entry!");

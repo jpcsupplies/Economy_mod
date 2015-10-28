@@ -1,7 +1,9 @@
-﻿namespace Economy.scripts.EconConfig
+﻿namespace Economy.scripts.EconStructures
 {
     using System;
+    using System.Xml.Serialization;
 
+    [XmlType("BankAccount")]
     public class BankAccountStruct
     {
         public ulong SteamId { get; set; }

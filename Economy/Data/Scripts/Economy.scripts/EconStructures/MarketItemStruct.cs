@@ -1,6 +1,9 @@
-﻿namespace Economy.scripts.EconConfig
+﻿namespace Economy.scripts.EconStructures
 {
-    public class MarketStruct
+    using System.Xml.Serialization;
+
+    [XmlType("MarketItem")]
+    public class MarketItemStruct
     {
         public string TypeId { get; set; }
 

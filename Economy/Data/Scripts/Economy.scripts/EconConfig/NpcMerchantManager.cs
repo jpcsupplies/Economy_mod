@@ -1,6 +1,7 @@
 ﻿namespace Economy.scripts.EconConfig
 {
     using System.Linq;
+    using Economy.scripts.EconStructures;
 
     /// <summary>
     /// checks for a valid NPC trader entry adds one if missing.

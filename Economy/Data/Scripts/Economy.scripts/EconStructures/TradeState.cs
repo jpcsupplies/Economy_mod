@@ -1,4 +1,4 @@
-﻿namespace Economy.scripts.EconConfig
+﻿namespace Economy.scripts.EconStructures
 {
     /// <summary>
     /// Names need to be explicitly set, as they will be written to the Data file.

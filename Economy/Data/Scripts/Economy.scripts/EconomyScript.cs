@@ -19,6 +19,7 @@ namespace Economy.scripts
     using System.Threading.Tasks;
     using System.Timers;
     using Economy.scripts.EconConfig;
+    using Economy.scripts.EconStructures;
     using Economy.scripts.Management;
     using Economy.scripts.Messages;
     using Sandbox.Common;
@@ -169,7 +170,7 @@ namespace Economy.scripts
 
             // start the timer last, as all data should be loaded before this point.
             ServerLogger.Write("Attaching Event timer.");
-            _timerEvents = new Timer(1000);
+            _timerEvents = new Timer(10000);
             _timerEvents.Elapsed += TimerEventsOnElapsed;
             _timerEvents.Start();
         }
@@ -407,7 +408,7 @@ namespace Economy.scripts
                 if (match.Success)
                 {
                     itemName = match.Groups["item"].Value.Trim();
-                     MyObjectBuilder_Base content = null;
+                    MyObjectBuilder_Base content = null;
                     string[] options;
                     // Search for the item and find one match only, either by exact name or partial name.
                     if (!Support.FindPhysicalParts(itemName, out content, out options))
@@ -420,9 +421,9 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
                         return true;
                     }
-                    
+
                     // TODO: extra security to prevent a player named _NPC messing with market
-                    MessageSell.SendSellMessage("_NPC", sellQuantity, content.TypeId.ToString(), content.SubtypeName, 0, true, true,false);
+                    MessageSell.SendSellMessage("_NPC", sellQuantity, content.TypeId.ToString(), content.SubtypeName, 0, true, true, false);
                     return true;
                 }
 
@@ -520,7 +521,7 @@ namespace Economy.scripts
 
                 switch (split.Length)
                 {
-                        // everything below here is not used but kept for reference for later functions
+                    // everything below here is not used but kept for reference for later functions
                     case 2: //ie /sell all or /sell cancel or /sell accept or /sell deny
                         if (split[1].Equals("cancel", StringComparison.InvariantCultureIgnoreCase))
                         {
@@ -545,18 +546,18 @@ namespace Economy.scripts
                         //return false;
                         break;
                         //default: //must be more than 2 and invalid
-/*                        if (buyerName != EconomyConsts.NpcMerchantName && buyerName != "OFFER")
-                        {
-                            //must be selling to a player (or faction ?)
-                            //check the item to sell is a valid product, do usual qty type checks etc
-                            //check the player / faction exists etc etc
-                            MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We are selling to a player send request prompt or if it is a faction check they are trading this item");
-                        }
-                        else
-                        {
-                            if (buyerName == EconomyConsts.NpcMerchantName) { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be selling to NPC - skip prompts sell immediately at price book price"); }
-                            if (buyerName == "OFFER") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be posting a sell offer to stockmarket - skip prompts post offer UNLESS we match a buy offer at the same price then process that"); }
-                        }*/
+                        /*                        if (buyerName != EconomyConsts.NpcMerchantName && buyerName != "OFFER")
+                                                {
+                                                    //must be selling to a player (or faction ?)
+                                                    //check the item to sell is a valid product, do usual qty type checks etc
+                                                    //check the player / faction exists etc etc
+                                                    MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We are selling to a player send request prompt or if it is a faction check they are trading this item");
+                                                }
+                                                else
+                                                {
+                                                    if (buyerName == EconomyConsts.NpcMerchantName) { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be selling to NPC - skip prompts sell immediately at price book price"); }
+                                                    if (buyerName == "OFFER") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be posting a sell offer to stockmarket - skip prompts post offer UNLESS we match a buy offer at the same price then process that"); }
+                                                }*/
                         //return false; 
                 }
 
@@ -629,7 +630,7 @@ namespace Economy.scripts
 
                         // Primary checks for the component are carried out Client side to reduce processing time on the server. not that 2ms matters but if 
                         // there is thousands of these requests at once one day in "space engineers the MMO" or on some auto-trading bot it might become a problem
-                        MessageMarketItemValue.SendMessage(content.TypeId.ToString(), content.SubtypeName, amount, MarketManager.GetDisplayName(content.TypeId.ToString(), content.SubtypeName));
+                        MessageMarketItemValue.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, amount, MarketManager.GetDisplayName(content.TypeId.ToString(), content.SubtypeName));
                         return true;
                     }
 
@@ -719,7 +720,7 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMessage("Help", "/value X Y - Looks up item [X] of optional quantity [Y] and reports the buy and sell value.");
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /value Ice 20    or   /value ice");
                             return true;
-                             
+
                     }
                 }
             }

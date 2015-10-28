@@ -65,6 +65,12 @@
             Clear();
         }
 
+        ~TextPanelWriter()
+        {
+            if (TextPanelWriter.TextPanelWriterCache.ContainsKey(_panel))
+                TextPanelWriter.TextPanelWriterCache.Remove(_panel);
+        }
+
         static TextPanelWriter()
         {
             LoadCharWidths();
@@ -85,7 +91,6 @@
             foreach (var item in list)
                 TextPanelWriterCache.Remove(item);
         }
-
 
         #endregion
 

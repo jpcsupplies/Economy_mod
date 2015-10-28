@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using Economy.scripts.EconStructures;
     using Sandbox.ModAPI;
 
     public static class AccountManager

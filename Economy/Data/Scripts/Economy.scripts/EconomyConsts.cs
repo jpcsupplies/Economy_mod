@@ -23,6 +23,13 @@
         /// <remarks>This sets if players (or traders) should be nearby before being allowed to trade or not</remarks>
         public const bool LimitedRange = false; //default should be true; may be false for testing or gameplay reasons.
 
+
+        /// <summary>
+        /// Default range of trade zones.
+        /// This is the radius of a sphere. 
+        /// </summary>
+        public const double DefaultTradeRange = 2500;
+
         /// <summary>
         /// Should the NPC market be limited or unlimited supply
         /// </summary>
@@ -39,7 +46,7 @@
         /// <summary>
         /// The name that will used to identify the Merchant's server account.
         /// </summary>
-        public const string NpcMerchantName = "NPC";
+        public const string NpcMerchantName = "_Default_NPC_Merchant_";
 
         /// <summary>
         /// The default value for timeouts.
