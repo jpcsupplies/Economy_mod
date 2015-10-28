@@ -139,7 +139,7 @@
                             //ItemQuantity = Math.Round(ItemQuantity, 0);  // Or do we just round the number?
                         }
 
-                        if (ItemQuantity <= 0)
+                        if (ItemQuantity <= 0 && ToUserName != "_NPC" ) //_NPC indicates if we skip here to set on hand
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Invalid quantity, or you dont have any to trade!");
                             return;
@@ -152,7 +152,7 @@
                         else
                             accountToBuy = AccountManager.FindAccount(ToUserName);
 
-                        if (accountToBuy == null)
+                        if (accountToBuy == null && ToUserName != "_NPC") //_NPC indicates if we skip here to set on hand
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, player does not exist or have an account!");
                             return;
@@ -166,7 +166,7 @@
                             return;
                         }
 
-                        if (marketItem.IsBlacklisted)
+                        if (marketItem.IsBlacklisted) //probably should add a set command for toggling black list here too
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you tried to sell is blacklisted on this server.");
                             return;
@@ -203,7 +203,7 @@
                         MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
 
                         var storedAmount = inventory.GetItemAmount(definition.Id);
-                        if (amount > storedAmount)
+                        if (amount > storedAmount && ToUserName != "_NPC") //_NPC indicates if we skip here to set on hand
                         {
                             // Insufficient items in inventory.
                             // TODO: use of definition.GetDisplayName() isn't localized here.
@@ -225,18 +225,28 @@
                         if (SellToMerchant) // && (merchant has enough money  || !EconomyConsts.LimitedSupply)
                                             //this is also a quick fix ideally npc should buy what it can afford and the rest is posted as a sell offer
                         {
-                            if (accountToBuy.BankBalance >= transactionAmount || !EconomyConsts.LimitedSupply)
+                            if (accountToBuy.BankBalance >= transactionAmount || !EconomyConsts.LimitedSupply || ToUserName == "_NPC")
                             {
                                 // here we look up item price and transfer items and money as appropriate
-                                inventory.RemoveItemsOfType(amount, definition.Id);
-                                marketItem.Quantity += ItemQuantity; // increment Market content.
+                                if (ToUserName != "_NPC") // only do this if we are not setting on hand
+                                {
+                                    inventory.RemoveItemsOfType(amount, definition.Id);
+                                    marketItem.Quantity += ItemQuantity; // increment Market content.
 
-                                accountToBuy.BankBalance -= transactionAmount;
-                                accountToBuy.Date = DateTime.Now;
+                                    accountToBuy.BankBalance -= transactionAmount;
+                                    accountToBuy.Date = DateTime.Now;
 
-                                accountToSell.BankBalance += transactionAmount;
-                                accountToSell.Date = DateTime.Now;
-                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName());
+                                    accountToSell.BankBalance += transactionAmount;
+                                    accountToSell.Date = DateTime.Now;
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName());
+                                }
+                                else if (sellingPlayer.IsAdmin())  //only do this if the player is an admin to stop a player named _NPC fiddling the on hand
+                                {
+                                    marketItem.Quantity = ItemQuantity;
+                                    accountToBuy.Date = DateTime.Now;
+                                    accountToSell.Date = DateTime.Now;
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "You just set {1} stock on hand to {0} units)",  ItemQuantity, definition.GetDisplayName());
+                                }
                             }
                             else
                             {

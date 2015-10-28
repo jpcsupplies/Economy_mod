@@ -247,35 +247,7 @@ namespace Economy.scripts
 
         #endregion
 
-        private bool RangeCheck(string targetname)
-        {
-            //lookup the location of target name and compare with location of seller
-            //there has to be an easy way to do this, the GPSs use it..
-            //Point 1 at (x1, y1, z1) and Point 2 at (x2, y2, z2).
-            //Sandbox.Game.Entities.MyFloatingObject.ClosestDistanceToAnyPlayerSquared
-            //Sandbox.Game.World.MyPlayer.GetPosition()
-            //Sandbox.ModAPI.IMyPlayer.GetPosition()
-            //targetname represents either a player or a registered trade zone
-            //might need to fine tune this more to also accept xyz coords.
 
-            //so logic is:
-            //get player position;  split player position into x=x1 y=y1 z=z1
-            //get targetname position or whatever data we passed to this, put into x=x2 y=y2 z=z2
-
-            // lets pretend here.. that we are at x1,y1,z1 (1000,1000,500)
-            // and we are looking for the distance to the junkyard x2, y2, z2 (1000,1000,1000)
-            double x2=1000; double y2=1000; double z2=1000;  //sample target location
-            double x1=1000; double y1=1000; double z1=500;   //sample player location
-           
-            //ok lets do some math here -        
-            double xd = x2-x1; //distance on x axis
-            double yd = y2-y1; //distance on y axis
-            double zd = z2-z1; //distance on z axis
-            double Distance = Math.Sqrt(xd * xd + yd * yd + zd * zd); //average distance expressed as a square root
-            MyAPIGateway.Utilities.ShowMessage("SQR", "Range on {1} reads as: {0}", Distance, targetname);
-             
-            if (Distance <= 2500) { return true; } else { return false;  } //so did it come within our default range
-        } 
 
         #region message handling
 
@@ -449,13 +421,13 @@ namespace Economy.scripts
                         return true;
                     }
                     
-                    // TODO: add items into holding as part of the sell message, from container Id: inventory.Owner.EntityId.
+                    // TODO: extra security to prevent a player named _NPC messing with market
                     MessageSell.SendSellMessage("_NPC", sellQuantity, content.TypeId.ToString(), content.SubtypeName, 0, true, true,false);
                     return true;
                 }
 
 
-                MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2 0 0");
+                MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2");
                 MyAPIGateway.Utilities.ShowMessage("SET", "#1 is quantity, #2 is item");
                 return true;
             }
@@ -746,11 +718,6 @@ namespace Economy.scripts
                         case "value":
                             MyAPIGateway.Utilities.ShowMessage("Help", "/value X Y - Looks up item [X] of optional quantity [Y] and reports the buy and sell value.");
                             MyAPIGateway.Utilities.ShowMessage("Help", "Example: /value Ice 20    or   /value ice");
-                            return true;
-                        case "test":
-                            MyAPIGateway.Utilities.ShowMessage("Help", "Testing "); // just here for firing off stuff i want to test
-                            string checkthis = split[2] + " " + split[3] + " " + split[4];
-                            if (RangeCheck(checkthis)) { MyAPIGateway.Utilities.ShowMessage("Help", "True "); } else { MyAPIGateway.Utilities.ShowMessage("Help", "False"); }
                             return true;
                              
                     }
