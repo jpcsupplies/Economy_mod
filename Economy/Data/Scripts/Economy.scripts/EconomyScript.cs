@@ -375,16 +375,16 @@ namespace Economy.scripts
                     }
 
                     MyObjectBuilder_Base content;
-                    string[] options;
+                    Dictionary<string, MyPhysicalItemDefinition> options;
                     // Search for the item and find one match only, either by exact name or partial name.
                     if (!Support.FindPhysicalParts(itemName, out content, out options))
                     {
-                        if (options.Length == 0)
+                        if (options.Count == 0)
                             MyAPIGateway.Utilities.ShowMessage("BUY", "Item name not found.");
-                        else if (options.Length > 10)
-                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
+                        else if (options.Count > 10)
+                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options.Keys) + " ?", null, "OK");
                         else
-                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options.Keys) + " ?");
                         return true;
                     }
 
@@ -419,16 +419,16 @@ namespace Economy.scripts
                     itemName = match.Groups["item"].Value.Trim();
                     sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
                     MyObjectBuilder_Base content = null;
-                    string[] options;
+                    Dictionary<string, MyPhysicalItemDefinition> options;
                     // Search for the item and find one match only, either by exact name or partial name.
                     if (!Support.FindPhysicalParts(itemName, out content, out options))
                     {
-                        if (options.Length == 0)
+                        if (options.Count == 0)
                             MyAPIGateway.Utilities.ShowMessage("SET", "Item name not found.");
-                        else if (options.Length > 10)
-                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
+                        else if (options.Count > 10)
+                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options.Keys) + " ?", null, "OK");
                         else
-                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options.Keys) + " ?");
                         return true;
                     }
 
@@ -500,16 +500,19 @@ namespace Economy.scripts
                     }
 
                     MyObjectBuilder_Base content = null;
-                    string[] options;
+                    Dictionary<string, MyPhysicalItemDefinition> options;
                     // Search for the item and find one match only, either by exact name or partial name.
                     if (!Support.FindPhysicalParts(itemName, out content, out options))
                     {
-                        if (options.Length == 0)
+                        // TODO: filter according to items in player inventory.
+                        //options = options.Where(e =>  check inventory ..(e.Value.Id.TypeId.ToString(), e.Value.Id.SubtypeName)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+                        if (options.Count == 0)
                             MyAPIGateway.Utilities.ShowMessage("SELL", "Item name not found.");
-                        else if (options.Length > 10)
-                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
+                        else if (options.Count > 10)
+                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options.Keys) + " ?", null, "OK");
                         else
-                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options.Keys) + " ?");
                         return true;
                     }
 
@@ -614,17 +617,17 @@ namespace Economy.scripts
                     var itemName = match.Groups["Key"].Value;
                     var strAmount = match.Groups["Value"].Value;
                     MyObjectBuilder_Base content;
-                    string[] options;
+                    Dictionary<string, MyPhysicalItemDefinition> options;
 
                     // Search for the item and find one match only, either by exact name or partial name.
                     if (!Support.FindPhysicalParts(itemName, out content, out options))
                     {
-                        if (options.Length == 0)
+                        if (options.Count == 0)
                             MyAPIGateway.Utilities.ShowMessage("VALUE", "Item name not found.");
-                        else if (options.Length > 10)
-                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options) + " ?", null, "OK");
+                        else if (options.Count > 10)
+                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options.Keys) + " ?", null, "OK");
                         else
-                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options) + " ?");
+                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options.Keys) + " ?");
                         return true;
                     }
                     if (content != null)

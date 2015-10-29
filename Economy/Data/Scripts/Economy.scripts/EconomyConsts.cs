@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace Economy.scripts
+﻿namespace Economy.scripts
 {
+    using System;
+
     /// <summary>
     /// Some of these options will later be configurable in a setting file and/or in game commands but for now set as defaults
     /// </summary>
@@ -12,7 +12,7 @@ namespace Economy.scripts
         /// </summary>
         /// <remarks>This will still be the default value if a Admin does not configure a custom starting balance.</remarks>
         public const decimal DefaultStartingBalance = 100;
-    
+
         /// <summary>
         /// The starting balance for NPC Bankers.
         /// </summary>

@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using EconConfig;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
@@ -16,10 +17,10 @@
     {
         #region fields
 
-        private static string[] _oreNames;
-        private static List<string> _ingotNames;
         private static MyPhysicalItemDefinition[] _physicalItems;
-        private static string[] _physicalItemNames;
+        private static Dictionary<string, MyPhysicalItemDefinition> _physicalItemNames;
+        private static Dictionary<string, MyPhysicalItemDefinition> _oreList;
+        private static Dictionary<string, MyPhysicalItemDefinition> _ingotList;
         private static bool _hasBuiltComponentList;
 
         #endregion
@@ -35,34 +36,30 @@
 
             EconomyScript.Instance.ClientLogger.Write("BuildComponentLists");
 
-            MyDefinitionManager.Static.GetOreTypeNames(out _oreNames);
             var physicalItems = MyDefinitionManager.Static.GetPhysicalItemDefinitions();
             _physicalItems = physicalItems.Where(item => item.Public).ToArray();  // Limit to public items.  This will remove the CubePlacer. :)
-            _ingotNames = new List<string>();
 
-            foreach (var physicalItem in _physicalItems)
-            {
-                if (physicalItem.Id.TypeId == typeof(MyObjectBuilder_Ingot))
-                {
-                    _ingotNames.Add(physicalItem.Id.SubtypeName);
-                }
-            }
+            // TODO: This list is generated ONCE, and not generated again during the session, so if an Item has its Blacklist state changed mid-game, it may show up or not show up.
+            // Filter out the server Blacklisted items from the options.
+            _physicalItems = _physicalItems.Where(e => !MarketManager.IsItemBlacklistedOnServer(e.Id.TypeId.ToString(), e.Id.SubtypeName)).ToArray();
 
             // Make sure all Public Physical item names are unique, so they can be properly searched for.
-            var names = new List<string>();
+            _physicalItemNames = new Dictionary<string, MyPhysicalItemDefinition>();
             foreach (var item in _physicalItems)
             {
                 var baseName = item.GetDisplayName();
                 var uniqueName = baseName;
                 var index = 1;
-                while (names.Contains(uniqueName, StringComparer.InvariantCultureIgnoreCase))
+                while (_physicalItemNames.ContainsKey(uniqueName))
                 {
                     index++;
                     uniqueName = string.Format("{0}{1}", baseName, index);
                 }
-                names.Add(uniqueName);
+                _physicalItemNames.Add(uniqueName, item);
             }
-            _physicalItemNames = names.ToArray();
+
+            _oreList = _physicalItemNames.Where(p => p.Value.Id.TypeId == typeof(MyObjectBuilder_Ore)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            _ingotList = _physicalItemNames.Where(p => p.Value.Id.TypeId == typeof(MyObjectBuilder_Ingot)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             _hasBuiltComponentList = true;
         }
@@ -74,10 +71,10 @@
         /// <param name="objectBuilder">The object builder of the physical object, ready for use.</param>
         /// <param name="options">Returns a list of potential matches if there was more than one of the same or partial name.</param>
         /// <returns>Returns true if a single exact match was found.</returns>
-        public static bool FindPhysicalParts(string itemName, out MyObjectBuilder_Base objectBuilder, out string[] options)
+
+        public static bool FindPhysicalParts(string itemName, out MyObjectBuilder_Base objectBuilder, out Dictionary<string, MyPhysicalItemDefinition> options)
         {
             BuildComponentLists();
-
             itemName = itemName.Trim();
             var itemNames = itemName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -86,28 +83,28 @@
             {
                 var findName = itemName.Substring(4).Trim();
 
-                var exactMatchOres = _oreNames.Where(ore => ore.Equals(findName, StringComparison.InvariantCultureIgnoreCase)).ToArray();
-                if (exactMatchOres.Length == 1)
+                var exactMatchOres = _oreList.Where(ore => ore.Value.Id.SubtypeName.Equals(findName, StringComparison.InvariantCultureIgnoreCase)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                if (exactMatchOres.Count == 1)
                 {
-                    objectBuilder = new MyObjectBuilder_Ore() { SubtypeName = exactMatchOres[0] };
-                    options = new string[0];
+                    objectBuilder = new MyObjectBuilder_Ore() { SubtypeName = exactMatchOres.First().Value.Id.SubtypeName };
+                    options = new Dictionary<string, MyPhysicalItemDefinition>();
                     return true;
                 }
-                else if (exactMatchOres.Length > 1)
+                if (exactMatchOres.Count > 1)
                 {
                     objectBuilder = null;
                     options = exactMatchOres;
                     return false;
                 }
 
-                var partialMatchOres = _oreNames.Where(ore => ore.IndexOf(findName, StringComparison.InvariantCultureIgnoreCase) >= 0).ToArray();
-                if (partialMatchOres.Length == 1)
+                var partialMatchOres = _oreList.Where(ore => ore.Value.Id.SubtypeName.IndexOf(findName, StringComparison.InvariantCultureIgnoreCase) >= 0).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                if (partialMatchOres.Count == 1)
                 {
-                    objectBuilder = new MyObjectBuilder_Ore() { SubtypeName = partialMatchOres[0] };
-                    options = new string[0];
+                    objectBuilder = new MyObjectBuilder_Ore() { SubtypeName = partialMatchOres.First().Value.Id.SubtypeName };
+                    options = new Dictionary<string, MyPhysicalItemDefinition>();
                     return true;
                 }
-                else if (partialMatchOres.Length > 1)
+                if (partialMatchOres.Count > 1)
                 {
                     objectBuilder = null;
                     options = partialMatchOres;
@@ -115,7 +112,7 @@
                 }
 
                 objectBuilder = null;
-                options = new string[0];
+                options = new Dictionary<string, MyPhysicalItemDefinition>();
                 return false;
             }
 
@@ -124,28 +121,28 @@
             {
                 var findName = itemName.Substring(6).Trim();
 
-                var exactMatchIngots = _ingotNames.Where(ingot => ingot.Equals(findName, StringComparison.InvariantCultureIgnoreCase)).ToArray();
-                if (exactMatchIngots.Length == 1)
+                var exactMatchIngots = _ingotList.Where(ingot => ingot.Value.Id.SubtypeName.Equals(findName, StringComparison.InvariantCultureIgnoreCase)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                if (exactMatchIngots.Count == 1)
                 {
-                    objectBuilder = new MyObjectBuilder_Ingot() { SubtypeName = exactMatchIngots[0] };
-                    options = new string[0];
+                    objectBuilder = new MyObjectBuilder_Ingot() { SubtypeName = exactMatchIngots.First().Value.Id.SubtypeName };
+                    options = new Dictionary<string, MyPhysicalItemDefinition>();
                     return true;
                 }
-                else if (exactMatchIngots.Length > 1)
+                if (exactMatchIngots.Count > 1)
                 {
                     objectBuilder = null;
                     options = exactMatchIngots;
                     return false;
                 }
 
-                var partialMatchIngots = _ingotNames.Where(ingot => ingot.IndexOf(findName, StringComparison.InvariantCultureIgnoreCase) >= 0).ToArray();
-                if (partialMatchIngots.Length == 1)
+                var partialMatchIngots = _ingotList.Where(ingot => ingot.Value.Id.SubtypeName.IndexOf(findName, StringComparison.InvariantCultureIgnoreCase) >= 0).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                if (partialMatchIngots.Count == 1)
                 {
-                    objectBuilder = new MyObjectBuilder_Ingot() { SubtypeName = partialMatchIngots[0] };
-                    options = new string[0];
+                    objectBuilder = new MyObjectBuilder_Ingot() { SubtypeName = partialMatchIngots.First().Value.Id.SubtypeName };
+                    options = new Dictionary<string, MyPhysicalItemDefinition>();
                     return true;
                 }
-                else if (partialMatchIngots.Length > 1)
+                if (partialMatchIngots.Count > 1)
                 {
                     objectBuilder = null;
                     options = partialMatchIngots;
@@ -153,30 +150,30 @@
                 }
 
                 objectBuilder = null;
-                options = new string[0];
+                options = new Dictionary<string, MyPhysicalItemDefinition>();
                 return false;
             }
 
             // full name match.
-            var res = _physicalItemNames.FirstOrDefault(s => s != null && s.Equals(itemName, StringComparison.InvariantCultureIgnoreCase));
+            var res = _physicalItemNames.FirstOrDefault(s => s.Key != null && s.Key.Equals(itemName, StringComparison.InvariantCultureIgnoreCase));
 
             // need a good method for finding partial name matches.
-            if (res == null)
+            if (res.Key == null)
             {
-                var matches = _physicalItemNames.Where(s => s != null && s.StartsWith(itemName, StringComparison.InvariantCultureIgnoreCase)).Distinct().ToArray();
+                var matches = _physicalItemNames.Where(s => s.Key != null && s.Key.StartsWith(itemName, StringComparison.InvariantCultureIgnoreCase)).Distinct().ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-                if (matches.Length == 1)
+                if (matches.Count == 1)
                 {
                     res = matches.FirstOrDefault();
                 }
                 else
                 {
-                    matches = _physicalItemNames.Where(s => s != null && s.IndexOf(itemName, StringComparison.InvariantCultureIgnoreCase) >= 0).Distinct().ToArray();
-                    if (matches.Length == 1)
+                    matches = _physicalItemNames.Where(s => s.Key != null && s.Key.IndexOf(itemName, StringComparison.InvariantCultureIgnoreCase) >= 0).Distinct().ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                    if (matches.Count == 1)
                     {
                         res = matches.FirstOrDefault();
                     }
-                    else if (matches.Length > 1)
+                    else if (matches.Count > 1)
                     {
                         objectBuilder = null;
                         options = matches;
@@ -185,19 +182,18 @@
                 }
             }
 
-            if (res != null)
+            if (res.Key != null)
             {
-                var item = _physicalItems[Array.IndexOf(_physicalItemNames, res)];
-                if (item != null)
+                if (res.Value != null)
                 {
-                    objectBuilder = MyObjectBuilderSerializer.CreateNewObject(item.Id.TypeId, item.Id.SubtypeName);
-                    options = new string[0];
+                    objectBuilder = MyObjectBuilderSerializer.CreateNewObject(res.Value.Id.TypeId, res.Value.Id.SubtypeName);
+                    options = new Dictionary<string, MyPhysicalItemDefinition>();
                     return true;
                 }
             }
 
             objectBuilder = null;
-            options = new string[0];
+            options = new Dictionary<string, MyPhysicalItemDefinition>();
             return false;
         }
 
