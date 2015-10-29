@@ -13,6 +13,12 @@
         public ulong MarketId { get; set; }
 
         /// <summary>
+        /// The name of the Market.
+        /// This should be set when the market is first created.
+        /// </summary>
+        public string DisplayName { get; set; }
+
+        /// <summary>
         /// The shape of the market zone.
         /// </summary>
         public MarketZoneType MarketZoneType { get; set; }

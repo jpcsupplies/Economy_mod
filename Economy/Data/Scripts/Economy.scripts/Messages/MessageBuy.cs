@@ -125,30 +125,11 @@
                 return;
             }
 
-            // TODO: this is hardcoded to the NPC merchant for the moment. Later this needs to be configurable.
-            var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.MarketId == EconomyConsts.NpcMerchantId);
-            if (market == null)
-            {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the market you are accessing does not exist!");
-                return;
-            }
-
-            var marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
-            if (marketItem == null)
-            {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the items you are trying to buy doesn't have a market entry!");
-                // TODO: in reality, this item needs not just to have an entry created, but a value applied also. It's the value that is more important.
-                return;
-            }
-
-            if (marketItem.IsBlacklisted)
+            if (MarketManager.IsItemBlacklistedOnServer(ItemTypeId, ItemSubTypeName))
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the item you tried to buy is blacklisted on this server.");
                 return;
             }
-
-            // Verify that the items are in the player inventory.
-            // TODO: later check trade block, cockpit inventory, cockpit ship inventory, inventory of targeted cube.
 
             // Get the player's inventory, regardless of if they are in a ship, or a remote control cube.
             var character = buyingPlayer.GetCharacter();
@@ -174,9 +155,49 @@
             //    return;
             //}
 
-            if (UseBankSellPrice)
-                // The player is buying, but the *Market* will *sell* it to the player at this price.
-                ItemPrice = marketItem.SellPrice;
+            var position = ((IMyEntity)character).WorldMatrix.Translation;
+
+            MarketItemStruct marketItem = null;
+
+            if (BuyFromMerchant || UseBankSellPrice)
+            {
+                var markets = MarketManager.FindMarketsFromLocation(position);
+                if (markets.Count == 0)
+                {
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, your are not in range of any markets!");
+                    return;
+                }
+
+                // TODO: find market with best Sell price that isn't blacklisted.
+
+                var market = markets.FirstOrDefault();
+                if (market == null)
+                {
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the market you are accessing does not exist!");
+                    return;
+                }
+
+                marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
+                if (marketItem == null)
+                {
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the items you are trying to buy doesn't have a market entry!");
+                    // In reality, this shouldn't happen as all markets have their items synced up on start up of the mod.
+                    return;
+                }
+
+                if (marketItem.IsBlacklisted)
+                {
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the item you tried to buy is blacklisted in this market.");
+                    return;
+                }
+
+                // Verify that the items are in the player inventory.
+                // TODO: later check trade block, cockpit inventory, cockpit ship inventory, inventory of targeted cube.
+
+                if (UseBankSellPrice)
+                    // The player is buying, but the *Market* will *sell* it to the player at this price.
+                    ItemPrice = marketItem.SellPrice;
+            }
 
             var accountToBuy = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
             var transactionAmount = ItemPrice * ItemQuantity;
@@ -195,7 +216,7 @@
             }
 
             if (BuyFromMerchant) // and supply is not exhausted, or unlimited mode is not on.   
-                //This is a quick fix, ideally it should do a partial buy of what is left and post a buy offer for remainder
+                                 //This is a quick fix, ideally it should do a partial buy of what is left and post a buy offer for remainder
             {
                 // here we look up item price and transfer items and money as appropriate
                 if (marketItem.Quantity >= ItemQuantity || !EconomyConsts.LimitedSupply)
@@ -219,7 +240,7 @@
                     MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0}", transactionAmount, ItemQuantity, definition.GetDisplayName());
                 }
                 else { MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There isn't '{0}' of {1} available to purchase! Only {2} available to buy!", ItemQuantity, definition.GetDisplayName(), marketItem.Quantity); }
-                
+
                 return;
             }
             else if (FindOnMarket)

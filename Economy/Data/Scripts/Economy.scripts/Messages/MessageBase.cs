@@ -18,6 +18,7 @@
     [XmlInclude(typeof(MessageClientTextMessage))]
     [XmlInclude(typeof(MessageSell))]
     [XmlInclude(typeof(MessageBuy))]
+    [XmlInclude(typeof(MessageSet))]
     [ProtoContract]
     public abstract class MessageBase
     {

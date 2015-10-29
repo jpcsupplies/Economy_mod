@@ -6,8 +6,9 @@
     using Economy.scripts.EconStructures;
     using Messages;
     using Sandbox.Definitions;
-    using VRage;
-    using VRage.ObjectBuilders;
+    using Sandbox.ModAPI;
+    using VRage.ModAPI;
+    using VRageMath;
 
     public static class MarketManager
     {
@@ -33,8 +34,6 @@
                         marketItems.Add(new MarketItemStruct { TypeId = item.Id.TypeId.ToString(), SubtypeName = item.Id.SubtypeName, BuyPrice = 1, SellPrice = 1, IsBlacklisted = true });
                         EconomyScript.Instance.ServerLogger.Write("MarketItem Adding new item: {0} {1}.", item.Id.TypeId.ToString(), item.Id.SubtypeName);
                     }
-
-
                 }
             }
 
@@ -42,41 +41,13 @@
             //var gasItems = MyDefinitionManager.Static.GetGas???;
 
 
+            // Bottles...
+            // MyDefinitionId = MyOxygenContainerDefinition.StoredGasId;
+            // maxVolume = MyOxygenContainerDefinition.Capacity;
+
+            // Tanks... To be done later. it should work the same as bottles though.
+            // MyDefinitionId = MyGasTankDefinition.StoredGasId;
         }
-
-        /// <summary>
-        /// Must be called by the Client for correct localization.
-        /// </summary>
-        /// <param name="typeId"></param>
-        /// <param name="subtypeName"></param>
-        /// <returns></returns>
-        public static string GetDisplayName(string typeId, string subtypeName)
-        {
-            MyObjectBuilderType result;
-            if (MyObjectBuilderType.TryParse(typeId, out result))
-            {
-                var id = new MyDefinitionId(result, subtypeName);
-                MyPhysicalItemDefinition definition;
-                if (MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition))
-                {
-                    return definition.DisplayNameEnum.HasValue ? MyTexts.GetString(definition.DisplayNameEnum.Value) : definition.DisplayNameString;
-                }
-            }
-            return "";
-        }
-
-        private static MyDefinitionId? GetDefinitionId(MarketItemStruct marketItem)
-        {
-            MyObjectBuilderType result;
-            if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
-            {
-                return new MyDefinitionId(result, marketItem.SubtypeName);
-            }
-
-            return null;
-        }
-
-        #endregion
 
         public static void CreateSellOrder(ulong sellerId, string goodsTypeId, string goodsSubtypeName, decimal quantity, decimal price)
         {
@@ -151,5 +122,67 @@
                 }
             }
         }
+
+        public static List<MarketStruct> FindMarketsFromLocation(Vector3D position)
+        {
+            var list = new List<MarketStruct>();
+            foreach (var market in EconomyScript.Instance.Data.Markets)
+            {
+                switch (market.MarketZoneType)
+                {
+                    case MarketZoneType.EntitySphere:
+                        if (market.EntityId == 0 || !MyAPIGateway.Entities.EntityExists(market.EntityId))
+                            continue;
+                        if (!market.MarketZoneSphere.HasValue)
+                            continue;
+                        IMyEntity entity;
+                        if (!MyAPIGateway.Entities.TryGetEntityById(market.EntityId, out entity))
+                            continue;
+                        if (entity.Closed || entity.MarkedForClose)
+                            continue;
+                        var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, market.MarketZoneSphere.Value.Radius);
+                        if (sphere.Contains(position) == ContainmentType.Contains)
+                            list.Add(market);
+                        break;
+
+                    case MarketZoneType.FixedSphere:
+                        if (!market.MarketZoneSphere.HasValue)
+                            continue;
+                        if (market.MarketZoneSphere.Value.Contains(position) == ContainmentType.Contains)
+                            list.Add(market);
+                        break;
+
+                    case MarketZoneType.FixedBox:
+                        if (!market.MarketZoneBox.HasValue)
+                            continue;
+                        if (market.MarketZoneBox.Value.Contains(position) == ContainmentType.Contains)
+                            list.Add(market);
+                        break;
+                }
+            }
+            return list;
+        }
+
+        public static bool IsItemBlacklistedOnServer(string itemTypeId, string itemSubTypeName)
+        {
+            var marketItem = EconomyScript.Instance.Config.DefaultPrices.FirstOrDefault(e => e.TypeId == itemTypeId && e.SubtypeName == itemSubTypeName);
+            if (marketItem == null)
+                return true; // does't exist. Same as been blacklisted.
+
+            return marketItem.IsBlacklisted;
+        }
+
+        //private static MyDefinitionId? GetDefinitionId(MarketItemStruct marketItem)
+        //{
+        //    MyObjectBuilderType result;
+        //    if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
+        //    {
+        //        return new MyDefinitionId(result, marketItem.SubtypeName);
+        //    }
+
+        //    return null;
+        //}
+
+        #endregion
     }
 }

@@ -638,6 +638,22 @@
       <BuyPrice>1</BuyPrice>
       <IsBlacklisted>true</IsBlacklisted>
     </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_GasProperties</TypeId>
+      <SubtypeName>Oxygen</SubtypeName>
+      <Quantity>10000</Quantity>
+      <SellPrice>10.11</SellPrice>
+      <BuyPrice>8.97</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_GasProperties</TypeId>
+      <SubtypeName>Hydrogen</SubtypeName>
+      <Quantity>10000</Quantity>
+      <SellPrice>10.11</SellPrice>
+      <BuyPrice>8.97</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
   </MarketItems>
 </Market>";
 
@@ -733,6 +749,7 @@
                 {
                     MarketId = EconomyConsts.NpcMerchantId,
                     MarketZoneType = MarketZoneType.FixedSphere,
+                    DisplayName = "Default Zone",
                     MarketZoneSphere = new BoundingSphereD(Vector3D.Zero, EconomyConsts.DefaultTradeRange), // Center of the game world.
                     MarketItems = new List<MarketItemStruct>()
                 };

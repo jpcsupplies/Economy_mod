@@ -135,8 +135,7 @@ namespace Economy.scripts
 
         public static string GetDisplayName(this MyObjectBuilder_Base objectBuilder)
         {
-            var defintion = MyDefinitionManager.Static.GetPhysicalItemDefinition(objectBuilder);
-            return defintion.DisplayNameEnum.HasValue ? MyTexts.GetString(defintion.DisplayNameEnum.Value) : defintion.DisplayNameString;
+            return MyDefinitionManager.Static.GetPhysicalItemDefinition(objectBuilder).GetDisplayName();
         }
 
         public static string GetDisplayName(this MyPhysicalItemDefinition defintion)

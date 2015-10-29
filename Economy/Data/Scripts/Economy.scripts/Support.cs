@@ -52,7 +52,7 @@
             var names = new List<string>();
             foreach (var item in _physicalItems)
             {
-                var baseName = item.DisplayNameEnum.HasValue ? MyTexts.GetString(item.DisplayNameEnum.Value) : item.DisplayNameString;
+                var baseName = item.GetDisplayName();
                 var uniqueName = baseName;
                 var index = 1;
                 while (names.Contains(uniqueName, StringComparer.InvariantCultureIgnoreCase))
@@ -232,7 +232,7 @@
             var distance = Vector3D.Distance(position1, position2);
 
             // so did it come within our default range
-            return distance <= 2500;
+            return distance <= EconomyConsts.DefaultTradeRange;
         }
 
         public static bool InventoryAdd(IMyInventory inventory, MyFixedPoint amount, MyDefinitionId definitionId)
@@ -283,5 +283,24 @@
 
             floatingBuilder.CreateAndSyncEntity();
         }
+
+        ///// <summary>
+        ///// Must be called by the Client for correct localization.
+        ///// </summary>
+        ///// <param name="typeId"></param>
+        ///// <param name="subtypeName"></param>
+        ///// <returns></returns>
+        //public static string GetDisplayName(string typeId, string subtypeName)
+        //{
+        //    MyObjectBuilderType result;
+        //    if (MyObjectBuilderType.TryParse(typeId, out result))
+        //    {
+        //        var id = new MyDefinitionId(result, subtypeName);
+        //        MyPhysicalItemDefinition definition;
+        //        if (MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition))
+        //            return definition.GetDisplayName();
+        //    }
+        //    return "";
+        //}
     }
 }

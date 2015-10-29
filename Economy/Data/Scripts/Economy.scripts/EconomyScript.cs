@@ -434,9 +434,12 @@ namespace Economy.scripts
 
                     MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2");
 
-                    MessageSell.SendSellMessage("_NPC", sellQuantity, content.TypeId.ToString(), content.SubtypeName, 0, true, true, false);
+                    // TODO: do range checks for the market, using MarketManager.FindMarketsFromLocation()
+
+                    // TODO: get more from the /SET command to set prices and Blacklist.
+                    MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Quantity, sellQuantity, 0, 0, false);
                     return true;
-                } 
+                }
 
 
                 MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2");
@@ -641,7 +644,7 @@ namespace Economy.scripts
 
                         // Primary checks for the component are carried out Client side to reduce processing time on the server. not that 2ms matters but if 
                         // there is thousands of these requests at once one day in "space engineers the MMO" or on some auto-trading bot it might become a problem
-                        MessageMarketItemValue.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, amount, MarketManager.GetDisplayName(content.TypeId.ToString(), content.SubtypeName));
+                        MessageMarketItemValue.SendMessage(content.TypeId.ToString(), content.SubtypeName, amount, content.GetDisplayName());
                         return true;
                     }
 

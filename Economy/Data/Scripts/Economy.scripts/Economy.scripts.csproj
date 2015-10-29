@@ -76,9 +76,6 @@
     <Compile Include="EconStructures\BankStruct.cs" />
     <Compile Include="EconStructures\MarketStruct.cs" />
     <Compile Include="ConnectionHelper.cs" />
-    <Compile Include="EconConfig\SellAction.cs" />
-    <Compile Include="EconStructures\MarketZoneType.cs" />
-    <Compile Include="EconStructures\TradeState.cs" />
     <Compile Include="EconomyConsts.cs" />
     <Compile Include="EconomyScript.cs" />
     <Compile Include="EconStructures\BankAccountStruct.cs" />
@@ -87,6 +84,7 @@
     <Compile Include="Management\LcdManager.cs" />
     <Compile Include="Management\TextPanelWriter.cs" />
     <Compile Include="Messages\MessageBuy.cs" />
+    <Compile Include="Messages\MessageSet.cs" />
     <Compile Include="Messages\MessageSell.cs" />
     <Compile Include="Messages\MessageMarketItemValue.cs" />
     <Compile Include="Messages\MessageBankBalance.cs" />

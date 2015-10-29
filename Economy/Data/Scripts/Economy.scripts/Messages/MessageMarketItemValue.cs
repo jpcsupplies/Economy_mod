@@ -4,26 +4,25 @@
     using System.Linq;
     using EconConfig;
     using ProtoBuf;
+    using Sandbox.ModAPI;
+    using VRage.ModAPI;
 
     [ProtoContract]
     public class MessageMarketItemValue : MessageBase
     {
         [ProtoMember(1)]
-        public ulong MarketId;
-
-        [ProtoMember(2)]
         public string TypeId;
 
-        [ProtoMember(3)]
+        [ProtoMember(2)]
         public string SubtypeName;
 
-        [ProtoMember(4)]
+        [ProtoMember(3)]
         public decimal Quantity;
 
         /// <summary>
         /// The localized Display Name from the Client to be sent back if the processing succeeds.
         /// </summary>
-        [ProtoMember(5)]
+        [ProtoMember(4)]
         public string DisplayName;
 
         public override void ProcessClient()
@@ -37,7 +36,25 @@
             AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
             EconomyScript.Instance.ServerLogger.Write("Value Request for '{0}:{1}' from '{2}'", TypeId, SubtypeName, SenderSteamId);
 
-            var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.MarketId == MarketId);
+            var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
+            var character = player.GetCharacter();
+            if (character == null)
+            {
+                MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", "You are dead. You get market items values while dead.");
+                return;
+            }
+            var position = ((IMyEntity)character).WorldMatrix.Translation;
+
+            var markets = MarketManager.FindMarketsFromLocation(position);
+            if (markets.Count == 0)
+            {
+                MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", "Sorry, your are not in range of any markets!");
+                return;
+            }
+
+            // TODO: find market with best Buy price that isn't blacklisted.
+
+            var market = markets.FirstOrDefault();
             if (market == null)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", "That market does not exist.");
@@ -66,16 +83,16 @@
                     // set reply to report back the current buy and sell price only since that is all we asked for
                     reply = String.Format("TRADE - You can buy each '{0}' for {1}, or sell it back for {2} each.", DisplayName, item.SellPrice, item.BuyPrice);
                 else
-                // value BLAH 12 - we must want to know how much we make/pay for buying/selling 12
-                // set reply to current buy and sell price multiplied by the requested qty.
-                    reply = String.Format("TRADE - You can buy {0} '{1}' for {2} or sell it back for {3} each.", Quantity, DisplayName, item.SellPrice*Quantity, item.BuyPrice*Quantity);
+                    // value BLAH 12 - we must want to know how much we make/pay for buying/selling 12
+                    // set reply to current buy and sell price multiplied by the requested qty.
+                    reply = String.Format("TRADE - You can buy {0} '{1}' for {2} or sell it back for {3} each.", Quantity, DisplayName, item.SellPrice * Quantity, item.BuyPrice * Quantity);
             }
             MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", reply);
         }
 
-        public static void SendMessage(ulong marketId, string typeId, string subtypeName, decimal quantity, string displayName)
+        public static void SendMessage(string typeId, string subtypeName, decimal quantity, string displayName)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketItemValue { MarketId = marketId, TypeId = typeId, SubtypeName = subtypeName, Quantity = quantity, DisplayName = displayName });
+            ConnectionHelper.SendMessageToServer(new MessageMarketItemValue { TypeId = typeId, SubtypeName = subtypeName, Quantity = quantity, DisplayName = displayName });
         }
     }
 }

@@ -140,7 +140,7 @@
                             //ItemQuantity = Math.Round(ItemQuantity, 0);  // Or do we just round the number?
                         }
 
-                        if (ItemQuantity <= 0 && ToUserName != "_NPC" ) //_NPC indicates if we skip here to set on hand
+                        if (ItemQuantity <= 0)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Invalid quantity, or you dont have any to trade!");
                             return;
@@ -153,30 +153,13 @@
                         else
                             accountToBuy = AccountManager.FindAccount(ToUserName);
 
-
-                        if (accountToBuy == null && ToUserName != "_NPC") //_NPC indicates if we skip here to set on hand
+                        if (accountToBuy == null)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, player does not exist or have an account!");
                             return;
                         }
 
-                        // TODO: this is hardcoded to the NPC merchant for the moment. Later this needs to be configurable.
-                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.MarketId == EconomyConsts.NpcMerchantId);
-                        if (market == null)
-                        {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the market you are accessing does not exist!");
-                            return;
-                        }
-
-                        var marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
-                        if (marketItem == null)
-                        {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the items you are trying to sell doesn't have a market entry!");
-                            // TODO: in reality, this item needs not just to have an entry created, but a value applied also. It's the value that is more important.
-                            return;
-                        }
-
-                        if (marketItem.IsBlacklisted) //probably should add a set command for toggling black list here too
+                        if (MarketManager.IsItemBlacklistedOnServer(ItemTypeId, ItemSubTypeName))
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you tried to sell is blacklisted on this server.");
                             return;
@@ -209,11 +192,12 @@
                         //    return;
                         //}
 
+                        var position = ((IMyEntity)character).WorldMatrix.Translation;
                         var inventory = character.GetPlayerInventory();
                         MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
 
                         var storedAmount = inventory.GetItemAmount(definition.Id);
-                        if (amount > storedAmount && ToUserName != "_NPC") //_NPC indicates if we skip here to set on hand
+                        if (amount > storedAmount)
                         {
                             // Insufficient items in inventory.
                             // TODO: use of definition.GetDisplayName() isn't localized here.
@@ -221,9 +205,44 @@
                             return;
                         }
 
-                        if (UseBankBuyPrice)
-                            // The player is selling, but the *Market* will *buy* it from the player at this price.
-                            ItemPrice = marketItem.BuyPrice;
+                        MarketItemStruct marketItem = null;
+
+                        if (SellToMerchant || UseBankBuyPrice)
+                        {
+                            var markets = MarketManager.FindMarketsFromLocation(position);
+                            if (markets.Count == 0)
+                            {
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, your are not in range of any markets!");
+                                return;
+                            }
+
+                            // TODO: find market with best Buy price that isn't blacklisted.
+
+                            var market = markets.FirstOrDefault();
+                            if (market == null)
+                            {
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the market you are accessing does not exist!");
+                                return;
+                            }
+
+                            marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
+                            if (marketItem == null)
+                            {
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the items you are trying to sell doesn't have a market entry!");
+                                // In reality, this shouldn't happen as all markets have their items synced up on start up of the mod.
+                                return;
+                            }
+
+                            if (marketItem.IsBlacklisted)
+                            {
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you tried to sell is blacklisted in this market.");
+                                return;
+                            }
+
+                            if (UseBankBuyPrice)
+                                // The player is selling, but the *Market* will *buy* it from the player at this price.
+                                ItemPrice = marketItem.BuyPrice;
+                        }
 
                         var accountToSell = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
                         var transactionAmount = ItemPrice * ItemQuantity;
@@ -235,28 +254,18 @@
                         if (SellToMerchant) // && (merchant has enough money  || !EconomyConsts.LimitedSupply)
                                             //this is also a quick fix ideally npc should buy what it can afford and the rest is posted as a sell offer
                         {
-                            if (accountToBuy.BankBalance >= transactionAmount || !EconomyConsts.LimitedSupply || ToUserName == "_NPC")
+                            if (accountToBuy.BankBalance >= transactionAmount || !EconomyConsts.LimitedSupply)
                             {
                                 // here we look up item price and transfer items and money as appropriate
-                                if (ToUserName != "_NPC") // only do this if we are not setting on hand
-                                {
-                                    inventory.RemoveItemsOfType(amount, definition.Id);
-                                    marketItem.Quantity += ItemQuantity; // increment Market content.
+                                inventory.RemoveItemsOfType(amount, definition.Id);
+                                marketItem.Quantity += ItemQuantity; // increment Market content.
 
-                                    accountToBuy.BankBalance -= transactionAmount;
-                                    accountToBuy.Date = DateTime.Now;
+                                accountToBuy.BankBalance -= transactionAmount;
+                                accountToBuy.Date = DateTime.Now;
 
-                                    accountToSell.BankBalance += transactionAmount;
-                                    accountToSell.Date = DateTime.Now;
-                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName());
-                                }
-                                else if (sellingPlayer.IsAdmin())  //only do this if the player is an admin to stop a player named _NPC fiddling the on hand
-                                {
-                                    marketItem.Quantity = ItemQuantity;
-                                    accountToBuy.Date = DateTime.Now;
-                                    accountToSell.Date = DateTime.Now;
-                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "You just set {1} stock on hand to {0} units",  ItemQuantity, definition.GetDisplayName());
-                                }
+                                accountToSell.BankBalance += transactionAmount;
+                                accountToSell.Date = DateTime.Now;
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName());
                             }
                             else
                             {
@@ -276,8 +285,8 @@
                         if (accountToBuy.SteamId == sellingPlayer.SteamUserId)
                         {
                             // commented out for testing with myself.
-                            //MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, you cannot sell to yourself!");
-                            //return;
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, you cannot sell to yourself!");
+                            return;
                         }
 
                         // check if buying player is online and in range?
