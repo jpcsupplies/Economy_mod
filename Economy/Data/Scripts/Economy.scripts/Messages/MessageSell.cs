@@ -405,21 +405,21 @@
                         }
 
                         if (hasAddedToInventory)
+                        {
+                            EconomyScript.Instance.Data.OrderBook.Remove(order); // item has been collected, so the order is finalized.
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} worth of {2} ({1} units) which are now in your inventory.", transactionAmount, order.Quantity, definition.GetDisplayName());
+                        }
                         else
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} worth of {2} ({1} units). Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName());
 
                         return;
                     }
 
-                case SellAction.Cancel:
-                    // TODO: Not yet complete.
-                    break;
-
                 case SellAction.Collect:
                     {
                         var collectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
                             (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellTimedout)
+                            || (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellRejected)
                             || (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellAccepted)).ToArray();
 
                         if (collectableOrders.Length == 0)
@@ -438,7 +438,7 @@
                         }
 
                         // TODO: this is just for debugging....
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are collecting items from {0} order/s.", collectableOrders.Length);
+                        //MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are collecting items from {0} order/s.", collectableOrders.Length);
 
                         foreach (var order in collectableOrders)
                         {
@@ -454,7 +454,8 @@
                             {
                                 // Someone hacking, and passing bad data?
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
-                                return;
+                                // TODO: more detail on the item.
+                                continue;
                             }
 
                             MyFixedPoint amount = (MyFixedPoint)order.Quantity;
@@ -471,8 +472,98 @@
                         return;
                     }
 
+                case SellAction.Cancel:
+                    {
+                        var cancellableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
+                              (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellDirectPlayer)).OrderByDescending(e => e.Created).ToArray();
+
+                        if (cancellableOrders.Length == 0)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "There is nothing to cancel currently.");
+                        }
+
+                        // use of OrderByDescending above assures us that [0] is the most recent order added.
+                        var order = cancellableOrders[0];
+                        order.TradeState = TradeState.SellRejected;
+
+                        var definition = MyDefinitionManager.Static.GetDefinition(order.TypeId, order.SubtypeName);
+
+                        if (definition == null)
+                        {
+                            // Someone hacking, and passing bad data?
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
+
+                            // trade has been finalized, so we can exit safely.
+                            return;
+                        }
+
+                        var transactionAmount = order.Price * order.Quantity;
+                        var collectingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
+                        var inventory = collectingPlayer.GetPlayerInventory();
+                        bool hasAddedToInventory = true;
+
+                        if (inventory != null)
+                        {
+                            MyFixedPoint amount = (MyFixedPoint)order.Quantity;
+                            hasAddedToInventory = Support.InventoryAdd(inventory, amount, definition.Id);
+                        }
+
+                        if (hasAddedToInventory)
+                        {
+                            EconomyScript.Instance.Data.OrderBook.Remove(order); // item has been collected, so the order is finalized.
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just cancelled the sale of {2} ({1} units) for {0} which are now in your inventory.", transactionAmount, order.Quantity, definition.GetDisplayName());
+                        }
+                        else
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just cancelled the sale of {2} ({1} units) for {0}. Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName());
+
+                        cancellableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
+                              (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellDirectPlayer)).OrderByDescending(e => e.Created).ToArray();
+
+                        if (cancellableOrders.Length > 0)
+                        {
+                            // TODO: Inform the player of the next order in the queue that can be cancelled.
+                        }
+                    }
+                    break;
+
                 case SellAction.Deny:
-                    // TODO: Not yet complete.
+                    {
+                        var rejectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
+                              (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer)).OrderByDescending(e => e.Created).ToArray();
+
+                        if (rejectableOrders.Length == 0)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "There is nothing to deny currently.");
+                        }
+
+                        // use of OrderByDescending above assures us that [0] is the most recent order added.
+                        var order = rejectableOrders[0];
+                        order.TradeState = TradeState.SellRejected;
+
+                        var definition = MyDefinitionManager.Static.GetDefinition(order.TypeId, order.SubtypeName);
+
+                        if (definition == null)
+                        {
+                            // Someone hacking, and passing bad data?
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
+
+                            // trade has been finalized, so we can exit safely.
+                            return;
+                        }
+
+                        var transactionAmount = order.Price * order.Quantity;
+                        var buyerId = ulong.Parse(order.OptionalId);
+                        MessageClientTextMessage.SendMessage(buyerId, "SELL", "You just rejected the purchase of {2} ({1} units) for {0}.", transactionAmount, order.Quantity, definition.GetDisplayName());
+                        MessageClientTextMessage.SendMessage(order.TraderId, "SELL", "{3} has just rejected your offer of {2} ({1} units) for {0}. Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), SenderDisplayName);
+
+                        rejectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
+                              (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer)).OrderByDescending(e => e.Created).ToArray();
+
+                        if (rejectableOrders.Length > 0)
+                        {
+                            // TODO: Inform the player of the next order in the queue that can be rejected.
+                        }
+                    }
                     break;
             }
 

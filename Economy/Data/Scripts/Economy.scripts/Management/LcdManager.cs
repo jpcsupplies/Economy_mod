@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using EconConfig;
     using Economy.scripts;
     using Economy.scripts.EconStructures;
     using Sandbox.Definitions;
@@ -17,7 +18,7 @@
         #region fields
 
         //private static int counter = 0;
-
+        
         #endregion
 
         public static void UpdateLcds()
@@ -90,22 +91,32 @@
         {
             //counter++;
 
-            var check1 = textPanel.GetPublicTitle().Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            var check2 = textPanel.GetPrivateTitle().Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            var showAll = check1.Any(e => e.Equals("*", StringComparison.InvariantCultureIgnoreCase)) || check2.Any(e => e.Equals("*", StringComparison.InvariantCultureIgnoreCase));
-
+            var checkArray = (textPanel.GetPrivateTitle() + " " + textPanel.GetPrivateTitle()).Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var showAll = false;
             bool showOre = false;
             bool showIngot = false;
             bool showComponent = false;
             bool showAmmo = false;
-            bool showTest = check1.Any(e => e.Equals("test", StringComparison.InvariantCultureIgnoreCase)) || check2.Any(e => e.Equals("test", StringComparison.InvariantCultureIgnoreCase));
+            bool showTest = false;
 
-            if (!showAll)
+            // removed Linq, to reduce the looping through the array. This should only have to do one loop through all items in the array.
+            foreach (var str in checkArray)
             {
-                showOre = check1.Any(e => e.Equals("ore", StringComparison.InvariantCultureIgnoreCase)) || check2.Any(e => e.Equals("ore", StringComparison.InvariantCultureIgnoreCase));
-                showIngot = check1.Any(e => e.Equals("ingot", StringComparison.InvariantCultureIgnoreCase)) || check2.Any(e => e.Equals("ingot", StringComparison.InvariantCultureIgnoreCase));
-                showComponent = check1.Any(e => e.Equals("component", StringComparison.InvariantCultureIgnoreCase)) || check2.Any(e => e.Equals("component", StringComparison.InvariantCultureIgnoreCase));
-                showAmmo = check1.Any(e => e.Equals("ammo", StringComparison.InvariantCultureIgnoreCase)) || check2.Any(e => e.Equals("ammo", StringComparison.InvariantCultureIgnoreCase));
+                if (str.Equals("*", StringComparison.InvariantCultureIgnoreCase))
+                    showAll = true;
+                if (!showAll)
+                {
+                    if (str.Equals("test", StringComparison.InvariantCultureIgnoreCase))
+                        showTest = true;
+                    if (str.Equals("ore", StringComparison.InvariantCultureIgnoreCase))
+                        showOre = true;
+                    if (str.Equals("ingot", StringComparison.InvariantCultureIgnoreCase))
+                        showIngot = true;
+                    if (str.Equals("component", StringComparison.InvariantCultureIgnoreCase))
+                        showComponent = true;
+                    if (str.Equals("ammo", StringComparison.InvariantCultureIgnoreCase))
+                        showAmmo = true;
+                }
             }
 
             bool showHelp = !showAll && !showOre && !showIngot && !showComponent & !showAmmo;
@@ -130,21 +141,25 @@
             var buyColumn = TextPanelWriter.LcdLineWidth - 180;
             var sellColumn = TextPanelWriter.LcdLineWidth - 0;
 
-            writer.AddPublicText("« Market List");
-            writer.AddPublicRightText(buyColumn, "Buy");
-            writer.AddPublicRightLine(sellColumn, "Sell »");
-
-            // Build a list of the items, so we can get the name so we can the sort the items by name.
-            var list = new Dictionary<MarketItemStruct, string>();
-
-            // TODO: this is hardcoded to the NPC merchant for the moment. Later this needs to be configurable.
-            var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.MarketId == EconomyConsts.NpcMerchantId);
-            if (market == null)
+            // This might be a costly operation to run.
+            var markets = MarketManager.FindMarketsFromLocation(textPanel.WorldMatrix.Translation);
+            if (markets.Count == 0)
             {
-                writer.AddPublicLine("Market not found");
+                writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "« Economy »");
+                writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "« No market in range »");
             }
             else
             {
+                // TODO: not sure if we should display all markets, the cheapest market item, or the closet market.
+                var market = markets.FirstOrDefault();
+
+                // Build a list of the items, so we can get the name so we can the sort the items by name.
+                var list = new Dictionary<MarketItemStruct, string>();
+
+                writer.AddPublicText("« Market List");
+                writer.AddPublicRightText(buyColumn, "Buy");
+                writer.AddPublicRightLine(sellColumn, "Sell »");
+
                 foreach (var marketItem in market.MarketItems)
                 {
                     if (marketItem.IsBlacklisted)

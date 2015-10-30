@@ -67,8 +67,10 @@
 
         ~TextPanelWriter()
         {
-            if (TextPanelWriter.TextPanelWriterCache.ContainsKey(_panel))
-                TextPanelWriter.TextPanelWriterCache.Remove(_panel);
+            //EconomyScript.Instance.ServerLogger.Write("Destroying TextPanelWriter");
+            if (TextPanelWriterCache.ContainsKey(_panel))
+                TextPanelWriterCache.Remove(_panel);
+            CleanupCache();
         }
 
         static TextPanelWriter()
@@ -174,13 +176,18 @@
         public void UpdatePublic(bool show = true)
         {
             _panel.SetValueFloat("FontSize", FontSize);
-            _panel.WritePublicText(_publicString.ToString());
 
-            if (show)
+            // no need to update if the text has not changed.
+            if (_panel.GetPublicText() != _publicString.ToString())
             {
-                if (ForceRedraw)
-                    _panel.ShowTextureOnScreen();
-                _panel.ShowPublicTextOnScreen();
+                _panel.WritePublicText(_publicString.ToString());
+
+                if (show)
+                {
+                    if (ForceRedraw)
+                        _panel.ShowTextureOnScreen();
+                    _panel.ShowPublicTextOnScreen();
+                }
             }
         }
 
@@ -211,13 +218,18 @@
         public void UpdatePrivate(bool show = false)
         {
             _panel.SetValueFloat("FontSize", FontSize);
-            _panel.WritePublicText(_privateString.ToString());
 
-            if (show)
+            // no need to update if the text has not changed.
+            if (_panel.GetPrivateText() != _privateString.ToString())
             {
-                if (ForceRedraw)
-                    _panel.ShowTextureOnScreen();
-                _panel.ShowPrivateTextOnScreen();
+                _panel.WritePrivateText(_privateString.ToString());
+
+                if (show)
+                {
+                    if (ForceRedraw)
+                        _panel.ShowTextureOnScreen();
+                    _panel.ShowPrivateTextOnScreen();
+                }
             }
         }
 

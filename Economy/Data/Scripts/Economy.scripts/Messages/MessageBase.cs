@@ -50,7 +50,7 @@
         [ProtoAfterDeserialization]
         void InvokeProcessing() // is not invoked after deserialization from xml
         {
-            Logger.Debug("START - Processing");
+            EconomyScript.Instance.ServerLogger.Write("START - Processing");
             switch (Side)
             {
                 case MessageSide.ClientSide:
@@ -60,7 +60,7 @@
                     ProcessServer();
                     break;
             }
-            Logger.Debug("END - Processing");
+            EconomyScript.Instance.ServerLogger.Write("END - Processing");
         }
         */
 
