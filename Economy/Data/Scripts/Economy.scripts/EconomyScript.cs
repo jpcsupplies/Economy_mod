@@ -677,7 +677,6 @@ namespace Economy.scripts
             }
 
             //ver reply
-                        // help command
             if (split[0].Equals("/ver", StringComparison.InvariantCultureIgnoreCase))
             { 
                 string versionreply = EconomyConsts.MajorVer + " " +  EconomyConsts.ModCommunicationVersion;
