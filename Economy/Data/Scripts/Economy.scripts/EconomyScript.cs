@@ -676,6 +676,15 @@ namespace Economy.scripts
                 // don't respond to non-admins.
             }
 
+            //ver reply
+                        // help command
+            if (split[0].Equals("/ver", StringComparison.InvariantCultureIgnoreCase))
+            { 
+                string versionreply = EconomyConsts.MajorVer + " " +  EconomyConsts.ModCommunicationVersion;
+                MyAPIGateway.Utilities.ShowMessage("VER", versionreply);
+                return true;
+            }
+
             // help command
             if (split[0].Equals("/ehelp", StringComparison.InvariantCultureIgnoreCase))
             {
