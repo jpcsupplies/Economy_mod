@@ -482,6 +482,7 @@
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "There is nothing to cancel currently.");
                         }
 
+                        // Sellers should be presented with the newest order first, as they will be the most recently created.
                         // use of OrderByDescending above assures us that [0] is the most recent order added.
                         var order = cancellableOrders[0];
                         order.TradeState = TradeState.SellRejected;
@@ -529,14 +530,15 @@
                 case SellAction.Deny:
                     {
                         var rejectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
-                              (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer)).OrderByDescending(e => e.Created).ToArray();
+                              (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer)).OrderBy(e => e.Created).ToArray();
 
                         if (rejectableOrders.Length == 0)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "There is nothing to deny currently.");
                         }
 
-                        // use of OrderByDescending above assures us that [0] is the most recent order added.
+                        // Buyers should be presented with the oldest order first, as they will timout first.
+                        // use of OrderBy above assures us that [0] is the most oldest order added.
                         var order = rejectableOrders[0];
                         order.TradeState = TradeState.SellRejected;
 
@@ -557,7 +559,7 @@
                         MessageClientTextMessage.SendMessage(order.TraderId, "SELL", "{3} has just rejected your offer of {2} ({1} units) for {0}. Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), SenderDisplayName);
 
                         rejectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
-                              (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer)).OrderByDescending(e => e.Created).ToArray();
+                              (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer)).OrderBy(e => e.Created).ToArray();
 
                         if (rejectableOrders.Length > 0)
                         {
