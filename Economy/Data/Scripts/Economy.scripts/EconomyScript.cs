@@ -137,7 +137,6 @@ namespace Economy.scripts
 
             ClientLogger.Init("EconomyClient.Log"); // comment this out if logging is not required for the Client.
             ClientLogger.Write("Economy Client Log Started");
-            ClientLogger.Write("Economy Client Version {0}", EconomyConsts.ModCommunicationVersion);
             if (ClientLogger.IsActive)
                 VRage.Utils.MyLog.Default.WriteLine(String.Format("##Mod## Economy Client Logging File: {0}", ClientLogger.LogFile));
 
@@ -167,7 +166,6 @@ namespace Economy.scripts
             _isServerRegistered = true;
             ServerLogger.Init("EconomyServer.Log", !Debug); // comment this out if logging is not required for the Server.
             ServerLogger.Write("Economy Server Log Started");
-            ServerLogger.Write("Economy Server Version {0}", EconomyConsts.ModCommunicationVersion);
             if (ServerLogger.IsActive)
                 VRage.Utils.MyLog.Default.WriteLine(String.Format("##Mod## Economy Server Logging File: {0}", ServerLogger.LogFile));
 

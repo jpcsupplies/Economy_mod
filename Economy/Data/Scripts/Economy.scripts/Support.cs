@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using EconConfig;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
@@ -39,9 +40,8 @@
             _physicalItems = physicalItems.Where(item => item.Public).ToArray();  // Limit to public items.  This will remove the CubePlacer. :)
 
             // TODO: This list is generated ONCE, and not generated again during the session, so if an Item has its Blacklist state changed mid-game, it may show up or not show up.
-            // Cannot call MarketManager here, because it is only accessible to the server, not Client.
             // Filter out the server Blacklisted items from the options.
-            //_physicalItems = _physicalItems.Where(e => !MarketManager.IsItemBlacklistedOnServer(e.Id.TypeId.ToString(), e.Id.SubtypeName)).ToArray();
+            _physicalItems = _physicalItems.Where(e => !MarketManager.IsItemBlacklistedOnServer(e.Id.TypeId.ToString(), e.Id.SubtypeName)).ToArray();
 
             // Make sure all Public Physical item names are unique, so they can be properly searched for.
             _physicalItemNames = new Dictionary<string, MyPhysicalItemDefinition>();
