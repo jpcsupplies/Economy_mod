@@ -20,6 +20,7 @@
         private static Dictionary<string, MyPhysicalItemDefinition> _physicalItemNames;
         private static Dictionary<string, MyPhysicalItemDefinition> _oreList;
         private static Dictionary<string, MyPhysicalItemDefinition> _ingotList;
+        private static Dictionary<MyDefinitionId, MyObjectBuilder_Base> _producedTypeList;
         private static bool _hasBuiltComponentList;
 
         #endregion
@@ -36,6 +37,7 @@
             EconomyScript.Instance.ClientLogger.Write("BuildComponentLists");
 
             var physicalItems = MyDefinitionManager.Static.GetPhysicalItemDefinitions();
+            _producedTypeList = new Dictionary<MyDefinitionId, MyObjectBuilder_Base>();
             _physicalItems = physicalItems.Where(item => item.Public).ToArray();  // Limit to public items.  This will remove the CubePlacer. :)
 
             // TODO: This list is generated ONCE, and not generated again during the session, so if an Item has its Blacklist state changed mid-game, it may show up or not show up.
@@ -56,6 +58,9 @@
                     uniqueName = string.Format("{0}{1}", baseName, index);
                 }
                 _physicalItemNames.Add(uniqueName, item);
+
+                var content = MyObjectBuilderSerializer.CreateNewObject(item.Id);
+                _producedTypeList.Add(item.Id, content);
             }
 
             _oreList = _physicalItemNames.Where(p => p.Value.Id.TypeId == typeof(MyObjectBuilder_Ore)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -197,6 +202,19 @@
             return false;
         }
 
+        public static MyObjectBuilder_Base ProducedType(MyDefinitionId definitionId)
+        {
+            BuildComponentLists();
+
+            // Cannot check the Type of the item, without having to use MyObjectBuilderSerializer.CreateNewObject()
+            // This is because MyObjectBuilderSerializer.ProducedType() is not available as a public method, and we cannot do a Refelection for the Base Type.
+            // So intead, we store a basic type of each object in memory created by MyObjectBuilderSerializer.CreateNewObject(), to allow us to do Type checks.
+            MyObjectBuilder_Base value;
+            if (_producedTypeList.TryGetValue(definitionId, out value))
+                return value;
+            return null;
+        }
+
         /// <summary>
         /// check the seller is in range of a valid trade region or player
         /// </summary>
@@ -230,6 +248,8 @@
             // so did it come within our default range
             return distance <= EconomyConsts.DefaultTradeRange;
         }
+
+        #region Inventory
 
         public static bool InventoryAdd(IMyInventory inventory, MyFixedPoint amount, MyDefinitionId definitionId)
         {
@@ -279,6 +299,8 @@
 
             floatingBuilder.CreateAndSyncEntity();
         }
+
+        #endregion
 
         ///// <summary>
         ///// Must be called by the Client for correct localization.

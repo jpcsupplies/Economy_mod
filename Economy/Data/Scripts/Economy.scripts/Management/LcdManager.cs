@@ -6,6 +6,8 @@
     using EconConfig;
     using Economy.scripts;
     using Economy.scripts.EconStructures;
+    using Sandbox.Common.ObjectBuilders;
+    using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Ingame;
@@ -97,6 +99,7 @@
             bool showIngot = false;
             bool showComponent = false;
             bool showAmmo = false;
+            bool showTools = false;
             bool showTest = false;
 
             // removed Linq, to reduce the looping through the array. This should only have to do one loop through all items in the array.
@@ -116,10 +119,12 @@
                         showComponent = true;
                     if (str.Equals("ammo", StringComparison.InvariantCultureIgnoreCase))
                         showAmmo = true;
+                    if (str.Equals("tools", StringComparison.InvariantCultureIgnoreCase))
+                        showTools = true;
                 }
             }
 
-            bool showHelp = !showAll && !showOre && !showIngot && !showComponent & !showAmmo;
+            bool showHelp = !showAll && !showOre && !showIngot && !showComponent & !showAmmo & !showTools;
 
             var writer = TextPanelWriter.Create(textPanel);
 
@@ -133,7 +138,7 @@
             if (showHelp)
             {
                 writer.AddPublicLine("Please add a tag to the private or public title.");
-                writer.AddPublicLine("ie., * ingot ore component ammo.");
+                writer.AddPublicLine("ie., * ingot ore component ammo tools.");
                 writer.UpdatePublic();
                 return;
             }
@@ -165,21 +170,28 @@
                     if (marketItem.IsBlacklisted)
                         continue;
 
-                    if (showAll ||
-                        (showOre && marketItem.TypeId == "MyObjectBuilder_Ore") ||
-                        (showIngot && marketItem.TypeId == "MyObjectBuilder_Ingot") ||
-                        (showComponent && marketItem.TypeId == "MyObjectBuilder_Component") ||
-                        (showAmmo && marketItem.TypeId == "MyObjectBuilder_AmmoMagazine"))
+                    MyObjectBuilderType result;
+                    if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
                     {
-                        MyPhysicalItemDefinition definition = null;
-                        MyObjectBuilderType result;
-                        if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
-                        {
-                            var id = new MyDefinitionId(result, marketItem.SubtypeName);
-                            MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
-                        }
+                        var id = new MyDefinitionId(result, marketItem.SubtypeName);
+                        var content = Support.ProducedType(id);
 
-                        list.Add(marketItem, definition == null ? marketItem.TypeId + "/" + marketItem.SubtypeName : definition.GetDisplayName());
+                        // Cannot check the Type of the item, without having to use MyObjectBuilderSerializer.CreateNewObject().
+
+                        if (showAll ||
+                            (showOre && content is MyObjectBuilder_Ore) ||
+                            (showIngot && content is MyObjectBuilder_Ingot) ||
+                            (showComponent && content is MyObjectBuilder_Component) ||
+                            (showAmmo && content is MyObjectBuilder_AmmoMagazine) ||
+                            (showTools && content is MyObjectBuilder_PhysicalGunObject) ||
+                            (showTools && content is MyObjectBuilder_GasContainerObject))  // Type check here allows mods that inherit from the same type to also appear in the lists.
+                        {
+                            MyPhysicalItemDefinition definition = null;
+                            if (MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition))
+                            {
+                                list.Add(marketItem, definition == null ? marketItem.TypeId + "/" + marketItem.SubtypeName : definition.GetDisplayName());
+                            }
+                        }
                     }
                 }
 
