@@ -321,25 +321,25 @@
                             // remove items from inventory.
                             inventory.RemoveItemsOfType(amount, definition.Id);
 
-                            MessageClientTextMessage.SendMessage(accountToBuy.SteamId, "SELL",
-                                "You have received an offer from {0} to buy {1} {2} at price {3} - type '/sell accept' to accept offer (or '/sell deny' to reject and return ore to seller)",
-                                SenderDisplayName, ItemQuantity, definition.GetDisplayName(), transactionAmount);
+                            // Only send message to targeted player if this is the only offer pending for them.
+                            // Otherwise it will be sent when the have with previous orders in their order Queue.
+                            if (EconomyScript.Instance.Data.OrderBook.Count(e => (e.OptionalId == accountToBuy.SteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer)) == 1)
+                            {
+                                MessageClientTextMessage.SendMessage(accountToBuy.SteamId, "SELL",
+                                    "You have received an offer from {0} to buy {1} {2} at price {3} - type '/sell accept' to accept offer (or '/sell deny' to reject and return item to seller)",
+                                    SenderDisplayName, ItemQuantity, definition.GetDisplayName(), transactionAmount);
+                            }
 
                             // TODO: Improve the message here, to say who were are trading to, and that the item is gone from inventory.
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Your offer has been sent.");
+                            // send message to seller to confirm action, "Your Trade offer has been submitted, and the goods removed from you inventory."
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Your offer of {0} {1} for {2} has been sent to {3}.", ItemQuantity, definition.GetDisplayName(), transactionAmount, accountToBuy.NickName);
 
                             return;
                         }
-                        // send message to seller to confirm action, "Your Trade offer has been submitted, and the goods removed from you inventory."
 
                         // Later actions..
                         // https://github.com/jpcsupplies/Economy_mod/issues/31
                         // https://github.com/jpcsupplies/Economy_mod/issues/46
-                        // "/sell cancel"  to cancel trade offer. Did you mistype a number?  
-                        // Returned goods need to be queued.
-                        // if trade offer rejected, message back "Your Trade offer of xxx to yyy has been rejected."  if first item in queue, "Type '/return' to receive your goods back."
-                        // if trade offer times out, message back "Your Trade offer of xxx to yyy has timed."  if first item in queue, "Type '/return' to receive your goods back."
-                        // if trade offer accepted, finish funds trasfer. message back "Your Trade offer of xxx to yyy has been accepted. You have recieved zzzz"
                     }
                     break;
 
@@ -392,6 +392,7 @@
                         }
 
                         // TODO: Improve the messages.
+                        // message back "Your Trade offer of xxx to yyy has been accepted. You have recieved zzzz"
                         MessageClientTextMessage.SendMessage(accountToSell.SteamId, "SELL", "You just sold {0} worth of {2} ({1} units)", transactionAmount, order.Quantity, definition.GetDisplayName());
 
                         var collectingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
@@ -411,6 +412,9 @@
                         }
                         else
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} worth of {2} ({1} units). Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName());
+
+                        // Send message to player if additional offers are pending their attention.
+                        DisplayNextOrderToAccept(SenderSteamId);
 
                         return;
                     }
@@ -437,8 +441,8 @@
                             return;
                         }
 
-                        // TODO: this is just for debugging....
-                        //MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are collecting items from {0} order/s.", collectableOrders.Length);
+                        // TODO: this is just for debugging until the message below are completed....
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are collecting items from {0} order/s.", collectableOrders.Length);
 
                         foreach (var order in collectableOrders)
                         {
@@ -524,22 +528,23 @@
                         {
                             // TODO: Inform the player of the next order in the queue that can be cancelled.
                         }
+                        return;
                     }
                     break;
 
                 case SellAction.Deny:
                     {
-                        var rejectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
+                        var buyOrdersForMe = EconomyScript.Instance.Data.OrderBook.Where(e =>
                               (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer)).OrderBy(e => e.Created).ToArray();
 
-                        if (rejectableOrders.Length == 0)
+                        if (buyOrdersForMe.Length == 0)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "There is nothing to deny currently.");
                         }
 
                         // Buyers should be presented with the oldest order first, as they will timout first.
                         // use of OrderBy above assures us that [0] is the most oldest order added.
-                        var order = rejectableOrders[0];
+                        var order = buyOrdersForMe[0];
                         order.TradeState = TradeState.SellRejected;
 
                         var definition = MyDefinitionManager.Static.GetDefinition(order.TypeId, order.SubtypeName);
@@ -556,21 +561,56 @@
                         var transactionAmount = order.Price * order.Quantity;
                         var buyerId = ulong.Parse(order.OptionalId);
                         MessageClientTextMessage.SendMessage(buyerId, "SELL", "You just rejected the purchase of {2} ({1} units) for {0}.", transactionAmount, order.Quantity, definition.GetDisplayName());
+
+                        // TODO: return items to inventory automatically to Trader inventory if there is space.
                         MessageClientTextMessage.SendMessage(order.TraderId, "SELL", "{3} has just rejected your offer of {2} ({1} units) for {0}. Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), SenderDisplayName);
 
-                        rejectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
-                              (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer)).OrderBy(e => e.Created).ToArray();
-
-                        if (rejectableOrders.Length > 0)
-                        {
-                            // TODO: Inform the player of the next order in the queue that can be rejected.
-                        }
+                        // Send message to player if additional offers are pending their attention.
+                        DisplayNextOrderToAccept(SenderSteamId);
+                        return;
                     }
                     break;
             }
 
             // this is a fall through from the above conditions not yet complete.
             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Not yet complete.");
+        }
+
+        /// <summary>
+        /// Send a message to targeted player if have additional offers pending for them.
+        /// </summary>
+        /// <param name="steamdId"></param>
+        private void DisplayNextOrderToAccept(ulong steamdId)
+        {
+            // Buyers should be presented with the oldest order first, as they will timout first.
+            // use of OrderBy assures us that [0] is the most oldest order added.
+            var remaingingUnacceptedOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
+                (e.OptionalId == steamdId.ToString() && e.TradeState == TradeState.SellDirectPlayer)).OrderBy(e => e.Created).ToList();
+
+            if (remaingingUnacceptedOrders.Count <= 0)
+                return;
+
+            var order = remaingingUnacceptedOrders[0];
+            var accountToSell = AccountManager.FindAccount(order.TraderId);
+            var transactionAmount = order.Price * order.Quantity;
+            var payingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(steamdId);
+
+            // need fix negative amounts before checking if the player can afford it.
+            if (!payingPlayer.IsAdmin())
+                transactionAmount = Math.Abs(transactionAmount);
+
+            var definition = MyDefinitionManager.Static.GetDefinition(order.TypeId, order.SubtypeName);
+
+            if (definition == null)
+            {
+                // Someone hacking, and passing bad data?
+                MessageClientTextMessage.SendMessage(steamdId, "SELL", "Sorry, the item in your order doesn't exist!");
+                return;
+            }
+
+            MessageClientTextMessage.SendMessage(steamdId, "SELL",
+                "You have received an offer from {0} to buy {1} {2} at price {3} - type '/sell accept' to accept offer (or '/sell deny' to reject and return item to seller)",
+                accountToSell.NickName, order.Quantity, definition.GetDisplayName(), transactionAmount);
         }
     }
 }
