@@ -93,7 +93,7 @@
         {
             //counter++;
 
-            var checkArray = (textPanel.GetPrivateTitle() + " " + textPanel.GetPrivateTitle()).Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var checkArray = (textPanel.GetPublicTitle() + " " + textPanel.GetPrivateTitle()).Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             var showAll = false;
             bool showOre = false;
             bool showIngot = false;
