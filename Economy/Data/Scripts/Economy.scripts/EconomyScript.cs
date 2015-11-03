@@ -704,6 +704,7 @@ namespace Economy.scripts
             //the global news sub to make it display
             //clearly this needs to run server side and trigger on all online players screens - 
             //this test will only display on the current admins screen however
+            //MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
             if (split[0].Equals("/global", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
 
@@ -734,12 +735,12 @@ namespace Economy.scripts
                 {
                     //did we just type ehelp? show what else they can get help on
                     //might be better to make a more detailed help reply here using mission window later on
-                    MyAPIGateway.Utilities.ShowMessage("help", "Commands: ehelp, buy, sell, bal, pay, seen");
+                    MyAPIGateway.Utilities.ShowMessage("ehelp", "Commands: ehelp, bal, pay, seen, buy, sell, value, ver, lcd");
                     if (MyAPIGateway.Session.Player.IsAdmin())
                     {
-                        MyAPIGateway.Utilities.ShowMessage("admin", "Commands: accounts, bal player, reset, pay player +/-any_amount");
+                        MyAPIGateway.Utilities.ShowMessage("Admin ehelp", "Commands: accounts, bal player, reset, set, global, pay player +/-any_amount");
                     }
-                    MyAPIGateway.Utilities.ShowMessage("help", "Try '/ehelp command' for more informations about specific command");
+                    MyAPIGateway.Utilities.ShowMessage("ehelp", "Try '/ehelp command' for more informations about specific command");
                     return true;
                 }
                 else
@@ -752,43 +753,54 @@ namespace Economy.scripts
                             return true;
                         // did we type /help buy etc
                         case "pay":
-                            MyAPIGateway.Utilities.ShowMessage("Help", "/pay X Y Z Pays player [x] amount [Y] [for reason Z]");
-                            MyAPIGateway.Utilities.ShowMessage("Help", "Example: /pay bob 100 being awesome");
-                            MyAPIGateway.Utilities.ShowMessage("Help", "for larger player names used quotes eg \"bob the builder\"");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/pay X Y Z Pays player [x] amount [Y] [for reason Z]");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /pay bob 100 being awesome");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "for larger player names used quotes eg \"bob the builder\"");
                             if (MyAPIGateway.Session.Player.IsAdmin())
                             {
-                                MyAPIGateway.Utilities.ShowMessage("Admin", "Admins can add or remove any amount from a player");
+                                MyAPIGateway.Utilities.ShowMessage("Admin eHelp", "Admins can add or remove any amount from a player, including negative");
                             }
                             return true;
                         case "seen":
-                            MyAPIGateway.Utilities.ShowMessage("Help", "/seen X Displays time and date that economy plugin last saw player X");
-                            MyAPIGateway.Utilities.ShowMessage("Help", "Example: /seen bob");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/seen X Displays time and date that economy plugin last saw player X");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /seen bob");
                             return true;
                         case "accounts":
-                            if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin", "/accounts displays all player balances"); return true; }
+                            if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin eHelp", "/accounts displays all player balances"); return true; }
                             else { return false; }
                         case "reset":
-                            if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin", "/reset resets your balance to 100"); return true; }
+                            if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin eHelp", "/reset resets your balance to 100"); return true; }
+                            else { return false; }
+                        case "set":
+                            if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin eHelp", "/set # X  Sets the on hand amount of item (X) to amount  (#) in the NPC market. Eventually will set other settings too."); return true; }
                             else { return false; }
                         case "bal":
-                            MyAPIGateway.Utilities.ShowMessage("Help", "/bal Displays your bank balance");
-                            MyAPIGateway.Utilities.ShowMessage("Help", "Example: /bal");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/bal Displays your bank balance");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /bal");
                             if (MyAPIGateway.Session.Player.IsAdmin())
                             {
-                                MyAPIGateway.Utilities.ShowMessage("Admin", "Admins can also view another player. eg. /bal bob");
+                                MyAPIGateway.Utilities.ShowMessage("Admin eHelp", "Admins can also view another player. eg. /bal bob");
                             }
                             return true;
                         case "buy":
-                            MyAPIGateway.Utilities.ShowMessage("Help", "/buy W X Y Z - Purchases a quantity [W] of item [X] [at price Y] [from player Z]");
-                            MyAPIGateway.Utilities.ShowMessage("Help", "Example: /buy 20 Ice ");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/buy W X Y Z - Purchases a quantity [W] of item [X] [at price Y] [from player Z]");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /buy 20 Ice ");
                             return true;
                         case "sell":
-                            MyAPIGateway.Utilities.ShowMessage("Help", "/sell W X Y Z - Sells a quantity [W] of item [X] [at price Y] [to player Z]");
-                            MyAPIGateway.Utilities.ShowMessage("Help", "Example: /sell 20 Ice ");
+                            string helpreply="."; //this reply is too big need to move it to pop up
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/sell W X Y Z - Sells a quantity [W] of item [X] [at price Y] [to player Z]");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Sell to NPC (or nearest market) Example: /sell 20 Ice ");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/sell cancel (If you offered to sell something to someone, this cancels the offer.");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/sell collect (collects items from failed sell offers");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/sell acccept|deny (accepts or rejects a sell offer made to you");
+                            MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "eHelp", helpreply, null, "Close");
                             return true;
                         case "value":
-                            MyAPIGateway.Utilities.ShowMessage("Help", "/value X Y - Looks up item [X] of optional quantity [Y] and reports the buy and sell value.");
-                            MyAPIGateway.Utilities.ShowMessage("Help", "Example: /value Ice 20    or   /value ice");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/value X Y - Looks up item [X] of optional quantity [Y] and reports the buy and sell value.");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /value Ice 20    or   /value ice");
+                            return true;
+                        case "ver":
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/ver Displays the diagnostic version of running Economy script");
                             return true;
 
                     }
