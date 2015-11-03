@@ -165,7 +165,7 @@ namespace Economy.scripts
         {
             _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
             _isServerRegistered = true;
-            ServerLogger.Init("EconomyServer.Log", !Debug); // comment this out if logging is not required for the Server.
+            ServerLogger.Init("EconomyServer.Log"); // comment this out if logging is not required for the Server.
             ServerLogger.Write("Economy Server Log Started");
             ServerLogger.Write("Economy Server Version {0}", EconomyConsts.ModCommunicationVersion);
             if (ServerLogger.IsActive)
