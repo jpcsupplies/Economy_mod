@@ -124,7 +124,7 @@
                 }
             }
 
-            bool showHelp = !showAll && !showOre && !showIngot && !showComponent & !showAmmo & !showTools;
+            bool showHelp = !showAll && !showOre && !showIngot && !showComponent && !showAmmo && !showTools;
 
             var writer = TextPanelWriter.Create(textPanel);
 
