@@ -150,6 +150,7 @@ namespace Economy.scripts
             }
 
             MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
+            MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Frontier Trade Network!", EconomyConsts.TradeNetworkName);
             MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/ehelp' for more informations about available commands");
             //MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
 
@@ -259,8 +260,6 @@ namespace Economy.scripts
 
         #endregion
 
-
-
         #region message handling
 
         private void GotMessage(string messageText, ref bool sendToOthers)
@@ -302,20 +301,17 @@ namespace Economy.scripts
 
         #endregion
 
+        #region command list
         private bool ProcessMessage(string messageText)
         {
-            Match match; // used by the Regular Expression to test user input.
-
-            #region command list
-
-            // this list is going to get messy since the help and commands themself tell user the same thing 
-
-            string[] split = messageText.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-            // nothing useful was entered.
-            if (split.Length == 0)
+           Match match; // used by the Regular Expression to test user input.
+           // this list is going to get messy since the help and commands themself tell user the same thing 
+           string[] split = messageText.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+           // nothing useful was entered.
+           if (split.Length == 0)
                 return false;
 
+            #region pay
             // pay command
             // eg /pay bob 50 here is your payment
             // eg /pay "Screaming Angles" 10 fish and chips
@@ -330,7 +326,9 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("PAY", "Missing parameter - /pay user amount reason");
                 return true;
             }
+            #endregion pay
 
+            #region buy
             // buy command
             if (split[0].Equals("/buy", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -405,7 +403,9 @@ namespace Economy.scripts
                 MyAPIGateway.Utilities.ShowMessage("BUY", "Nothing nearby to trade with?");
                 return true;
             }
+            #endregion buy
 
+            #region set
             // set command - to allow an admin to set the on hand stock of a specified item - it's a dirty hack tho
             // This wont actually work as the regex conditions are invalid, and the messagesell script will reject these
             //options.   Usage /set <qty> "item name"   must be admin
@@ -448,7 +448,9 @@ namespace Economy.scripts
                 MyAPIGateway.Utilities.ShowMessage("SET", "#1 is quantity, #2 is item");
                 return true;
             }
+            #endregion set
 
+            #region sell
             // sell command
             if (split[0].Equals("/sell", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -584,7 +586,9 @@ namespace Economy.scripts
                 MyAPIGateway.Utilities.ShowMessage("SELL", "#1 is quantity, #2 is item, #3 optional price to offer #4 optional where to sell to");
                 return true;
             }
+            #endregion sell
 
+            #region seen
             // seen command
             if (split[0].Equals("/seen", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -606,7 +610,9 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("BAL", "Incorrect parameters");
                 return true;
             }
+            #endregion seen
 
+            #region value
             // value command for looking up the table price of an item.
             // eg /value itemname optionalqty
             // !!!is it possible to make this work more like the bal or pay command so
@@ -659,7 +665,9 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("VALUE", "You need to specify something to value eg /value ice");
                 return true;
             }
+            #endregion value
 
+            #region accounts
             // accounts command.  For Admins only.
             if (split[0].Equals("/accounts", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
@@ -667,7 +675,9 @@ namespace Economy.scripts
                 return true;
                 // don't respond to non-admins.
             }
+            #endregion accounts
 
+            #region reset
             // reset command.  For Admins only.
             if (split[0].Equals("/reset", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
@@ -675,7 +685,9 @@ namespace Economy.scripts
                 return true;
                 // don't respond to non-admins.
             }
+            #endregion reset
 
+            #region ver
             //ver reply
             if (split[0].Equals("/ver", StringComparison.InvariantCultureIgnoreCase))
             { 
@@ -683,7 +695,38 @@ namespace Economy.scripts
                 MyAPIGateway.Utilities.ShowMessage("VER", versionreply);
                 return true;
             }
+            #endregion ver
 
+            #region news system
+            //news reply - early proof of concept work
+            //this should fire a sub with the parameter as the message to be displayed, that way if we get other things like bounties or
+            //navigation hazard warnings and random frontier news working, we can just throw the generated news report at 
+            //the global news sub to make it display
+            //clearly this needs to run server side and trigger on all online players screens - 
+            //this test will only display on the current admins screen however
+            if (split[0].Equals("/global", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
+            {
+
+                string announce = "Date Now " + messageText;
+                //messageTexts needs the /global removed, and add a missionbox newline on each \n  then display the formatted
+                //message in a mission box.
+                MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "News:", announce, null, "Close");
+                return true;
+            }
+
+            //this is the normal players command to bring up the news log (newest to oldest) and/or last major news message
+            if (split[0].Equals("/news", StringComparison.InvariantCultureIgnoreCase))
+            {
+
+                string announce = "No news is good news?";
+                //messageTexts needs the /global removed, and add a missionbox newline on each \n  then display the formatted
+                //message in a mission box.
+                MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "News:", announce, null, "Close");
+                return true;
+            }
+            #endregion news system
+
+            #region help
             // help command
             if (split[0].Equals("/ehelp", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -751,11 +794,11 @@ namespace Economy.scripts
                     }
                 }
             }
-
-            #endregion
-
+            #endregion help
+     
             // it didnt start with help or anything else that matters so return false and get us out of here;
             return false;
-        }
+        } 
+        #endregion command list
     }
 }

@@ -211,7 +211,7 @@
             //[we could put an admin check on blacklist however, allow admins to spawn even blacklisted gear]
             if (accountToBuy.BankBalance < transactionAmount)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you cannot afford {0}!", transactionAmount);
+                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you cannot afford {0} {1}!", transactionAmount, EconomyConsts.CurrencyName);
                 return;
             }
 
@@ -237,7 +237,7 @@
 
                     accountToBuy.BankBalance -= transactionAmount;
                     accountToBuy.Date = DateTime.Now;
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0}", transactionAmount, ItemQuantity, definition.GetDisplayName());
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0} {4}", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyConsts.CurrencyName);
                 }
                 else { MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There isn't '{0}' of {1} available to purchase! Only {2} available to buy!", ItemQuantity, definition.GetDisplayName(), marketItem.Quantity); }
 

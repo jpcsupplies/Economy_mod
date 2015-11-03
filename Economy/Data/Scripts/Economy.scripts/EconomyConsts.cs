@@ -23,6 +23,11 @@
         //milestone level A=Alpha B=Beta, dev = development test version or Milestone eg 1.0A Milestone, 1.1A Dev etc
         public const string MajorVer = "Econ 1.0A Milestone"; 
 
+        //Name our money
+        public const string CurrencyName = "Credits";
+
+        //Name our Trading Network
+        public const string TradeNetworkName = "Blue Mining Inc";
 
         /// <summary>
         /// The is the Id which this mod registers iteself for sending and receiving messages through SE. 
