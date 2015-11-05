@@ -444,6 +444,7 @@ namespace Economy.scripts
                     MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Quantity, sellQuantity, 0, 0, false);
                     return true;
                 }
+                else { if (split[1].Equals("blacklist", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SET", "todo - /set blacklist #2 should call SetMarketItemType.Blacklisted on messageset()"); } }
 
 
                 MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2");

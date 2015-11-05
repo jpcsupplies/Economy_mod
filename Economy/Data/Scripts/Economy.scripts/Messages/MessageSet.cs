@@ -150,9 +150,17 @@
                 marketItem.SellPrice = ItemSellPrice;
             }
 
-            if (SetType.HasFlag(SetMarketItemType.Blacklisted))
+            if (SetType.HasFlag(SetMarketItemType.Blacklisted)) //make it a toggle if already true make it false, or vice versa etc
             {
-                marketItem.IsBlacklisted = BlackListed;
+                if (marketItem.IsBlacklisted != BlackListed) {
+                    // shouldnt this be true or false instead of Blacklisted?
+                    //marketItem.IsBlacklisted = BlackListed; 
+                    marketItem.IsBlacklisted = true; //ie like this?
+                }
+                else
+                {   
+                    marketItem.IsBlacklisted = false;
+                }
             }
 
             MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "You just set {1} stock on hand to {0} units", ItemQuantity, definition.GetDisplayName());
