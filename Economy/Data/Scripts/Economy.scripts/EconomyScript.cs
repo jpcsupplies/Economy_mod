@@ -439,6 +439,8 @@ namespace Economy.scripts
                     // TODO: do range checks for the market, using MarketManager.FindMarketsFromLocation()
 
                     // TODO: get more from the /SET command to set prices and Blacklist.
+                    // aha i see what you did there SetMarketItemType.Quantity, SetMarketItemType.Prices, SetMarketItemType.Blacklisted
+                    // on it soon hopefully
                     MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Quantity, sellQuantity, 0, 0, false);
                     return true;
                 }
@@ -744,7 +746,7 @@ namespace Economy.scripts
                     return true;
                 }
                 else
-                {
+                {   string helpreply="."; //this reply is too big need to move it to pop up \r\n
                     switch (split[1].ToLowerInvariant())
                     {
                         // did we type /ehelp help ?
@@ -787,13 +789,14 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /buy 20 Ice ");
                             return true;
                         case "sell":
-                            string helpreply="."; //this reply is too big need to move it to pop up
-                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/sell W X Y Z - Sells a quantity [W] of item [X] [at price Y] [to player Z]");
-                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Sell to NPC (or nearest market) Example: /sell 20 Ice ");
-                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/sell cancel (If you offered to sell something to someone, this cancels the offer.");
-                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/sell collect (collects items from failed sell offers");
-                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/sell acccept|deny (accepts or rejects a sell offer made to you");
-                            MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "eHelp", helpreply, null, "Close");
+                            helpreply = "/sell W X Y Z \r\n Sells quantity [W] of item [X] [at price Y] [to player Z]\r\n" +
+                                " Eg sell to another player /sell 1 rifle 10 Bob\r\n" +
+                                " or Sell to NPC (or nearest market) Eg: /sell 20 Ice \r\n" +
+                                "/sell cancel (Cancels any sell offers you did)\r\n" +
+                                "/sell collect (collects items from failed sell offers)\r\n" +
+                                "/sell acccept|deny (accepts or rejects a sell offer made to you)\r\n";
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /sell 20 Ice [optional price] [optional player]");
+                            MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "sell command", helpreply, null, "Close");
                             return true;
                         case "value":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/value X Y - Looks up item [X] of optional quantity [Y] and reports the buy and sell value.");
