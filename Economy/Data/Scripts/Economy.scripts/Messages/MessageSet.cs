@@ -160,8 +160,8 @@
                 else
                 {   
                     marketItem.IsBlacklisted = false;
-                } 
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "You just set {1} to blacklisted= {0}", BlackListed, definition.GetDisplayName());
+                }
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "You just set {1} to blacklisted= {0}", marketItem.IsBlacklisted, definition.GetDisplayName());
                 return;
             }
 
