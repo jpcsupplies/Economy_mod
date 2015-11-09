@@ -152,7 +152,7 @@
 
             if (SetType.HasFlag(SetMarketItemType.Blacklisted)) //make it a toggle if already true make it false, or vice versa etc
             {
-                if (marketItem.IsBlacklisted != BlackListed) {
+                if (marketItem.IsBlacklisted != true) {
                     // shouldnt this be true or false instead of Blacklisted?
                     //marketItem.IsBlacklisted = BlackListed; 
                     marketItem.IsBlacklisted = true; //ie like this?
@@ -160,10 +160,13 @@
                 else
                 {   
                     marketItem.IsBlacklisted = false;
-                }
+                } 
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "You just set {1} to blacklisted= {0}", BlackListed, definition.GetDisplayName());
+                return;
             }
 
             MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "You just set {1} stock on hand to {0} units", ItemQuantity, definition.GetDisplayName());
+            
         }
     }
 }

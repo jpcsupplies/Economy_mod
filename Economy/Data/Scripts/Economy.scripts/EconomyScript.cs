@@ -56,7 +56,7 @@ namespace Economy.scripts
         // /set reset etc  the syntax may not be exactly as above these are just hypothetical examples
         // see https://github.com/jpcsupplies/Economy_mod/issues/66
         //current functionality is just to alter the market on hand of a single item, eg /set 10000 ice
-        const string SetPattern = @"(?<command>/set)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<qtyall>ALL))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
+        const string SetPattern = @"(?<command>/set)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<blacklist>blacklist))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
 
         /// <summary>
         ///  buy pattern no "all" required.   reusing sell  
@@ -415,11 +415,16 @@ namespace Economy.scripts
             {
                 decimal sellQuantity = 0;
                 string itemName = "";
+                bool blacklist = false;
                 match = Regex.Match(messageText, SetPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     itemName = match.Groups["item"].Value.Trim();
-                    sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
+                    
+                    blacklist = match.Groups["blacklist"].Value.Equals("blacklist", StringComparison.InvariantCultureIgnoreCase);
+                    if (!blacklist)
+                        sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
+                    //sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
                     MyObjectBuilder_Base content = null;
                     Dictionary<string, MyPhysicalItemDefinition> options;
                     // Search for the item and find one match only, either by exact name or partial name.
@@ -441,10 +446,14 @@ namespace Economy.scripts
                     // TODO: get more from the /SET command to set prices and Blacklist.
                     // aha i see what you did there SetMarketItemType.Quantity, SetMarketItemType.Prices, SetMarketItemType.Blacklisted
                     // on it soon hopefully
-                    MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Quantity, sellQuantity, 0, 0, false);
+                    if (blacklist) {
+                        MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Blacklisted, -1, 0, 0, false);
+                        MyAPIGateway.Utilities.ShowMessage("SET", "todo - /set blacklist #2 should call SetMarketItemType.Blacklisted on messageset()"); }
+                    else { MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Quantity, sellQuantity, 0, 0, false); }
                     return true;
                 }
-                else { if (split[1].Equals("blacklist", StringComparison.InvariantCultureIgnoreCase)) { MyAPIGateway.Utilities.ShowMessage("SET", "todo - /set blacklist #2 should call SetMarketItemType.Blacklisted on messageset()"); } }
+                
+                
 
 
                 MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2");
