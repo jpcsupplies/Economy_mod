@@ -237,9 +237,12 @@
 
                     accountToBuy.BankBalance -= transactionAmount;
                     accountToBuy.Date = DateTime.Now;
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0} {4}", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyConsts.CurrencyName);
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0} {3}", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyConsts.CurrencyName);
                 }
-                else { MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There isn't '{0}' of {1} available to purchase! Only {2} available to buy!", ItemQuantity, definition.GetDisplayName(), marketItem.Quantity); }
+                else
+                {
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There isn't '{0}' of {1} available to purchase! Only {2} available to buy!", ItemQuantity, definition.GetDisplayName(), marketItem.Quantity);
+                }
 
                 return;
             }
