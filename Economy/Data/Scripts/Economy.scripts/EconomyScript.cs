@@ -447,7 +447,7 @@ namespace Economy.scripts
                     // aha i see what you did there SetMarketItemType.Quantity, SetMarketItemType.Prices, SetMarketItemType.Blacklisted
                     // on it soon hopefully
                     if (blacklist) {
-                        MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Blacklisted, -1, 0, 0, false);
+                        MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Blacklisted, 0, 0, 0, false);
                         MyAPIGateway.Utilities.ShowMessage("SET", "todo - /set blacklist #2 should call SetMarketItemType.Blacklisted on messageset()"); }
                     else { MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Quantity, sellQuantity, 0, 0, false); }
                     return true;

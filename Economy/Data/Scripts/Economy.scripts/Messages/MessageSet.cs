@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using System.Text;
     using Economy.scripts;
     using ProtoBuf;
     using Sandbox.Common.ObjectBuilders;
@@ -141,32 +142,30 @@
                 return;
             }
 
+            var msg = new StringBuilder();
+            msg.AppendFormat("You just set {0}", definition.GetDisplayName());
+
             if (SetType.HasFlag(SetMarketItemType.Quantity))
+            {
                 marketItem.Quantity = ItemQuantity;
+                msg.AppendFormat(", stock on hand to {0} units", ItemQuantity);
+            }
 
             if (SetType.HasFlag(SetMarketItemType.Prices))
             {
                 marketItem.BuyPrice = ItemBuyPrice;
                 marketItem.SellPrice = ItemSellPrice;
+                msg.AppendFormat(", buy price to {0}, sell price to {1}", ItemBuyPrice, ItemSellPrice);
             }
 
-            if (SetType.HasFlag(SetMarketItemType.Blacklisted)) //make it a toggle if already true make it false, or vice versa etc
+            if (SetType.HasFlag(SetMarketItemType.Blacklisted))
             {
-                if (marketItem.IsBlacklisted != true) {
-                    // shouldnt this be true or false instead of Blacklisted?
-                    //marketItem.IsBlacklisted = BlackListed; 
-                    marketItem.IsBlacklisted = true; //ie like this?
-                }
-                else
-                {   
-                    marketItem.IsBlacklisted = false;
-                }
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "You just set {1} to blacklisted= {0}", marketItem.IsBlacklisted, definition.GetDisplayName());
-                return;
+                //marketItem.IsBlacklisted = BlackListed;
+                marketItem.IsBlacklisted = !marketItem.IsBlacklisted;
+                msg.AppendFormat(", blacklist to {0}, ", marketItem.IsBlacklisted ? "On" : "Off");
             }
 
-            MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "You just set {1} stock on hand to {0} units", ItemQuantity, definition.GetDisplayName());
-            
+            MessageClientTextMessage.SendMessage(SenderSteamId, "SET", msg.ToString());
         }
     }
 }
