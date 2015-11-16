@@ -150,7 +150,7 @@ namespace Economy.scripts
             }
 
             MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
-            MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Frontier Trade Network!", EconomyScript.Instance.Config.TradeNetworkName);
+            MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Frontier Trade Network!", EconomyConsts.TradeNetworkName); // TODO: need to get Tradenetwork name sent from Server on connection.
             MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/ehelp' for more informations about available commands");
             //MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
 
