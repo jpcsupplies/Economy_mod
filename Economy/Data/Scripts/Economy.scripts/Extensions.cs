@@ -6,6 +6,7 @@ namespace Economy.scripts
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using VRage;
+    using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
 
@@ -195,5 +196,173 @@ namespace Economy.scripts
                 return null;
             return ((Sandbox.Game.Entities.MyEntity)character).GetInventory();
         }
+
+        #region attached grids
+
+        /// <summary>
+        /// Find all grids attached to the specified grid, either by piston, rotor, connector or landing gear.
+        /// This will iterate through all attached grids, until all are found.
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="type">Specifies if all attached grids will be found or only grids that are attached either by piston or rotor.</param>
+        /// <returns>A list of all attached grids, including the original.</returns>
+        public static List<IMyCubeGrid> GetAttachedGrids(this IMyEntity entity, AttachedGrids type = AttachedGrids.All)
+        {
+            var cubeGrid = entity as IMyCubeGrid;
+
+            if (cubeGrid == null)
+                return new List<IMyCubeGrid>();
+
+            var results = new List<IMyCubeGrid> { cubeGrid };
+            GetAttachedGrids(cubeGrid, ref results, type);
+            return results;
+        }
+
+        private static void GetAttachedGrids(IMyCubeGrid cubeGrid, ref List<IMyCubeGrid> results, AttachedGrids type)
+        {
+            if (cubeGrid == null)
+                return;
+
+            var blocks = new List<IMySlimBlock>();
+            cubeGrid.GetBlocks(blocks, b => b != null && b.FatBlock != null && !b.FatBlock.BlockDefinition.TypeId.IsNull);
+
+            foreach (var block in blocks)
+            {
+                //MyAPIGateway.Utilities.ShowMessage("Block", string.Format("{0}", block.FatBlock.BlockDefinition.TypeId));
+
+                if (block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_MotorAdvancedStator) ||
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_MotorStator) ||
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_MotorSuspension) ||
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_MotorBase))
+                {
+                    // The MotorStator which inherits from MotorBase.
+                    var motorBase = block.GetObjectBuilder() as MyObjectBuilder_MotorBase;
+                    if (motorBase == null || !motorBase.RotorEntityId.HasValue || motorBase.RotorEntityId.Value == 0 || !MyAPIGateway.Entities.EntityExists(motorBase.RotorEntityId.Value))
+                        continue;
+                    var entityParent = MyAPIGateway.Entities.GetEntityById(motorBase.RotorEntityId.Value).Parent as IMyCubeGrid;
+                    if (entityParent == null)
+                        continue;
+                    if (!results.Any(e => e.EntityId == entityParent.EntityId))
+                    {
+                        results.Add(entityParent);
+                        GetAttachedGrids(entityParent, ref results, type);
+                    }
+                }
+                else if (block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_MotorAdvancedRotor) ||
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_MotorRotor) ||
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_RealWheel) ||
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_Wheel))
+                {
+                    // The Rotor Part.
+                    var motorCube = Support.FindRotorBase(block.FatBlock.EntityId);
+                    if (motorCube == null)
+                        continue;
+                    var entityParent = (IMyCubeGrid)motorCube.Parent;
+                    if (!results.Any(e => e.EntityId == entityParent.EntityId))
+                    {
+                        results.Add(entityParent);
+                        GetAttachedGrids(entityParent, ref results, type);
+                    }
+                }
+                else if (block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_PistonTop))
+                {
+                    // The Piston Top.
+                    var pistonCube = Support.FindPistonBase(block.FatBlock.EntityId);
+                    if (pistonCube == null)
+                        continue;
+                    var entityParent = (IMyCubeGrid)pistonCube.Parent;
+                    if (!results.Any(e => e.EntityId == entityParent.EntityId))
+                    {
+                        results.Add(entityParent);
+                        GetAttachedGrids(entityParent, ref results, type);
+                    }
+                }
+                else if (block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_ExtendedPistonBase) ||
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_PistonBase))
+                {
+                    var pistonBase = block.GetObjectBuilder() as MyObjectBuilder_PistonBase;
+                    if (pistonBase == null || pistonBase.TopBlockId == 0 || !MyAPIGateway.Entities.EntityExists(pistonBase.TopBlockId))
+                        continue;
+                    var entityParent = MyAPIGateway.Entities.GetEntityById(pistonBase.TopBlockId).Parent as IMyCubeGrid;
+                    if (entityParent == null)
+                        continue;
+                    if (!results.Any(e => e.EntityId == entityParent.EntityId))
+                    {
+                        results.Add(entityParent);
+                        GetAttachedGrids(entityParent, ref results, type);
+                    }
+                }
+                else if (block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_ShipConnector) && type == AttachedGrids.All)
+                {
+                    // There isn't a non-Ingame interface for IMyShipConnector at this time.
+                    var connector = (Sandbox.ModAPI.Ingame.IMyShipConnector)block.FatBlock;
+
+                    if (connector.IsConnected == false || connector.IsLocked == false || connector.OtherConnector == null)
+                        continue;
+
+                    var otherGrid = (IMyCubeGrid)connector.OtherConnector.CubeGrid;
+
+                    if (!results.Any(e => e.EntityId == otherGrid.EntityId))
+                    {
+                        results.Add(otherGrid);
+                        GetAttachedGrids(otherGrid, ref results, type);
+                    }
+                }
+                else if (block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_LandingGear) && type == AttachedGrids.All)
+                {
+                    var landingGear = (IMyLandingGear)block.FatBlock;
+                    if (landingGear.IsLocked == false)
+                        continue;
+
+                    var entity = landingGear.GetAttachedEntity();
+                    if (entity == null || !(entity is IMyCubeGrid))
+                        continue;
+
+                    var otherGrid = (IMyCubeGrid)entity;
+                    if (!results.Any(e => e.EntityId == otherGrid.EntityId))
+                    {
+                        results.Add(otherGrid);
+                        GetAttachedGrids(otherGrid, ref results, type);
+                    }
+                }
+            }
+
+            // Loop through all other grids, find their Landing gear, and figure out if they are attached to <cubeGrid>.
+            var allShips = new HashSet<IMyEntity>();
+            var checkList = results; // cannot use ref paramter in Lambada expression!?!.
+            MyAPIGateway.Entities.GetEntities(allShips, e => e is IMyCubeGrid && !checkList.Contains(e));
+
+            if (type == AttachedGrids.All)
+            {
+                foreach (IMyCubeGrid ship in allShips)
+                {
+                    blocks = new List<IMySlimBlock>();
+                    ship.GetBlocks(blocks,
+                        b =>
+                            b != null && b.FatBlock != null && !b.FatBlock.BlockDefinition.TypeId.IsNull &&
+                            b.FatBlock is IMyLandingGear);
+
+                    foreach (var block in blocks)
+                    {
+                        var landingGear = (IMyLandingGear)block.FatBlock;
+                        if (landingGear.IsLocked == false)
+                            continue;
+
+                        var entity = landingGear.GetAttachedEntity();
+
+                        if (entity == null || entity.EntityId != cubeGrid.EntityId)
+                            continue;
+
+                        if (!results.Any(e => e.EntityId == ship.EntityId))
+                        {
+                            results.Add(ship);
+                            GetAttachedGrids(ship, ref results, type);
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
     }
 }

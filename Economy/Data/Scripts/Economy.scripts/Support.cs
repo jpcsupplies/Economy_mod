@@ -302,6 +302,211 @@
 
         #endregion
 
+        #region Find Cube in Grid
+
+        public static IMyCubeBlock FindRotorBase(long entityId, IMyCubeGrid parent = null)
+        {
+            var entities = new HashSet<IMyEntity>();
+            MyAPIGateway.Entities.GetEntities(entities, e => e is IMyCubeGrid);
+
+            foreach (var entity in entities)
+            {
+                var cubeGrid = (IMyCubeGrid)entity;
+
+                if (cubeGrid == null)
+                    continue;
+
+                var blocks = new List<IMySlimBlock>();
+                cubeGrid.GetBlocks(blocks, block => block != null && block.FatBlock != null &&
+                    (block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_MotorAdvancedStator) ||
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_MotorStator) ||
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_MotorSuspension) ||
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_MotorBase)));
+
+                foreach (var block in blocks)
+                {
+                    var motorBase = block.GetObjectBuilder() as MyObjectBuilder_MotorBase;
+
+                    if (motorBase == null || !motorBase.RotorEntityId.HasValue || motorBase.RotorEntityId.Value == 0 || !MyAPIGateway.Entities.EntityExists(motorBase.RotorEntityId.Value))
+                        continue;
+
+                    if (motorBase.RotorEntityId == entityId)
+                        return block.FatBlock;
+                }
+            }
+
+            return null;
+        }
+
+        public static IMyCubeBlock FindPistonBase(long entityId, IMyCubeGrid parent = null)
+        {
+            var entities = new HashSet<IMyEntity>();
+            MyAPIGateway.Entities.GetEntities(entities, e => e is IMyCubeGrid);
+
+            foreach (var entity in entities)
+            {
+                var cubeGrid = (IMyCubeGrid)entity;
+
+                if (cubeGrid == null)
+                    continue;
+
+                var blocks = new List<IMySlimBlock>();
+                cubeGrid.GetBlocks(blocks, block => block != null && block.FatBlock != null &&
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_PistonBase));
+
+                foreach (var block in blocks)
+                {
+                    var pistonBase = block.GetObjectBuilder() as MyObjectBuilder_PistonBase;
+
+                    if (pistonBase == null || pistonBase.TopBlockId == 0 || !MyAPIGateway.Entities.EntityExists(pistonBase.TopBlockId))
+                        continue;
+
+                    if (pistonBase.TopBlockId == entityId)
+                        return block.FatBlock;
+                }
+            }
+
+            return null;
+        }
+
+        public static IMyEntity FindLookAtEntity(Sandbox.ModAPI.Interfaces.IMyControllableEntity controlledEntity, bool findShips, bool findCubes, bool findPlayers, bool findAsteroids, bool findPlanets, bool findReplicable)
+        {
+            IMyEntity entity;
+            double distance;
+            Vector3D hitPoint;
+            FindLookAtEntity(controlledEntity, true, out entity, out distance, out hitPoint, findShips, findCubes, findPlayers, findAsteroids, findPlanets, findReplicable);
+            return entity;
+        }
+
+        public static void FindLookAtEntity(Sandbox.ModAPI.Interfaces.IMyControllableEntity controlledEntity, bool ignoreOccupiedGrid, out IMyEntity lookEntity, out double lookDistance, out Vector3D hitPoint, bool findShips, bool findCubes, bool findPlayers, bool findAsteroids, bool findPlanets, bool findReplicable)
+        {
+            const float range = 5000000;
+            Matrix worldMatrix;
+            Vector3D startPosition;
+            Vector3D endPosition;
+            IMyCubeGrid occupiedGrid = null;
+
+            if (controlledEntity.Entity.Parent == null)
+            {
+                worldMatrix = controlledEntity.GetHeadMatrix(true, true, false); // dead center of player cross hairs, or the direction the player is looking with ALT.
+                startPosition = worldMatrix.Translation + worldMatrix.Forward * 0.5f;
+                endPosition = worldMatrix.Translation + worldMatrix.Forward * (range + 0.5f);
+            }
+            else
+            {
+                occupiedGrid = controlledEntity.Entity.GetTopMostParent() as IMyCubeGrid;
+                worldMatrix = controlledEntity.Entity.WorldMatrix;
+                // TODO: need to adjust for position of cockpit within ship.
+                startPosition = worldMatrix.Translation + worldMatrix.Forward * 1.5f;
+                endPosition = worldMatrix.Translation + worldMatrix.Forward * (range + 1.5f);
+            }
+
+            var entites = new HashSet<IMyEntity>();
+            MyAPIGateway.Entities.GetEntities(entites, e => e != null);
+
+            var list = new Dictionary<IMyEntity, double>();
+            var ray = new RayD(startPosition, worldMatrix.Forward);
+
+            foreach (var entity in entites)
+            {
+                if (findShips || findCubes)
+                {
+                    var cubeGrid = entity as Sandbox.ModAPI.IMyCubeGrid;
+
+                    if (cubeGrid != null)
+                    {
+                        if (ignoreOccupiedGrid && occupiedGrid != null && occupiedGrid.EntityId == cubeGrid.EntityId)
+                            continue;
+
+                        // check if the ray comes anywhere near the Grid before continuing.    
+                        if (ray.Intersects(entity.WorldAABB).HasValue)
+                        {
+                            var hit = cubeGrid.RayCastBlocks(startPosition, endPosition);
+                            if (hit.HasValue)
+                            {
+                                var distance = (startPosition - cubeGrid.GridIntegerToWorld(hit.Value)).Length();
+                                var block = cubeGrid.GetCubeBlock(hit.Value);
+
+                                if (block.FatBlock != null && findCubes)
+                                    list.Add(block.FatBlock, distance);
+                                else if (findShips)
+                                    list.Add(entity, distance);
+                            }
+                        }
+                    }
+                }
+
+                if (findPlayers)
+                {
+                    var controller = entity as Sandbox.ModAPI.Interfaces.IMyControllableEntity;
+                    if (controlledEntity.Entity.EntityId != entity.EntityId && controller != null && ray.Intersects(entity.WorldAABB).HasValue)
+                    {
+                        var distance = (startPosition - entity.GetPosition()).Length();
+                        list.Add(entity, distance);
+                    }
+                }
+
+                if (findReplicable)
+                {
+                    var replicable = entity as Sandbox.Game.Entities.MyReplicableEntity;
+                    if (replicable != null && ray.Intersects(entity.WorldAABB).HasValue)
+                    {
+                        var distance = (startPosition - entity.GetPosition()).Length();
+                        list.Add(entity, distance);
+                    }
+                }
+
+                if (findAsteroids)
+                {
+                    var voxelMap = entity as IMyVoxelMap;
+                    if (voxelMap != null)
+                    {
+                        var aabb = new BoundingBoxD(voxelMap.PositionLeftBottomCorner, voxelMap.PositionLeftBottomCorner + voxelMap.Storage.Size);
+                        var hit = ray.Intersects(aabb);
+                        if (hit.HasValue)
+                        {
+                            var center = voxelMap.PositionLeftBottomCorner + (voxelMap.Storage.Size / 2);
+                            var distance = (startPosition - center).Length();  // use distance to center of asteroid.
+                            list.Add(entity, distance);
+                        }
+                    }
+                }
+
+                if (findPlanets)
+                {
+                    // Looks to be working against Git and public release.
+                    var planet = entity as Sandbox.Game.Entities.MyPlanet;
+                    if (planet != null)
+                    {
+                        var aabb = new BoundingBoxD(planet.PositionLeftBottomCorner, planet.PositionLeftBottomCorner + planet.Size);
+                        var hit = ray.Intersects(aabb);
+                        if (hit.HasValue)
+                        {
+                            var center = planet.WorldMatrix.Translation;
+                            var distance = (startPosition - center).Length(); // use distance to center of planet.
+                            list.Add(entity, distance);
+                        }
+                    }
+                }
+            }
+
+            if (list.Count == 0)
+            {
+                lookEntity = null;
+                lookDistance = 0;
+                hitPoint = Vector3D.Zero;
+                return;
+            }
+
+            // find the closest Entity.
+            var item = list.OrderBy(f => f.Value).First();
+            lookEntity = item.Key;
+            lookDistance = item.Value;
+            hitPoint = startPosition + (Vector3D.Normalize(ray.Direction) * lookDistance);
+        }
+
+        #endregion
+
         ///// <summary>
         ///// Must be called by the Client for correct localization.
         ///// </summary>

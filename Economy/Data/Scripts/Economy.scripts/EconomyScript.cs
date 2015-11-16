@@ -679,6 +679,49 @@ namespace Economy.scripts
             }
             #endregion value
 
+
+            #region worth
+            // worth command
+            if (split[0].Equals("/worth", StringComparison.InvariantCultureIgnoreCase))
+            {
+                // TODO: FindLookAtEntity responds to projections, new ship placement, and copy paste.
+                var selectedShip = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, true, false, false, false, false, false) as IMyCubeGrid;
+                if (selectedShip != null)
+                {
+                    // TODO: counters.
+                    int terminalBlocks = 0;
+                    int armorBlocks = 0;
+
+                    var grids = selectedShip.GetAttachedGrids(AttachedGrids.Static);
+                    foreach (var grid in grids)
+                    {
+                        var blocks = new List<IMySlimBlock>();
+                        grid.GetBlocks(blocks);
+
+                        foreach (var block in blocks)
+                        {
+                            if (block.FatBlock == null)
+                            {
+                                // TODO: use block.GetObjectBuilder() to get component List.
+                                armorBlocks++;
+                            }
+                            else
+                            {
+                                // TODO: use block.FatBlock.BlockDefinition to get component List.
+                                terminalBlocks++;
+                            }
+
+                            // TODO: Go through component List based on construction level.
+                            // TODO: Go through Construction Inventory.
+                            // TODO: Go through all other Inventories for components/items.
+                        }
+                    }
+                    // TODO: full detail.
+                    //MyAPIGateway.Utilities.ShowMessage("Worth", string.Format("Armors={0}   Terminals={1}", armorBlocks, terminalBlocks));
+                }
+            }
+            #endregion
+
             #region accounts
             // accounts command.  For Admins only.
             if (split[0].Equals("/accounts", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
