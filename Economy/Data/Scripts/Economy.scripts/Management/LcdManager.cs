@@ -101,10 +101,13 @@
             bool showAmmo = false;
             bool showTools = false;
             bool showTest = false;
+            bool showStock = false;
 
             // removed Linq, to reduce the looping through the array. This should only have to do one loop through all items in the array.
             foreach (var str in checkArray)
             {
+                if (str.Equals("stock", StringComparison.InvariantCultureIgnoreCase))
+                    showStock = true;
                 if (str.Equals("*", StringComparison.InvariantCultureIgnoreCase))
                     showAll = true;
                 if (!showAll)
@@ -145,12 +148,13 @@
 
             var buyColumn = TextPanelWriter.LcdLineWidth - 180;
             var sellColumn = TextPanelWriter.LcdLineWidth - 0;
+            var stockColumn = TextPanelWriter.LcdLineWidth - 0;
 
             // This might be a costly operation to run.
             var markets = MarketManager.FindMarketsFromLocation(textPanel.WorldMatrix.Translation);
             if (markets.Count == 0)
             {
-                writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "« Economy »");
+                writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "« {0} »", EconomyScript.Instance.Config.TradeNetworkName);
                 writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "« No market in range »");
             }
             else
@@ -161,9 +165,16 @@
                 // Build a list of the items, so we can get the name so we can the sort the items by name.
                 var list = new Dictionary<MarketItemStruct, string>();
 
+                writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, market.DisplayName);
+
                 writer.AddPublicText("« Market List");
-                writer.AddPublicRightText(buyColumn, "Buy");
-                writer.AddPublicRightLine(sellColumn, "Sell »");
+                if (showStock)
+                    writer.AddPublicRightLine(stockColumn, "Stock »");
+                else
+                {
+                    writer.AddPublicRightText(buyColumn, "Buy");
+                    writer.AddPublicRightLine(sellColumn, "Sell »");
+                }
 
                 foreach (var marketItem in market.MarketItems)
                 {
@@ -198,8 +209,17 @@
                 foreach (var kvp in list.OrderBy(k => k.Value))
                 {
                     writer.AddPublicLeftTrim(buyColumn - 120, kvp.Value);
-                    writer.AddPublicRightText(buyColumn, kvp.Key.BuyPrice.ToString("0.00"));
-                    writer.AddPublicRightText(sellColumn, kvp.Key.SellPrice.ToString("0.00"));
+                    if (showStock)
+                    {
+                        // TODO: components and tools should be displayed as whole numbers. Will be hard to align with other values.
+
+                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("0.000000")); // TODO: recheck number of decimal places.
+                    }
+                    else
+                    {
+                        writer.AddPublicRightText(buyColumn, kvp.Key.BuyPrice.ToString("0.00"));
+                        writer.AddPublicRightText(sellColumn, kvp.Key.SellPrice.ToString("0.00"));
+                    }
                     writer.AddPublicLine();
                 }
             }

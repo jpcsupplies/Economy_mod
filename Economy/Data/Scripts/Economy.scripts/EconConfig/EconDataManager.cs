@@ -66,6 +66,12 @@
 
             // Sync in whatever is defined in the game (may contain new cubes, and modded cubes).
             MarketManager.SyncMarketItems(ref config.DefaultPrices);
+
+            if (config.TradeTimeout.TotalSeconds < 1f)
+            {
+                config.TradeTimeout = new TimeSpan(0, 0, 1); // limit minimum trade timeout to 1 second.
+                EconomyScript.Instance.ServerLogger.Write("TradeTimeout has been reset, as it was below 1 second.");
+            }
         }
 
         private static EconConfigStruct InitConfig()
@@ -665,7 +671,6 @@
             {
                 var items = MyAPIGateway.Utilities.SerializeFromXML<MarketStruct>(xmlText);
                 config.DefaultPrices = items.MarketItems;
-
             }
             catch (Exception ex)
             {
@@ -749,12 +754,15 @@
                 {
                     MarketId = EconomyConsts.NpcMerchantId,
                     MarketZoneType = MarketZoneType.FixedSphere,
-                    DisplayName = "Default Zone",
+                    DisplayName = EconomyConsts.NpcMarketName,
                     MarketZoneSphere = new BoundingSphereD(Vector3D.Zero, EconomyConsts.DefaultTradeRange), // Center of the game world.
                     MarketItems = new List<MarketItemStruct>()
                 };
                 data.Markets.Add(market);
             }
+
+            if (string.IsNullOrEmpty(market.DisplayName))
+                market.DisplayName = EconomyConsts.NpcMarketName;
 
             // Add missing items that are covered by Default items.
             foreach (var defaultItem in defaultPrices)

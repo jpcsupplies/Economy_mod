@@ -90,19 +90,19 @@
                 // which needs to not send if the player isnt online - pity ive no idea how to write to the faction chat system
                 // be a good place to send the player a faction message as it would work even if they were offline..
                 MessageClientTextMessage.SendMessage(account.SteamId, "PAY",
-                    string.Format("{0}, {1} just paid you {2} {4} for {3}", account.NickName, SenderDisplayName, TransactionAmount, Reason, EconomyConsts.CurrencyName));
+                    string.Format("{0}, {1} just paid you {2} {4} for {3}", account.NickName, SenderDisplayName, TransactionAmount, Reason, EconomyScript.Instance.Config.CurrencyName));
 
                 MessageClientTextMessage.SendMessage(SenderSteamId, "PAY",
-                    string.Format("You just paid {0} {1}, {3} for {2}", account.NickName, TransactionAmount, Reason, EconomyConsts.CurrencyName));
+                    string.Format("You just paid {0} {1}, {3} for {2}", account.NickName, TransactionAmount, Reason, EconomyScript.Instance.Config.CurrencyName));
 
-                EconomyScript.Instance.ServerLogger.Write("Pay: '{0}' sent {1} {3} to '{2}'", accountToSpend.NickName, TransactionAmount, ToUserName, EconomyConsts.CurrencyName);
+                EconomyScript.Instance.ServerLogger.Write("Pay: '{0}' sent {1} {3} to '{2}'", accountToSpend.NickName, TransactionAmount, ToUserName, EconomyScript.Instance.Config.CurrencyName);
 
 
                 //*      if false/otherwise throw error you dont have enough money
             }
             else
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "PAY", "Sorry you don't have enough {0}", EconomyConsts.CurrencyName);
+                MessageClientTextMessage.SendMessage(SenderSteamId, "PAY", "Sorry you don't have enough {0}", EconomyScript.Instance.Config.CurrencyName);
             }
         }
 

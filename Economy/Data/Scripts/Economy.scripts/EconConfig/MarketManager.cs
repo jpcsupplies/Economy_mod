@@ -85,7 +85,7 @@
         public static void CheckTradeTimeouts()
         {
             var processingTime = DateTime.Now;
-            var expiration = TimeSpan.FromMinutes(EconomyConsts.TradeTimeoutMinutes);
+            var expiration = EconomyScript.Instance.Config.TradeTimeout;
 
             if (EconomyScript.Instance.Data == null || EconomyScript.Instance.Data.OrderBook.Count == 0)
                 return;

@@ -150,7 +150,7 @@ namespace Economy.scripts
             }
 
             MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
-            MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Frontier Trade Network!", EconomyConsts.TradeNetworkName);
+            MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Frontier Trade Network!", EconomyScript.Instance.Config.TradeNetworkName);
             MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/ehelp' for more informations about available commands");
             //MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "Warning", "This is only a placeholder mod it is not functional yet!", null, "Close");
 
@@ -304,11 +304,11 @@ namespace Economy.scripts
         #region command list
         private bool ProcessMessage(string messageText)
         {
-           Match match; // used by the Regular Expression to test user input.
-           // this list is going to get messy since the help and commands themself tell user the same thing 
-           string[] split = messageText.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-           // nothing useful was entered.
-           if (split.Length == 0)
+            Match match; // used by the Regular Expression to test user input.
+                         // this list is going to get messy since the help and commands themself tell user the same thing 
+            string[] split = messageText.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            // nothing useful was entered.
+            if (split.Length == 0)
                 return false;
 
             #region pay
@@ -420,7 +420,7 @@ namespace Economy.scripts
                 if (match.Success)
                 {
                     itemName = match.Groups["item"].Value.Trim();
-                    
+
                     blacklist = match.Groups["blacklist"].Value.Equals("blacklist", StringComparison.InvariantCultureIgnoreCase);
                     if (!blacklist)
                         sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
@@ -446,14 +446,16 @@ namespace Economy.scripts
                     // TODO: get more from the /SET command to set prices and Blacklist.
                     // aha i see what you did there SetMarketItemType.Quantity, SetMarketItemType.Prices, SetMarketItemType.Blacklisted
                     // on it soon hopefully
-                    if (blacklist) {
+                    if (blacklist)
+                    {
                         MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Blacklisted, 0, 0, 0, false);
-                        MyAPIGateway.Utilities.ShowMessage("SET", "todo - /set blacklist #2 should call SetMarketItemType.Blacklisted on messageset()"); }
+                        MyAPIGateway.Utilities.ShowMessage("SET", "todo - /set blacklist #2 should call SetMarketItemType.Blacklisted on messageset()");
+                    }
                     else { MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Quantity, sellQuantity, 0, 0, false); }
                     return true;
                 }
-                
-                
+
+
 
 
                 MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2");
@@ -745,8 +747,8 @@ namespace Economy.scripts
             #region ver
             //ver reply
             if (split[0].Equals("/ver", StringComparison.InvariantCultureIgnoreCase))
-            { 
-                string versionreply = EconomyConsts.MajorVer + " " +  EconomyConsts.ModCommunicationVersion;
+            {
+                string versionreply = EconomyConsts.MajorVer + " " + EconomyConsts.ModCommunicationVersion;
                 MyAPIGateway.Utilities.ShowMessage("VER", versionreply);
                 return true;
             }
@@ -799,7 +801,8 @@ namespace Economy.scripts
                     return true;
                 }
                 else
-                {   string helpreply="."; //this reply is too big need to move it to pop up \r\n
+                {
+                    string helpreply = "."; //this reply is too big need to move it to pop up \r\n
                     switch (split[1].ToLowerInvariant())
                     {
                         // did we type /ehelp help ?
@@ -863,10 +866,10 @@ namespace Economy.scripts
                 }
             }
             #endregion help
-     
+
             // it didnt start with help or anything else that matters so return false and get us out of here;
             return false;
-        } 
+        }
         #endregion command list
     }
 }

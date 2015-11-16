@@ -17,11 +17,11 @@
         /// communications classes. A Player will connect to the server, and will automatically download version 2.
         /// We would now have a Client running newer communication classes trying to talk to the Server with older classes.
         /// </remarks>
-        public const int ModCommunicationVersion = 20151031; // This will be based on the date of update.
+        public const int ModCommunicationVersion = 20151116; // This will be based on the date of update.
 
 
         //milestone level A=Alpha B=Beta, dev = development test version or Milestone eg 1.0A Milestone, 1.1A Dev etc
-        public const string MajorVer = "Econ 1.2A Dev"; 
+        public const string MajorVer = "Econ 1.2A Dev";
 
         //Name our money
         public const string CurrencyName = "Credits";
@@ -52,7 +52,7 @@
         public const decimal NPCStartingBalance = 20000;
 
         /// <summary>
-        /// Should players be near each other to trade or should it be unlimited distance
+        /// Should players be near each other to trade or should it be unlimited distance.
         /// </summary>
         /// <remarks>This sets if players (or traders) should be nearby before being allowed to trade or not</remarks>
         public const bool LimitedRange = false; //default should be true; may be false for testing or gameplay reasons.
@@ -65,7 +65,7 @@
         public const double DefaultTradeRange = 2500;
 
         /// <summary>
-        /// Should the NPC market be limited or unlimited supply
+        /// Should the NPC market be limited or unlimited supply.
         /// </summary>
         /// <remarks>This will be a bool that configures if buying and selling from 0.0.0 trade region 
         /// should be unlimited supply of goods and funds or limited to what has been bought, sold and 
@@ -82,10 +82,12 @@
         /// </summary>
         public const string NpcMerchantName = "_Default_NPC_Merchant_";
 
+        public const string NpcMarketName = "Central Market";
+
         /// <summary>
         /// The default value for timeouts.
         /// </summary>
-        public const double TradeTimeoutMinutes = 2;
+        public readonly static TimeSpan TradeTimeout = new TimeSpan(0, 2, 0);
 
         /// <summary>
         /// Should the NPC market be randomly restocked with simulated trade traffic
@@ -245,6 +247,7 @@
         /// All attached grids will be found.
         /// </summary>
         All,
+
         /// <summary>
         /// Only grids statically attached to that grid, such as by piston or rotor will be found.
         /// </summary>

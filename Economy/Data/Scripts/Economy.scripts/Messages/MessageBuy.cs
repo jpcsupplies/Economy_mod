@@ -211,7 +211,7 @@
             //[we could put an admin check on blacklist however, allow admins to spawn even blacklisted gear]
             if (accountToBuy.BankBalance < transactionAmount)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you cannot afford {0} {1}!", transactionAmount, EconomyConsts.CurrencyName);
+                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you cannot afford {0} {1}!", transactionAmount, EconomyScript.Instance.Config.CurrencyName);
                 return;
             }
 
@@ -219,7 +219,7 @@
                                  //This is a quick fix, ideally it should do a partial buy of what is left and post a buy offer for remainder
             {
                 // here we look up item price and transfer items and money as appropriate
-                if (marketItem.Quantity >= ItemQuantity || !EconomyConsts.LimitedSupply)
+                if (marketItem.Quantity >= ItemQuantity || !EconomyScript.Instance.Config.LimitedSupply)
                 {
                     marketItem.Quantity -= ItemQuantity; // reduce Market content.
 
@@ -230,14 +230,14 @@
                         Support.InventoryDrop((IMyEntity)character, amount, definition.Id);
                     }
 
-                    //EconomyConsts.LimitedSupply
+                    //EconomyScript.Instance.Config.LimitedSupply
 
                     accountToSell.BankBalance += transactionAmount;
                     accountToSell.Date = DateTime.Now;
 
                     accountToBuy.BankBalance -= transactionAmount;
                     accountToBuy.Date = DateTime.Now;
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0} {3}", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyConsts.CurrencyName);
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0} {3}", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.Config.CurrencyName);
                 }
                 else
                 {
@@ -264,7 +264,7 @@
                 // check if selling player is online and in range?
                 var payingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(accountToSell.SteamId);
 
-                if (EconomyConsts.LimitedRange && !Support.RangeCheck(buyingPlayer, payingPlayer))
+                if (EconomyScript.Instance.Config.LimitedRange && !Support.RangeCheck(buyingPlayer, payingPlayer))
                 {
                     MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you are not in range of that player!");
                     return;

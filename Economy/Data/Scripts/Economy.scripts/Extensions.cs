@@ -139,9 +139,9 @@ namespace Economy.scripts
             return MyDefinitionManager.Static.GetPhysicalItemDefinition(objectBuilder).GetDisplayName();
         }
 
-        public static string GetDisplayName(this MyPhysicalItemDefinition defintion)
+        public static string GetDisplayName(this MyPhysicalItemDefinition definition)
         {
-            return defintion.DisplayNameEnum.HasValue ? MyTexts.GetString(defintion.DisplayNameEnum.Value) : defintion.DisplayNameString;
+            return definition.DisplayNameEnum.HasValue ? MyTexts.GetString(definition.DisplayNameEnum.Value) : definition.DisplayNameString;
         }
 
         public static SerializableVector3 ToSerializableVector3(this Vector3D v)
