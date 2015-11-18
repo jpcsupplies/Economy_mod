@@ -56,7 +56,8 @@ namespace Economy.scripts
         // /set reset etc  the syntax may not be exactly as above these are just hypothetical examples
         // see https://github.com/jpcsupplies/Economy_mod/issues/66
         //current functionality is just to alter the market on hand of a single item, eg /set 10000 ice
-        const string SetPattern = @"(?<command>/set)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<blacklist>blacklist))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
+        //or /set blacklist ice   or /set buy item price
+        const string SetPattern = @"(?<command>/set)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<buy>buy))\s+(?:(?:""(?<item>[^""]|(?<sell>sell))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<blacklist>blacklist))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
 
         /// <summary>
         ///  buy pattern no "all" required.   reusing sell  
@@ -406,25 +407,39 @@ namespace Economy.scripts
             #endregion buy
 
             #region set
-            // set command - to allow an admin to set the on hand stock of a specified item - it's a dirty hack tho
-            // This wont actually work as the regex conditions are invalid, and the messagesell script will reject these
-            //options.   Usage /set <qty> "item name"   must be admin
-            //set will also be used for other functions later such as allowing staff to toggle
-            //settings like limited or unlimited stock, range checks, currency name, buy or sell prices etc
+            // set command - must be admin this may prove to be our most fiddly command may need a rewrite eventually
+            // perhaps we limit set command to item managment and add another command like /option for the constant settings
+            // allows an admin to maintain on hand, blacklist, buy and sell prices of npc market
+            // The regex needs fine tuning but should basically work
+            //Usage: /set <qty> "item name"   (to set the on hand stock of an item)
+            //       /set blacklist "item name" (to toggle blacklist on or off (depending on current state))
+            //       /set buy "item name"  <price>
+            //       /set sell "item name" <price>
+            // also will eventually set options like limited or unlimited stock, range checks size (or on or off), currency name
+            // and trading on or off.   Or any other options an admin should be able to set in game.
+            // we need a /check command maybe to display current blacklist status, price and stock too
+            
             if (split[0].Equals("/set", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
-                decimal sellQuantity = 0;
+                decimal amount = 0;
                 string itemName = "";
+                bool setbuy = false;
+                bool setsell = false;
                 bool blacklist = false;
                 match = Regex.Match(messageText, SetPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     itemName = match.Groups["item"].Value.Trim();
-
+                    setbuy = match.Groups["buy"].Value.Equals("buy", StringComparison.InvariantCultureIgnoreCase);
+                    setsell = match.Groups["sell"].Value.Equals("sell", StringComparison.InvariantCultureIgnoreCase);
                     blacklist = match.Groups["blacklist"].Value.Equals("blacklist", StringComparison.InvariantCultureIgnoreCase);
-                    if (!blacklist)
-                        sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
-                    //sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
+                    if (!blacklist && !setbuy && !setsell) //must be setting on hand
+                        amount = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
+
+                    if (setbuy || setsell) //must be setting a price
+                        amount = Convert.ToDecimal(match.Groups["price"].Value, CultureInfo.InvariantCulture);
+
+                    //ok what item are we setting?
                     MyObjectBuilder_Base content = null;
                     Dictionary<string, MyPhysicalItemDefinition> options;
                     // Search for the item and find one match only, either by exact name or partial name.
@@ -438,28 +453,49 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options.Keys) + " ?");
                         return true;
                     }
-
-                    MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2");
+                    MyAPIGateway.Utilities.ShowMessage("SET", "Configuring {0} {1)", content.TypeId.ToString(), content.SubtypeName);
 
                     // TODO: do range checks for the market, using MarketManager.FindMarketsFromLocation()
 
                     // TODO: get more from the /SET command to set prices and Blacklist.
                     // aha i see what you did there SetMarketItemType.Quantity, SetMarketItemType.Prices, SetMarketItemType.Blacklisted
                     // on it soon hopefully
-                    if (blacklist)
+                    //SendMessage(ulong marketId, string itemTypeId, string itemSubTypeName, SetMarketItemType setType,
+                    // decimal itemQuantity, decimal itemBuyPrice, decimal itemSellPrice, bool blackListed)
+                    if (blacklist) //we want to black list
                     {
                         MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Blacklisted, 0, 0, 0, false);
                         MyAPIGateway.Utilities.ShowMessage("SET", "todo - /set blacklist #2 should call SetMarketItemType.Blacklisted on messageset()");
                     }
-                    else { MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Quantity, sellQuantity, 0, 0, false); }
+                    else //or not what about...
+                    {
+                        if (setbuy) // do we want to set buy price..?
+                        {
+                            MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Prices, 0, amount, -1, false);
+                        }
+                        else
+                        {
+                            if (setsell) //or do we want to set sell price..?
+                            {
+                                MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Prices, 0, -1, amount, false);
+                            }
+                            else //no we must want to set on hand?
+                            {
+                                MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Quantity, amount, 0, 0, false);
+                            }
+                        }
+                    }
+                    //whatever we did we are done now
                     return true;
                 }
 
 
 
 
-                MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2");
-                MyAPIGateway.Utilities.ShowMessage("SET", "#1 is quantity, #2 is item");
+                MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2 #3");
+                //MyAPIGateway.Utilities.ShowMessage("SET", "#1 is quantity, #2 is item");
+                MyAPIGateway.Utilities.ShowMessage("SET", "#1 is quantity or blacklist (or buy or sell), #2 is item, (#3 is price)");
+                MyAPIGateway.Utilities.ShowMessage("SET", "eg /set 1 rifle, /set blacklist rifle, /set buy rifle 1000, /set sell rifle 2000");
                 return true;
             }
             #endregion set

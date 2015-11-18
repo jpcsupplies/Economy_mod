@@ -152,10 +152,9 @@
             }
 
             if (SetType.HasFlag(SetMarketItemType.Prices))
-            {
-                marketItem.BuyPrice = ItemBuyPrice;
-                marketItem.SellPrice = ItemSellPrice;
-                msg.AppendFormat(", buy price to {0}, sell price to {1}", ItemBuyPrice, ItemSellPrice);
+            {   //using positive numbers as both a flag, and to prevent admins setting items to pay you when you buy them or vice versa.. 2 for 1 exploit protection and mode detect! 
+                if (ItemBuyPrice >= 0) { marketItem.BuyPrice = ItemBuyPrice; msg.AppendFormat(", buy price to {0}", ItemBuyPrice); }
+                if (ItemSellPrice >= 0) { marketItem.SellPrice = ItemSellPrice; msg.AppendFormat(", sell price to {1}", ItemSellPrice); }
             }
 
             if (SetType.HasFlag(SetMarketItemType.Blacklisted))
