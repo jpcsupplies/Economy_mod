@@ -55,15 +55,24 @@
         [ProtoMember(7)]
         public decimal ItemSellPrice;
 
-        /// <summary>
-        /// Blacklist item.
-        /// </summary>
-        [ProtoMember(8)]
-        public bool BlackListed;
-
-        public static void SendMessage(ulong marketId, string itemTypeId, string itemSubTypeName, SetMarketItemType setType, decimal itemQuantity, decimal itemBuyPrice, decimal itemSellPrice, bool blackListed)
+        public static void SendMessage(ulong marketId, string itemTypeId, string itemSubTypeName, SetMarketItemType setType, decimal itemQuantity, decimal itemBuyPrice, decimal itemSellPrice)
         {
-            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = setType, ItemQuantity = itemQuantity, ItemBuyPrice = itemBuyPrice, ItemSellPrice = itemSellPrice, BlackListed = blackListed });
+            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = setType, ItemQuantity = itemQuantity, ItemBuyPrice = itemBuyPrice, ItemSellPrice = itemSellPrice });
+        }
+
+        public static void SendMessageBuy(ulong marketId, string itemTypeId, string itemSubTypeName, decimal itemBuyPrice)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = SetMarketItemType.BuyPrice, ItemBuyPrice = itemBuyPrice });
+        }
+
+        public static void SendMessageSell(ulong marketId, string itemTypeId, string itemSubTypeName, decimal itemSellPrice)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = SetMarketItemType.SellPrice, ItemSellPrice = itemSellPrice });
+        }
+
+        public static void SendMessageQuantity(ulong marketId, string itemTypeId, string itemSubTypeName, decimal itemQuantity)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = SetMarketItemType.Quantity, ItemQuantity = itemQuantity });
         }
 
         public override void ProcessClient()
@@ -143,7 +152,7 @@
             }
 
             var msg = new StringBuilder();
-            msg.AppendFormat("You just set {0}", definition.GetDisplayName());
+            msg.AppendFormat("You just set '{0}'", definition.GetDisplayName());
 
             if (SetType.HasFlag(SetMarketItemType.Quantity))
             {
@@ -151,15 +160,32 @@
                 msg.AppendFormat(", stock on hand to {0} units", ItemQuantity);
             }
 
-            if (SetType.HasFlag(SetMarketItemType.Prices))
-            {   //using positive numbers as both a flag, and to prevent admins setting items to pay you when you buy them or vice versa.. 2 for 1 exploit protection and mode detect! 
-                if (ItemBuyPrice >= 0) { marketItem.BuyPrice = ItemBuyPrice; msg.AppendFormat(", buy price to {0}", ItemBuyPrice); }
-                if (ItemSellPrice >= 0) { marketItem.SellPrice = ItemSellPrice; msg.AppendFormat(", sell price to {1}", ItemSellPrice); }
+            // Validation to prevent admins setting prices too low for items.
+            if (SetType.HasFlag(SetMarketItemType.BuyPrice))
+            {
+                if (ItemBuyPrice >= 0)
+                {
+                    marketItem.BuyPrice = ItemBuyPrice;
+                    msg.AppendFormat(", buy price to {0}", ItemBuyPrice);
+                }
+                else
+                    msg.AppendFormat(", could not set buy price to less than 0.");
+            }
+
+            // Validation to prevent admins setting prices too low for items.
+            if (SetType.HasFlag(SetMarketItemType.SellPrice))
+            {
+                if (ItemSellPrice >= 0)
+                {
+                    marketItem.SellPrice = ItemSellPrice;
+                    msg.AppendFormat(", sell price to {0}", ItemSellPrice);
+                }
+                else
+                    msg.AppendFormat(", could not set sell price to less than 0.");
             }
 
             if (SetType.HasFlag(SetMarketItemType.Blacklisted))
             {
-                //marketItem.IsBlacklisted = BlackListed;
                 marketItem.IsBlacklisted = !marketItem.IsBlacklisted;
                 msg.AppendFormat(", blacklist to {0}, ", marketItem.IsBlacklisted ? "On" : "Off");
             }

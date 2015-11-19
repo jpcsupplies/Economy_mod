@@ -17,7 +17,7 @@
         /// communications classes. A Player will connect to the server, and will automatically download version 2.
         /// We would now have a Client running newer communication classes trying to talk to the Server with older classes.
         /// </remarks>
-        public const int ModCommunicationVersion = 20151116; // This will be based on the date of update.
+        public const int ModCommunicationVersion = 20151119; // This will be based on the date of update.
 
 
         //milestone level A=Alpha B=Beta, dev = development test version or Milestone eg 1.0A Milestone, 1.1A Dev etc
@@ -147,8 +147,9 @@
     public enum SetMarketItemType : byte
     {
         Quantity = 0x1,
-        Prices = 0x2,
-        Blacklisted = 0x4
+        BuyPrice = 0x2,
+        SellPrice = 0x4,
+        Blacklisted = 0x8
     }
 
     /// <summary>
