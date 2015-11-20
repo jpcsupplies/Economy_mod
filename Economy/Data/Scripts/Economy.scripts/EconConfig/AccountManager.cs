@@ -96,6 +96,27 @@
             }
         }
 
+        // TODO: this will also need to be called from a scheduler rountine, that runs perhaps once an hour to once a day.
+        public static void CheckAccountExpiry(EconDataStruct data)
+        {
+            // Instance and Config are both defined before Data, so this is safe to call here.
+            var expireDate = DateTime.Now - EconomyScript.Instance.Config.AccountExpiry;
+
+            var deadAccounts = data.Accounts.Where(a => a.Date < expireDate && a.SteamId != EconomyConsts.NpcMerchantId).ToArray();
+            foreach (var account in deadAccounts)
+            {
+                EconomyScript.Instance.ServerLogger.Write("Removing Dead Account '{0}' with {1} {2}.", account.NickName, account.BankBalance, EconomyScript.Instance.Config.CurrencyName);
+                data.Accounts.Remove(account);
+
+                // EconomyScript.Instance.Data would not have been set for the first run though.
+                var marketAccount = data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
+
+                if (account.BankBalance > 0)
+                    // TODO: do something with the BankBalance if in a faction.
+                    marketAccount.BankBalance += account.BankBalance;
+            }
+        }
+
         #endregion
 
     }

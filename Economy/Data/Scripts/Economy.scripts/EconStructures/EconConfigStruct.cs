@@ -17,6 +17,7 @@
             LimitedRange = EconomyConsts.LimitedRange;
             LimitedSupply = EconomyConsts.LimitedSupply;
             TradeTimeout = EconomyConsts.TradeTimeout;
+            AccountExpiry = EconomyConsts.AccountExpiry;
         }
 
         /// <summary>
@@ -43,6 +44,8 @@
         /// Should the NPC market be limited or unlimited supply.
         /// </summary>
         public bool LimitedSupply;
+
+        #region TradeTimeout
 
         // Local Variable
         private TimeSpan _tradeTimeout;
@@ -79,6 +82,48 @@
                 }
             }
         }
+
+        #endregion
+
+        #region AccountExpiry
+
+        // Local Variable
+        private TimeSpan _accountExpiry;
+
+        /// <summary>
+        /// The time to timeout a player to player trade offer.
+        /// </summary>
+        /// <remarks>The TimeSpan data type cannot be natively serialized, so we cheat by using 
+        /// a proxy property to store it in another acceptable (and human readable) format.</remarks>
+        [XmlIgnore]
+        public TimeSpan AccountExpiry
+        {
+            get { return _accountExpiry; }
+            set { _accountExpiry = value; }
+        }
+
+        /// <summary>
+        /// Serialization property for AccountExpiry.
+        /// </summary>
+        [XmlElement("AccountExpiry")]
+        public string AccountExpiryTicks
+        {
+            get { return _accountExpiry.ToString("c"); }
+            set
+            {
+                try
+                {
+                    _accountExpiry = TimeSpan.Parse(value, CultureInfo.InvariantCulture);
+                }
+                catch (Exception)
+                {
+                    _accountExpiry = EconomyConsts.AccountExpiry;
+                    EconomyScript.Instance.ServerLogger.Write("AccountExpiry has been reset, as the stored value '{0}' was invalid.", value);
+                }
+            }
+        }
+
+        #endregion
 
         public List<MarketItemStruct> DefaultPrices;
     }

@@ -808,6 +808,9 @@
 
             // Buy/Sell - check we have our NPC banker ready
             NpcMerchantManager.VerifyAndCreate(data);
+
+            // Initial check of account on server load.
+            AccountManager.CheckAccountExpiry(data);
         }
 
         private static EconDataStruct InitData()

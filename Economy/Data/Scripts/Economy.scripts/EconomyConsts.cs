@@ -90,6 +90,11 @@
         public readonly static TimeSpan TradeTimeout = new TimeSpan(0, 2, 0);
 
         /// <summary>
+        /// The default age to allow accounts to be before expiry.
+        /// </summary>
+        public readonly static TimeSpan AccountExpiry = new TimeSpan(2, 0, 0, 0);
+
+        /// <summary>
         /// Should the NPC market be randomly restocked with simulated trade traffic
         /// </summary>
         /// <remarks>This is a bool which enables or disables the behavior that when an NPC resource is 
