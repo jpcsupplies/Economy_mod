@@ -92,7 +92,7 @@
         /// <summary>
         /// The default age to allow accounts to be before expiry.
         /// </summary>
-        public readonly static TimeSpan AccountExpiry = new TimeSpan(2, 0, 0, 0);
+        public readonly static TimeSpan AccountExpiry = new TimeSpan(30, 0, 0, 0);
 
         /// <summary>
         /// Should the NPC market be randomly restocked with simulated trade traffic
