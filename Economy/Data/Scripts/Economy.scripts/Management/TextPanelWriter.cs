@@ -98,6 +98,11 @@
 
         #region properties
 
+        public bool IsWide
+        {
+            get { return _isWide; }
+        }
+
         public float WidthModifier
         {
             get { return (_isWide ? 2f : 1f) / FontSize; }
