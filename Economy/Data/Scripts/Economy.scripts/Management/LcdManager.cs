@@ -67,11 +67,13 @@
                 foreach (var block in list)
                 {
                     var textPanel = block as IMyTextPanel;
-                    if (textPanel != null 
+                    if (textPanel != null
                         && textPanel.IsFunctional
-                        && textPanel.IsWorking 
-                        && textPanel.CustomName.IndexOf("[Economy]", StringComparison.InvariantCultureIgnoreCase) >= 0)
+                        && textPanel.IsWorking
+                        && EconomyConsts.LCDTags.Any(tag => textPanel.CustomName.IndexOf(tag, StringComparison.InvariantCultureIgnoreCase) >= 0))
+                    {
                         updatelist.Add((IMyTextPanel)block);
+                    }
                 }
             }
 

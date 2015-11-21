@@ -95,6 +95,11 @@
         public readonly static TimeSpan AccountExpiry = new TimeSpan(30, 0, 0, 0);
 
         /// <summary>
+        /// The tags that are checked in Text Panels to determine if they are to be used by the Economy Mod.
+        /// </summary>
+        public readonly static string[] LCDTags = new string[] { "[Economy]", "(Economy)" };
+
+        /// <summary>
         /// Should the NPC market be randomly restocked with simulated trade traffic
         /// </summary>
         /// <remarks>This is a bool which enables or disables the behavior that when an NPC resource is 
