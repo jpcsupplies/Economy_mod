@@ -101,8 +101,12 @@
         {
             // Instance and Config are both defined before Data, so this is safe to call here.
             var expireDate = DateTime.Now - EconomyScript.Instance.Config.AccountExpiry;
+            var newAccountExpireDate = DateTime.Now.AddDays(-1);
 
-            var deadAccounts = data.Accounts.Where(a => a.Date < expireDate && a.SteamId != EconomyConsts.NpcMerchantId).ToArray();
+            var deadAccounts = data.Accounts.Where(a => a.SteamId != EconomyConsts.NpcMerchantId &&
+                (a.Date < expireDate)
+                || (a.Date == a.OpenedDate && a.BankBalance == EconomyScript.Instance.Config.DefaultStartingBalance && a.Date < newAccountExpireDate)
+            ).ToArray();
             foreach (var account in deadAccounts)
             {
                 EconomyScript.Instance.ServerLogger.Write("Removing Dead Account '{0}' with {1} {2}.", account.NickName, account.BankBalance, EconomyScript.Instance.Config.CurrencyName);
