@@ -99,6 +99,7 @@
     <Compile Include="Messages\MessagePayUser.cs" />
     <Compile Include="Messages\MessagePlayerSeen.cs" />
     <Compile Include="Messages\MessageResetAccount.cs" />
+    <Compile Include="Messages\MessageWorth.cs" />
     <Compile Include="Messages\MessageSide.cs" />
     <Compile Include="Support.cs" />
     <Compile Include="TextLogger.cs" />

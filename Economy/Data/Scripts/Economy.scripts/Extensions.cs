@@ -139,7 +139,7 @@ namespace Economy.scripts
             return MyDefinitionManager.Static.GetPhysicalItemDefinition(objectBuilder).GetDisplayName();
         }
 
-        public static string GetDisplayName(this MyPhysicalItemDefinition definition)
+        public static string GetDisplayName(this MyDefinitionBase definition)
         {
             return definition.DisplayNameEnum.HasValue ? MyTexts.GetString(definition.DisplayNameEnum.Value) : definition.DisplayNameString;
         }
@@ -361,6 +361,29 @@ namespace Economy.scripts
                     }
                 }
             }
+        }
+
+        #endregion
+
+        #region framework
+
+        /// <summary>
+        /// Adds an element with the provided key and value to the System.Collections.Generic.IDictionary&gt;TKey,TValue&lt;.
+        /// If the provide key already exists, then the existing key is updated with the newly supplied value.
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="dictionary"></param>
+        /// <param name="key">The object to use as the key of the element to add.</param>
+        /// <param name="value">The object to use as the value of the element to add.</param>
+        /// <exception cref="System.ArgumentNullException">key is null</exception>
+        /// <exception cref="System.NotSupportedException">The System.Collections.Generic.IDictionary&gt;TKey,TValue&lt; is read-only.</exception>
+        public static void Update<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        {
+            if (dictionary.ContainsKey(key))
+                dictionary[key] = value;
+            else
+                dictionary.Add(key, value);
         }
 
         #endregion

@@ -109,5 +109,17 @@
                 _logWriter = null;
             }
         }
+
+        public static void WriteGameLog(string text, params object[] args)
+        {
+            string message = text;
+            if (args != null && args.Length != 0)
+                message = string.Format(text, args);
+
+            if (MyAPIGateway.Utilities.IsDedicated)
+                VRage.Utils.MyLog.Default.WriteLineAndConsole(message);
+            else
+                VRage.Utils.MyLog.Default.WriteLine(message);
+        }
     }
 }
