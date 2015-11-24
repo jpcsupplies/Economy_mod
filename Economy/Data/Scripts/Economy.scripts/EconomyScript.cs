@@ -725,6 +725,8 @@ namespace Economy.scripts
                     MessageWorth.SendMessage(selectedShip.EntityId);
                     return true;
                 }
+                MyAPIGateway.Utilities.ShowMessage("WORTH", "You need to target a ship or station to value.");
+                return true;
             }
             #endregion
 

@@ -9,11 +9,10 @@
     using Economy.scripts.EconStructures;
     using ProtoBuf;
     using Sandbox.Common.ObjectBuilders;
+    using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
-    using VRage;
     using VRage.ModAPI;
-    using VRage.ObjectBuilders;
 
     /// <summary>
     /// Will value a grid (ship or station), including attached rotor and piston parts.
@@ -83,10 +82,12 @@
             // TODO: counters.
             int terminalBlocks = 0;
             int armorBlocks = 0;
-            decimal totalValue = 0;
+            decimal shipValue = 0;
+            decimal inventoryValue = 0;
             int gridCount = 0;
 
-            var accumulatedComponents = new Dictionary<MyDefinitionId, decimal>();
+            var gridComponents = new Dictionary<MyDefinitionId, decimal>();
+            var inventoryComponents = new Dictionary<MyDefinitionId, decimal>();
 
             MyAPIGateway.Parallel.StartBackground(delegate ()
             // Background processing occurs within this block.
@@ -125,9 +126,9 @@
                             {
                                 //EconomyScript.Instance.ServerLogger.Write("Component Worth '{0}' '{1}' x {2}.", component.Definition.Id.TypeId, component.Definition.Id.SubtypeName, component.Count);
 
-                                if (!accumulatedComponents.ContainsKey(component.Definition.Id))
-                                    accumulatedComponents.Add(component.Definition.Id, 0);
-                                accumulatedComponents[component.Definition.Id] += component.Count;
+                                if (!gridComponents.ContainsKey(component.Definition.Id))
+                                    gridComponents.Add(component.Definition.Id, 0);
+                                gridComponents[component.Definition.Id] += component.Count;
                             }
 
                             // This will subtract off components missing from a partially built cube.
@@ -137,16 +138,33 @@
                             foreach (var kvp in missingComponents)
                             {
                                 var definitionid = new MyDefinitionId(typeof(MyObjectBuilder_Component), kvp.Key);
-                                accumulatedComponents[definitionid] -= kvp.Value;
+                                gridComponents[definitionid] -= kvp.Value;
                             }
 
                             #endregion
 
-                            #region Go through all other Inventories for components/items.
-
                             if (block.FatBlock != null)
                             {
                                 var cube = (Sandbox.Game.Entities.MyEntity)block.FatBlock;
+
+                                #region Go through Gasses for tanks and cockpits.
+
+                                var gasTankDefintion = blockDefintion as MyGasTankDefinition;
+
+                                if (gasTankDefintion != null)
+                                {
+                                    var tank = (Sandbox.ModAPI.Ingame.IMyOxygenTank)cube;
+                                    decimal volume = (decimal)gasTankDefintion.Capacity * (decimal)tank.GetOxygenLevel();
+                                    if (!inventoryComponents.ContainsKey(gasTankDefintion.StoredGasId))
+                                        inventoryComponents.Add(gasTankDefintion.StoredGasId, 0);
+                                    inventoryComponents[gasTankDefintion.StoredGasId] += volume;
+                                    //MessageClientTextMessage.SendMessage(SenderSteamId, "GAS tank", "{0} detected {1}", gasTankDefintion.StoredGasId, volume);
+                                }
+
+                                #endregion
+
+                                #region Go through all other Inventories for components/items.
+
                                 for (var i = 0; i < cube.InventoryCount; i++)
                                 {
                                     var inventory = cube.GetInventory(i);
@@ -154,32 +172,30 @@
                                     foreach (var item in list)
                                     {
                                         var id = item.Content.GetId();
-                                        if (!accumulatedComponents.ContainsKey(id))
-                                            accumulatedComponents.Add(id, 0);
-                                        accumulatedComponents[id] += (decimal)item.Amount;
+                                        if (!inventoryComponents.ContainsKey(id))
+                                            inventoryComponents.Add(id, 0);
+                                        inventoryComponents[id] += (decimal)item.Amount;
+
+                                        // Go through Gas bottles.
+                                        var gasContainer = item.Content as MyObjectBuilder_GasContainerObject;
+                                        if (gasContainer != null)
+                                        {
+                                            var defintion = (MyOxygenContainerDefinition)MyDefinitionManager.Static.GetPhysicalItemDefinition(item.Content.GetId());
+                                            decimal volume = (decimal)defintion.Capacity * (decimal)gasContainer.GasLevel;
+                                            if (!inventoryComponents.ContainsKey(defintion.StoredGasId))
+                                                inventoryComponents.Add(defintion.StoredGasId, 0);
+                                            inventoryComponents[defintion.StoredGasId] += volume;
+                                            //MessageClientTextMessage.SendMessage(SenderSteamId, "GAS bottle", "{0} detected {1}", defintion.StoredGasId, volume);
+                                        }
                                     }
                                 }
+
+                                #endregion
                             }
 
-                            #endregion
 
-                            // TODO: Go through Gasses for tanks and bottles and cockpits.
-
-                            foreach (var kvp in accumulatedComponents)
-                            {
-                                //EconomyScript.Instance.ServerLogger.Write("Component Count '{0}' '{1}' x {2}.", kvp.Key.TypeId, kvp.Key.SubtypeName, kvp.Value);
-
-                                var item = market.MarketItems.FirstOrDefault(e => e.TypeId == kvp.Key.TypeId.ToString() && e.SubtypeName == kvp.Key.SubtypeName);
-                                if (item == null)
-                                {
-                                    EconomyScript.Instance.ServerLogger.Write("Component Item could not be found in Market for Worth '{0}' '{1}'.", kvp.Key.TypeId, kvp.Key.SubtypeName);
-                                    // can ignore for worth.
-                                }
-                                else
-                                {
-                                    totalValue += kvp.Value * item.SellPrice; // TODO: check if we use the sell or buy price.
-                                }
-                            }
+                            shipValue += SumComponents(market, gridComponents);
+                            inventoryValue += SumComponents(market, inventoryComponents);
                         }
                     }
                 }
@@ -195,23 +211,52 @@
                 TextLogger.WriteGameLog("## Econ ## Worth:foreground");
 
                 var str = new StringBuilder();
-                str.AppendFormat("Armors={0}   Terminals={1}  Grids={2}\r\n", armorBlocks, terminalBlocks, gridCount);
 
-                foreach (var kvp in accumulatedComponents)
-                {
-                    MyPhysicalItemDefinition definition = null;
-                    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(kvp.Key, out definition);
-                    str.AppendFormat("'{0}'  x {1}.\r\n", definition.GetDisplayName(), kvp.Value);
-                }
+                //foreach (var kvp in gridComponents)
+                //{
+                //    MyPhysicalItemDefinition definition = null;
+                //    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(kvp.Key, out definition); // Oxygen and Hydrogen do not have available defintions.
+                //    str.AppendFormat("'{0}' x {1}.\r\n", definition == null ? kvp.Key.SubtypeName : definition.GetDisplayName(), kvp.Value);
+                //}
 
-                var prefix = string.Format("{0:#,##0.00000}", totalValue);
+                //foreach (var kvp in inventoryComponents)
+                //{
+                //    MyPhysicalItemDefinition definition = null;
+                //    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(kvp.Key, out definition);
+                //    str.AppendFormat("'{0}' x {1}.\r\n", definition == null ? kvp.Key.SubtypeName : definition.GetDisplayName(), kvp.Value);
+                //}
 
+                //var prefix = string.Format("{0:#,##0.00000}", totalValue);
+
+                str.AppendFormat("{0}: {1}\r\n", selectedShip.IsStatic ? "Station" : selectedShip.GridSizeEnum.ToString() + " Ship",  selectedShip.DisplayName);
+                str.AppendFormat("Grids={2}\r\nArmor Blocks={0}\r\nTerminal Blocks={1}\r\n", armorBlocks, terminalBlocks, gridCount);
                 str.AppendLine("-----------------------------------");
-
-                str.AppendFormat(" Ship: {0}\r\n", selectedShip.DisplayName);
-                str.AppendFormat(" Final Value: {0:#,##0.00000} {1}\r\n", totalValue, EconomyScript.Instance.Config.CurrencyName);
-                MessageClientDialogMessage.SendMessage(SenderSteamId, "WORTH", prefix, str.ToString());
+                str.AppendFormat("Ship Value: {0:#,##0.00000} {1}.\r\n", shipValue, EconomyScript.Instance.Config.CurrencyName);
+                str.AppendFormat("Inventory Value: {0:#,##0.00000} {1}.\r\n", inventoryValue, EconomyScript.Instance.Config.CurrencyName);
+                str.AppendFormat("Final Value: {0:#,##0.00000} {1}.\r\n", shipValue + inventoryValue, EconomyScript.Instance.Config.CurrencyName);
+                MessageClientDialogMessage.SendMessage(SenderSteamId, "WORTH", selectedShip.DisplayName, str.ToString());
             });
+        }
+
+        private static decimal SumComponents(MarketStruct market, Dictionary<MyDefinitionId, decimal> accumulatedComponents)
+        {
+            decimal total = 0;
+            foreach (var kvp in accumulatedComponents)
+            {
+                //EconomyScript.Instance.ServerLogger.Write("Component Count '{0}' '{1}' x {2}.", kvp.Key.TypeId, kvp.Key.SubtypeName, kvp.Value);
+
+                var item = market.MarketItems.FirstOrDefault(e => e.TypeId == kvp.Key.TypeId.ToString() && e.SubtypeName == kvp.Key.SubtypeName);
+                if (item == null)
+                {
+                    EconomyScript.Instance.ServerLogger.Write("Component Item could not be found in Market for Worth '{0}' '{1}'.", kvp.Key.TypeId, kvp.Key.SubtypeName);
+                    // can ignore for worth.
+                }
+                else
+                {
+                    total += kvp.Value * item.SellPrice; // TODO: check if we use the sell or buy price.
+                }
+            }
+            return total;
         }
     }
 }
