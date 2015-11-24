@@ -12,6 +12,7 @@
     using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
+    using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
 
     /// <summary>
@@ -149,16 +150,28 @@
 
                                 #region Go through Gasses for tanks and cockpits.
 
+                                var tank = cube as Sandbox.ModAPI.Ingame.IMyOxygenTank;
                                 var gasTankDefintion = blockDefintion as MyGasTankDefinition;
 
-                                if (gasTankDefintion != null)
+                                if (gasTankDefintion != null && tank != null)
                                 {
-                                    var tank = (Sandbox.ModAPI.Ingame.IMyOxygenTank)cube;
                                     decimal volume = (decimal)gasTankDefintion.Capacity * (decimal)tank.GetOxygenLevel();
                                     if (!inventoryComponents.ContainsKey(gasTankDefintion.StoredGasId))
                                         inventoryComponents.Add(gasTankDefintion.StoredGasId, 0);
                                     inventoryComponents[gasTankDefintion.StoredGasId] += volume;
                                     //MessageClientTextMessage.SendMessage(SenderSteamId, "GAS tank", "{0} detected {1}", gasTankDefintion.StoredGasId, volume);
+                                }
+
+                                // Check through Cockpits.
+                                var cockpit = cube as Sandbox.Game.Entities.MyCockpit;  // For some reason, the o2 is on the MyCockpit Class. There is no Interface.
+                                if (cockpit != null)
+                                {
+                                    // Hardcoded, because Oxygen and Hydrogen do not have available defintions.
+                                    var oxygenDefintion = new MyDefinitionId(typeof(MyObjectBuilder_GasProperties), "Oxygen"); 
+                                    if (!inventoryComponents.ContainsKey(oxygenDefintion))
+                                        inventoryComponents.Add(oxygenDefintion, 0);
+                                    inventoryComponents[oxygenDefintion] += (decimal)cockpit.OxygenAmount;
+                                    //MessageClientTextMessage.SendMessage(SenderSteamId, "COCKPIT tank", "{0} detected {1}", null, cockpit.OxygenAmount);
                                 }
 
                                 #endregion
@@ -192,7 +205,6 @@
 
                                 #endregion
                             }
-
 
                             shipValue += SumComponents(market, gridComponents);
                             inventoryValue += SumComponents(market, inventoryComponents);
