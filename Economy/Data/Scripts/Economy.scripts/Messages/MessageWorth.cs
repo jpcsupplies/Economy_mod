@@ -45,7 +45,7 @@
             var character = player.GetCharacter();
             if (character == null)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", "You are dead. You get market items values while dead.");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "WORTH", "You are dead. You get market items values while dead.");
                 return;
             }
             var position = ((IMyEntity)character).WorldMatrix.Translation;
@@ -53,7 +53,7 @@
             var markets = MarketManager.FindMarketsFromLocation(position);
             if (markets.Count == 0)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", "Sorry, your are not in range of any markets!");
+                MessageClientTextMessage.SendMessage(SenderSteamId, "WORTH", "Sorry, your are not in range of any markets!");
                 return;
             }
 
@@ -80,7 +80,6 @@
                 return;
             }
 
-            // TODO: counters.
             int terminalBlocks = 0;
             int armorBlocks = 0;
             decimal shipValue = 0;
