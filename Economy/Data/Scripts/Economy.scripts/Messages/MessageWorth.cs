@@ -167,7 +167,7 @@
                                 if (cockpit != null)
                                 {
                                     // Hardcoded, because Oxygen and Hydrogen do not have available defintions.
-                                    var oxygenDefintion = new MyDefinitionId(typeof(MyObjectBuilder_GasProperties), "Oxygen"); 
+                                    var oxygenDefintion = new MyDefinitionId(typeof(MyObjectBuilder_GasProperties), "Oxygen");
                                     if (!inventoryComponents.ContainsKey(oxygenDefintion))
                                         inventoryComponents.Add(oxygenDefintion, 0);
                                     inventoryComponents[oxygenDefintion] += (decimal)cockpit.OxygenAmount;
@@ -192,14 +192,14 @@
                                             var id = item.Content.GetId();
                                             if (!inventoryComponents.ContainsKey(id))
                                                 inventoryComponents.Add(id, 0);
-                                            inventoryComponents[id] += (decimal) item.Amount;
+                                            inventoryComponents[id] += (decimal)item.Amount;
 
                                             // Go through Gas bottles.
                                             var gasContainer = item.Content as MyObjectBuilder_GasContainerObject;
                                             if (gasContainer != null)
                                             {
-                                                var defintion = (MyOxygenContainerDefinition) MyDefinitionManager.Static.GetPhysicalItemDefinition(item.Content.GetId());
-                                                decimal volume = (decimal) defintion.Capacity*(decimal) gasContainer.GasLevel;
+                                                var defintion = (MyOxygenContainerDefinition)MyDefinitionManager.Static.GetPhysicalItemDefinition(item.Content.GetId());
+                                                decimal volume = (decimal)defintion.Capacity * (decimal)gasContainer.GasLevel;
                                                 if (!inventoryComponents.ContainsKey(defintion.StoredGasId))
                                                     inventoryComponents.Add(defintion.StoredGasId, 0);
                                                 inventoryComponents[defintion.StoredGasId] += volume;
@@ -220,6 +220,7 @@
                 catch (Exception ex)
                 {
                     EconomyScript.Instance.ServerLogger.WriteException(ex);
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "WORTH", "Failed and died. Please contact the administrator.");
                 }
 
                 TextLogger.WriteGameLog("## Econ ## Worth:background end");
@@ -228,31 +229,39 @@
             {
                 TextLogger.WriteGameLog("## Econ ## Worth:foreground");
 
-                var str = new StringBuilder();
+                try
+                {
+                    var str = new StringBuilder();
 
-                //foreach (var kvp in gridComponents)
-                //{
-                //    MyPhysicalItemDefinition definition = null;
-                //    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(kvp.Key, out definition); // Oxygen and Hydrogen do not have available defintions.
-                //    str.AppendFormat("'{0}' x {1}.\r\n", definition == null ? kvp.Key.SubtypeName : definition.GetDisplayName(), kvp.Value);
-                //}
+                    //foreach (var kvp in gridComponents)
+                    //{
+                    //    MyPhysicalItemDefinition definition = null;
+                    //    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(kvp.Key, out definition); // Oxygen and Hydrogen do not have available defintions.
+                    //    str.AppendFormat("'{0}' x {1}.\r\n", definition == null ? kvp.Key.SubtypeName : definition.GetDisplayName(), kvp.Value);
+                    //}
 
-                //foreach (var kvp in inventoryComponents)
-                //{
-                //    MyPhysicalItemDefinition definition = null;
-                //    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(kvp.Key, out definition);
-                //    str.AppendFormat("'{0}' x {1}.\r\n", definition == null ? kvp.Key.SubtypeName : definition.GetDisplayName(), kvp.Value);
-                //}
+                    //foreach (var kvp in inventoryComponents)
+                    //{
+                    //    MyPhysicalItemDefinition definition = null;
+                    //    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(kvp.Key, out definition);
+                    //    str.AppendFormat("'{0}' x {1}.\r\n", definition == null ? kvp.Key.SubtypeName : definition.GetDisplayName(), kvp.Value);
+                    //}
 
-                //var prefix = string.Format("{0:#,##0.00000}", totalValue);
+                    //var prefix = string.Format("{0:#,##0.00000}", totalValue);
 
-                str.AppendFormat("{0}: {1}\r\n", selectedShip.IsStatic ? "Station" : selectedShip.GridSizeEnum.ToString() + " Ship",  selectedShip.DisplayName);
-                str.AppendFormat("Grids={2}\r\nArmor Blocks={0}\r\nTerminal Blocks={1}\r\n", armorBlocks, terminalBlocks, gridCount);
-                str.AppendLine("-----------------------------------");
-                str.AppendFormat("Ship Value: {0:#,##0.00000} {1}.\r\n", shipValue, EconomyScript.Instance.Config.CurrencyName);
-                str.AppendFormat("Inventory Value: {0:#,##0.00000} {1}.\r\n", inventoryValue, EconomyScript.Instance.Config.CurrencyName);
-                str.AppendFormat("Final Value: {0:#,##0.00000} {1}.\r\n", shipValue + inventoryValue, EconomyScript.Instance.Config.CurrencyName);
-                MessageClientDialogMessage.SendMessage(SenderSteamId, "WORTH", selectedShip.DisplayName, str.ToString());
+                    str.AppendFormat("{0}: {1}\r\n", selectedShip.IsStatic ? "Station" : selectedShip.GridSizeEnum.ToString() + " Ship", selectedShip.DisplayName);
+                    str.AppendFormat("Grids={2}\r\nArmor Blocks={0}\r\nTerminal Blocks={1}\r\n", armorBlocks, terminalBlocks, gridCount);
+                    str.AppendLine("-----------------------------------");
+                    str.AppendFormat("Ship Value: {0:#,##0.00000} {1}.\r\n", shipValue, EconomyScript.Instance.Config.CurrencyName);
+                    str.AppendFormat("Inventory Value: {0:#,##0.00000} {1}.\r\n", inventoryValue, EconomyScript.Instance.Config.CurrencyName);
+                    str.AppendFormat("Final Value: {0:#,##0.00000} {1}.\r\n", shipValue + inventoryValue, EconomyScript.Instance.Config.CurrencyName);
+                    MessageClientDialogMessage.SendMessage(SenderSteamId, "WORTH", selectedShip.DisplayName, str.ToString());
+                }
+                catch (Exception ex)
+                {
+                    EconomyScript.Instance.ServerLogger.WriteException(ex);
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "WORTH", "Failed and died. Please contact the administrator.");
+                }
             });
         }
 
