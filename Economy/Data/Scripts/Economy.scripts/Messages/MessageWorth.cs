@@ -8,6 +8,7 @@
     using Economy.scripts;
     using Economy.scripts.EconStructures;
     using ProtoBuf;
+    using Sandbox.Common;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
@@ -177,27 +178,33 @@
 
                                 #region Go through all other Inventories for components/items.
 
-                                for (var i = 0; i < cube.InventoryCount; i++)
+                                // Inventory check based on normal game access.
+                                var relation = block.FatBlock.GetUserRelationToOwner(player.PlayerID);
+                                if (relation != MyRelationsBetweenPlayerAndBlock.Enemies
+                                    && relation != MyRelationsBetweenPlayerAndBlock.Neutral)
                                 {
-                                    var inventory = cube.GetInventory(i);
-                                    var list = inventory.GetItems();
-                                    foreach (var item in list)
+                                    for (var i = 0; i < cube.InventoryCount; i++)
                                     {
-                                        var id = item.Content.GetId();
-                                        if (!inventoryComponents.ContainsKey(id))
-                                            inventoryComponents.Add(id, 0);
-                                        inventoryComponents[id] += (decimal)item.Amount;
-
-                                        // Go through Gas bottles.
-                                        var gasContainer = item.Content as MyObjectBuilder_GasContainerObject;
-                                        if (gasContainer != null)
+                                        var inventory = cube.GetInventory(i);
+                                        var list = inventory.GetItems();
+                                        foreach (var item in list)
                                         {
-                                            var defintion = (MyOxygenContainerDefinition)MyDefinitionManager.Static.GetPhysicalItemDefinition(item.Content.GetId());
-                                            decimal volume = (decimal)defintion.Capacity * (decimal)gasContainer.GasLevel;
-                                            if (!inventoryComponents.ContainsKey(defintion.StoredGasId))
-                                                inventoryComponents.Add(defintion.StoredGasId, 0);
-                                            inventoryComponents[defintion.StoredGasId] += volume;
-                                            //MessageClientTextMessage.SendMessage(SenderSteamId, "GAS bottle", "{0} detected {1}", defintion.StoredGasId, volume);
+                                            var id = item.Content.GetId();
+                                            if (!inventoryComponents.ContainsKey(id))
+                                                inventoryComponents.Add(id, 0);
+                                            inventoryComponents[id] += (decimal) item.Amount;
+
+                                            // Go through Gas bottles.
+                                            var gasContainer = item.Content as MyObjectBuilder_GasContainerObject;
+                                            if (gasContainer != null)
+                                            {
+                                                var defintion = (MyOxygenContainerDefinition) MyDefinitionManager.Static.GetPhysicalItemDefinition(item.Content.GetId());
+                                                decimal volume = (decimal) defintion.Capacity*(decimal) gasContainer.GasLevel;
+                                                if (!inventoryComponents.ContainsKey(defintion.StoredGasId))
+                                                    inventoryComponents.Add(defintion.StoredGasId, 0);
+                                                inventoryComponents[defintion.StoredGasId] += volume;
+                                                //MessageClientTextMessage.SendMessage(SenderSteamId, "GAS bottle", "{0} detected {1}", defintion.StoredGasId, volume);
+                                            }
                                         }
                                     }
                                 }
