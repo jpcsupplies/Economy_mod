@@ -63,9 +63,9 @@
             var create = DateTime.Now; // Keeps the Date and OpenedDate at the same millisecond on creation.
             //are we creating a player or the NPC trader - this may require finer discrimination if we ever have multiple NPCs
             if (steamId != EconomyConsts.NpcMerchantId)
-                return new BankAccountStruct() { BankBalance = EconomyScript.Instance.Config.DefaultStartingBalance, Date = create, NickName = nickName, SteamId = steamId, OpenedDate = create, Language = language };
+                return new BankAccountStruct { BankBalance = EconomyScript.Instance.Config.DefaultStartingBalance, Date = create, NickName = nickName, SteamId = steamId, OpenedDate = create, Language = language };
             else
-                return new BankAccountStruct() { BankBalance = EconomyScript.Instance.Config.NPCStartingBalance, Date = create, NickName = nickName, SteamId = steamId, OpenedDate = create, Language = language };
+                return new BankAccountStruct { BankBalance = EconomyScript.Instance.Config.NPCStartingBalance, Date = create, NickName = nickName, SteamId = steamId, OpenedDate = create, Language = language };
         }
 
         public static void ResetAccount(BankAccountStruct account)
@@ -103,10 +103,13 @@
             var expireDate = DateTime.Now - EconomyScript.Instance.Config.AccountExpiry;
             var newAccountExpireDate = DateTime.Now.AddDays(-1);
 
-            var deadAccounts = data.Accounts.Where(a => a.SteamId != EconomyConsts.NpcMerchantId &&
-                (a.Date < expireDate)
-                || (a.Date == a.OpenedDate && a.BankBalance == EconomyScript.Instance.Config.DefaultStartingBalance && a.Date < newAccountExpireDate)
+            var deadAccounts = data.Accounts.Where(a =>
+                (a.SteamId != EconomyConsts.NpcMerchantId
+                && data.Markets.All(m => m.MarketId != a.SteamId))   // Exclude accounts which run markets.
+                && (a.Date < expireDate
+                || a.Date == a.OpenedDate && a.BankBalance == EconomyScript.Instance.Config.DefaultStartingBalance && a.Date < newAccountExpireDate)
             ).ToArray();
+
             foreach (var account in deadAccounts)
             {
                 EconomyScript.Instance.ServerLogger.Write("Removing Dead Account '{0}' with {1} {2}.", account.NickName, account.BankBalance, EconomyScript.Instance.Config.CurrencyName);
