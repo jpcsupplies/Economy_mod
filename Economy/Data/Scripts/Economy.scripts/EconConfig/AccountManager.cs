@@ -65,7 +65,7 @@
             if (steamId != EconomyConsts.NpcMerchantId)
                 return new BankAccountStruct() { BankBalance = EconomyScript.Instance.Config.DefaultStartingBalance, Date = create, NickName = nickName, SteamId = steamId, OpenedDate = create, Language = language };
             else
-                return new BankAccountStruct() { BankBalance = EconomyConsts.NPCStartingBalance, Date = create, NickName = nickName, SteamId = steamId, OpenedDate = create, Language = language };
+                return new BankAccountStruct() { BankBalance = EconomyScript.Instance.Config.NPCStartingBalance, Date = create, NickName = nickName, SteamId = steamId, OpenedDate = create, Language = language };
         }
 
         public static void ResetAccount(BankAccountStruct account)

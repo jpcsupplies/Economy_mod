@@ -755,7 +755,7 @@
                     MarketId = EconomyConsts.NpcMerchantId,
                     MarketZoneType = MarketZoneType.FixedSphere,
                     DisplayName = EconomyConsts.NpcMarketName,
-                    MarketZoneSphere = new BoundingSphereD(Vector3D.Zero, EconomyConsts.DefaultTradeRange), // Center of the game world.
+                    MarketZoneSphere = new BoundingSphereD(Vector3D.Zero, EconomyScript.Instance.Config.DefaultTradeRange), // Center of the game world.
                     MarketItems = new List<MarketItemStruct>()
                 };
                 data.Markets.Add(market);

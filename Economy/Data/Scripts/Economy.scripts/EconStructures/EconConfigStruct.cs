@@ -18,6 +18,9 @@
             LimitedSupply = EconomyConsts.LimitedSupply;
             TradeTimeout = EconomyConsts.TradeTimeout;
             AccountExpiry = EconomyConsts.AccountExpiry;
+            NPCStartingBalance = EconomyConsts.NPCStartingBalance;
+            NpcMerchantName = EconomyConsts.NpcMerchantName;
+            DefaultTradeRange = EconomyConsts.DefaultTradeRange;
         }
 
         /// <summary>
@@ -44,6 +47,21 @@
         /// Should the NPC market be limited or unlimited supply.
         /// </summary>
         public bool LimitedSupply;
+
+        /// <summary>
+        /// The starting balance for NPC Bankers.
+        /// </summary>
+        public decimal NPCStartingBalance;
+
+        /// <summary>
+        /// The name that will used to identify the Merchant's server account.
+        /// </summary>
+        public string NpcMerchantName;
+
+        /// <summary>
+        /// Default range of trade zones.
+        /// </summary>
+        public double DefaultTradeRange;
 
         #region TradeTimeout
 

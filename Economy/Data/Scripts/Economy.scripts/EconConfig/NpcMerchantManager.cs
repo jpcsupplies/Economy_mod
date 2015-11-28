@@ -20,7 +20,7 @@
             if (myNpcAccount == null)
             {
                 //nope, lets construct our bank record with a new balance
-                myNpcAccount = AccountManager.CreateNewDefaultAccount(EconomyConsts.NpcMerchantId, EconomyConsts.NpcMerchantName, 0);
+                myNpcAccount = AccountManager.CreateNewDefaultAccount(EconomyConsts.NpcMerchantId, EconomyScript.Instance.Config.NpcMerchantName, 0);
 
                 //ok lets apply it
                 data.Accounts.Add(myNpcAccount);

@@ -613,7 +613,11 @@ namespace Economy.scripts
                         //return false;
                         break;
                         //default: //must be more than 2 and invalid
-                        /*                        if (buyerName != EconomyConsts.NpcMerchantName && buyerName != "OFFER")
+
+                        // Accessing EconomyScript.Instance.Config.NpcMerchantName here will cause an exception, as Config is only loaded on the Server, not Clients.
+                        // Need to make sure core functionality is run on the Server.
+
+                        /*                        if (buyerName != EconomyScript.Instance.Config.NpcMerchantName && buyerName != "OFFER")
                                                 {
                                                     //must be selling to a player (or faction ?)
                                                     //check the item to sell is a valid product, do usual qty type checks etc
@@ -622,7 +626,7 @@ namespace Economy.scripts
                                                 }
                                                 else
                                                 {
-                                                    if (buyerName == EconomyConsts.NpcMerchantName) { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be selling to NPC - skip prompts sell immediately at price book price"); }
+                                                    if (buyerName == EconomyScript.Instance.Config.NpcMerchantName) { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be selling to NPC - skip prompts sell immediately at price book price"); }
                                                     if (buyerName == "OFFER") { MyAPIGateway.Utilities.ShowMessage("SELL", "Debug: We must be posting a sell offer to stockmarket - skip prompts post offer UNLESS we match a buy offer at the same price then process that"); }
                                                 }*/
                         //return false; 

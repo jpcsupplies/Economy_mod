@@ -246,7 +246,7 @@
             var distance = Vector3D.Distance(position1, position2);
 
             // so did it come within our default range
-            return distance <= EconomyConsts.DefaultTradeRange;
+            return distance <= EconomyScript.Instance.Config.DefaultTradeRange;
         }
 
         #region Inventory
