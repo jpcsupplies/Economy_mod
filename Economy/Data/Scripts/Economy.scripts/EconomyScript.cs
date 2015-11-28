@@ -718,8 +718,7 @@ namespace Economy.scripts
             // worth command
             if (split[0].Equals("/worth", StringComparison.InvariantCultureIgnoreCase))
             {
-                // TODO: FindLookAtEntity responds to projections, new ship placement, and copy paste.
-                var selectedShip = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, true, false, false, false, false, false) as IMyCubeGrid;
+                var selectedShip = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, true, false, false, false, false, false, false) as IMyCubeGrid;
                 if (selectedShip != null)
                 {
                     MessageWorth.SendMessage(selectedShip.EntityId);

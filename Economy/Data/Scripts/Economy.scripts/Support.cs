@@ -369,12 +369,12 @@
             return null;
         }
 
-        public static IMyEntity FindLookAtEntity(Sandbox.ModAPI.Interfaces.IMyControllableEntity controlledEntity, bool findShips, bool findCubes, bool findPlayers, bool findAsteroids, bool findPlanets, bool findReplicable)
+        public static IMyEntity FindLookAtEntity(Sandbox.ModAPI.Interfaces.IMyControllableEntity controlledEntity, bool findShips, bool findCubes, bool findPlayers, bool findAsteroids, bool findPlanets, bool findReplicable, bool ignoreProjection)
         {
             IMyEntity entity;
             double distance;
             Vector3D hitPoint;
-            FindLookAtEntity(controlledEntity, true, true, out entity, out distance, out hitPoint, findShips, findCubes, findPlayers, findAsteroids, findPlanets, findReplicable);
+            FindLookAtEntity(controlledEntity, true, ignoreProjection, out entity, out distance, out hitPoint, findShips, findCubes, findPlayers, findAsteroids, findPlanets, findReplicable);
             return entity;
         }
 
