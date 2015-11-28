@@ -67,7 +67,18 @@
 
             // we create the writer when it is needed to prevent the creation of empty files
             if (_logWriter == null)
-                _logWriter = MyAPIGateway.Utilities.WriteFileInGlobalStorage(_logFileName);
+            {
+                try
+                {
+                    _logWriter = MyAPIGateway.Utilities.WriteFileInGlobalStorage(_logFileName);
+                }
+                catch (Exception ex)
+                {
+                    Terminate();
+                    WriteGameLog("## TextLogger Exception caught in mod. Message: {0}", ex.Message);
+                    return;
+                }
+            }
 
             string message;
             if (args == null || args.Length == 0)
