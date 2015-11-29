@@ -38,7 +38,7 @@
         public decimal Quantity { get; set; }
 
         /// <summary>
-        /// Sell price, or desired buy price.
+        /// Sell price, or desired buy price per unit of Quantity.
         /// </summary>
         public decimal Price { get; set; }
 
