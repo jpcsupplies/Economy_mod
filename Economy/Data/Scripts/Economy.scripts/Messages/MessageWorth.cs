@@ -52,20 +52,26 @@
             var position = ((IMyEntity)character).WorldMatrix.Translation;
 
             var markets = MarketManager.FindMarketsFromLocation(position);
-            if (markets.Count == 0)
-            {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "WORTH", "Sorry, your are not in range of any markets!");
-                return;
-            }
 
             // TODO: find market with best Buy price that isn't blacklisted.
 
             var market = markets.FirstOrDefault();
+            string marketDetail = null;
             if (market == null)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", "That market does not exist.");
+                market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.MarketId == EconomyConsts.NpcMerchantId);
+                if (market != null)
+                    marketDetail = string.Format("No markets in range, using default market '{0}' for appraisal.", market.DisplayName);
+            }
+
+            if (market == null)
+            {
+                MessageClientTextMessage.SendMessage(SenderSteamId, "WORTH", "That market does not exist.");
                 return;
             }
+
+            if (marketDetail == null)
+                marketDetail = string.Format("Using market '{0}' for appraisal.", market.DisplayName);
 
             if (!MyAPIGateway.Entities.EntityExists(EntityId))
             {
