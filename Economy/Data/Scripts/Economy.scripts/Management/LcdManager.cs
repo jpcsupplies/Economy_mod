@@ -17,47 +17,12 @@
 
     public class LcdManager
     {
-        #region fields
-
-        //private static int counter = 0;
-        
-        #endregion
-
         public static void UpdateLcds()
         {
-            //counter = 0;
-
-            #region sample 1
-            //// scan through all ships, and all cubes.
-
-            //var start1 = DateTime.Now;
-            //var entities = new HashSet<IMyEntity>();
-            //MyAPIGateway.Entities.GetEntities(entities, e => e is Sandbox.ModAPI.IMyCubeGrid);
-            //// TODO: projected ship check?
-            //foreach (var entity in entities)
-            //{
-            //    var cubeGrid = (Sandbox.ModAPI.IMyCubeGrid)entity;
-            //    var blocks = new List<Sandbox.ModAPI.IMySlimBlock>();
-            //    cubeGrid.GetBlocks(blocks, block => block != null && block.FatBlock != null &&
-            //        block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_TextPanel) &&
-            //        ((Sandbox.ModAPI.IMyTerminalBlock)block.FatBlock).CustomName.IndexOf("[Economy]", StringComparison.InvariantCultureIgnoreCase) >= 0);
-            //    foreach (var block in blocks)
-            //        ProcessLcdBlock((IMyTextPanel)block.FatBlock);
-            //}
-            //var time1 = DateTime.Now - start1;
-
-            #endregion
-
-            //MyAPIGateway.Utilities.ShowMessage("Count A", "{0} {1}", counter, time1);
-            //counter = 0;
-
-            #region Sample 2
-
-            //var start2 = DateTime.Now;
-
             var players = new List<IMyPlayer>();
             MyAPIGateway.Players.GetPlayers(players, p => p != null);
             var updatelist = new HashSet<IMyTextPanel>();
+
             foreach (var player in players)
             {
                 // Establish a visual range of the LCD.
@@ -66,6 +31,7 @@
                 var list = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere);
                 foreach (var block in list)
                 {
+                    // TODO: projected ship check?
                     var textPanel = block as IMyTextPanel;
                     if (textPanel != null
                         && textPanel.IsFunctional
@@ -82,13 +48,6 @@
                 var interval = Math.Max(1f, textPanel.GetValueFloat("ChangeIntervalSlider"));
                 ProcessLcdBlock(textPanel);
             }
-
-            //var time2 = DateTime.Now - start2;
-
-            #endregion
-
-            //MyAPIGateway.Utilities.ShowMessage("Count B", "{0} {1}", counter, time2);
-            //counter = 0;
         }
 
         private static void ProcessLcdBlock(IMyTextPanel textPanel)

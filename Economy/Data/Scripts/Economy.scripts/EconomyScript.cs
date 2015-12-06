@@ -295,6 +295,10 @@ namespace Economy.scripts
             // DO NOT SET ANY IN GAME API CALLS HERE. AT ALL!
             MyAPIGateway.Utilities.InvokeOnGameThread(delegate ()
             {
+                // Recheck main Gateway properties, as the Game world my be currently shutting down when the InvokeOnGameThread is called.
+                if (MyAPIGateway.Players == null || MyAPIGateway.Entities == null || MyAPIGateway.Session == null || MyAPIGateway.Utilities == null)
+                    return;
+
                 // Any processing needs to occur in here, as it will be on the main thread, and hopefully thread safe.
                 MarketManager.CheckTradeTimeouts();
                 LcdManager.UpdateLcds();
