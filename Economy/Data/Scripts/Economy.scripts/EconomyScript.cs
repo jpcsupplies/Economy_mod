@@ -721,6 +721,15 @@ namespace Economy.scripts
             }
             #endregion value
 
+            #region pricelist
+
+            if (split[0].Equals("/pricelist", StringComparison.InvariantCultureIgnoreCase))
+            {
+                // TODO: add optional parameters.
+                MessageMarketPriceList.SendMessage();
+            }
+
+            #endregion
 
             #region worth
             // worth command
