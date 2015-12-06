@@ -255,6 +255,7 @@
 
                     //var prefix = string.Format("{0:#,##0.00000}", totalValue);
 
+                    str.AppendLine(marketDetail);
                     str.AppendFormat("{0}: {1}\r\n", selectedShip.IsStatic ? "Station" : selectedShip.GridSizeEnum.ToString() + " Ship", selectedShip.DisplayName);
                     str.AppendFormat("Grids={2}\r\nArmor Blocks={0}\r\nTerminal Blocks={1}\r\n", armorBlocks, terminalBlocks, gridCount);
                     str.AppendLine("-----------------------------------");
