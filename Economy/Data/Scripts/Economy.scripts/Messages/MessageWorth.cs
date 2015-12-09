@@ -96,6 +96,8 @@
             var gridComponents = new Dictionary<MyDefinitionId, decimal>();
             var inventoryComponents = new Dictionary<MyDefinitionId, decimal>();
 
+            MessageClientTextMessage.SendMessage(SenderSteamId, "WORTH", "Calculating the worth...");
+
             MyAPIGateway.Parallel.StartBackground(delegate ()
             // Background processing occurs within this block.
             {
