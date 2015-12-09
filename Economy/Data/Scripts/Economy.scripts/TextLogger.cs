@@ -90,6 +90,36 @@
             _logWriter.Flush();
         }
 
+        public void WriteRaw(string text, params object[] args)
+        {
+            if (!_isInitialized)
+                return;
+
+            // we create the writer when it is needed to prevent the creation of empty files
+            if (_logWriter == null)
+            {
+                try
+                {
+                    _logWriter = MyAPIGateway.Utilities.WriteFileInGlobalStorage(_logFileName);
+                }
+                catch (Exception ex)
+                {
+                    Terminate();
+                    WriteGameLog("## TextLogger Exception caught in mod. Message: {0}", ex.Message);
+                    return;
+                }
+            }
+
+            string message;
+            if (args == null || args.Length == 0)
+                message = text;
+            else
+                message = string.Format(text, args);
+
+            _logWriter.Write(message);
+            _logWriter.Flush();
+        }
+
         public void WriteException(Exception ex, string additionalInformation = null)
         {
             if (!_isInitialized)
