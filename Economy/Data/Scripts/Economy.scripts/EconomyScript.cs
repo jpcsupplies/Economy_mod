@@ -58,7 +58,7 @@ namespace Economy.scripts
         //current functionality is just to alter the market on hand of a single item, eg /set 10000 ice
         //or /set blacklist ice   or /set buy item price
 
-        const string SetPattern = @"(?<command>/set)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<blacklist>blacklist)|(?<buy>buy)|(?<sell>sell))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+))))?";
+        const string SetPattern = @"(?<command>/set)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<blacklist>blacklist)|(?<tradezone>tradezone)|(?<buy>buy)|(?<sell>sell))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+))))?";
 
         /// <summary>
         ///  buy pattern no "all" required.   reusing sell  
@@ -431,12 +431,14 @@ namespace Economy.scripts
                 bool setbuy = false;
                 bool setsell = false;
                 bool blacklist = false;
+                bool tradezone = false;
                 match = Regex.Match(messageText, SetPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     itemName = match.Groups["item"].Value.Trim();
                     setbuy = match.Groups["buy"].Value.Equals("buy", StringComparison.InvariantCultureIgnoreCase);
                     setsell = match.Groups["sell"].Value.Equals("sell", StringComparison.InvariantCultureIgnoreCase);
+                    blacklist = match.Groups["tradezone"].Value.Equals("tradezone", StringComparison.InvariantCultureIgnoreCase);
                     blacklist = match.Groups["blacklist"].Value.Equals("blacklist", StringComparison.InvariantCultureIgnoreCase);
                     if (!blacklist && !setbuy && !setsell) // must be setting on hand
                         if (!decimal.TryParse(match.Groups["qty"].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
@@ -480,6 +482,18 @@ namespace Economy.scripts
                     else if (setsell) //or do we want to set sell price..?
                     {
                         MessageSet.SendMessageSell(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, amount);
+                    }
+                    else if (tradezone) //or do we want to move tradezone..?
+                    {
+                        //we need to either accept a parameter here x,y,z  or lacking a parameter use the invoking players current location
+                        //we should also accept an add or remove parameter if we are adding an additional location for NPC tradezone
+                        //if more than one tradezone exists, and we lack a parameter then fail and prompt player to add or remove coord
+                        //also need a list option
+                        //eg /set tradezone (moves the trade zone to that players location. should write to news log when that works too)
+                        //eg1 /set tradezone add  (adds current location as a trade zone)
+                        //eg2  /set tradezone remove 0,0,0 (removes the entry for market 0,0,0 if no other NPC location exists this effectively disables it)
+                        //eg3 /set tradezone add 123,456,789 (add an addition market for npc ad location x=123, y=456, z=789)
+                        //eg4 /set tradezone list (display a summary (in mission?) of all NPC trade locations)
                     }
                     else //no we must want to set on hand?
                     {
@@ -726,7 +740,7 @@ namespace Economy.scripts
             if (split[0].Equals("/pricelist", StringComparison.InvariantCultureIgnoreCase))
             {
                 // TODO: add optional parameters.
-                MessageMarketPriceList.SendMessage();
+                // doesnt exist yet MessageMarketPriceList.SendMessage();
             }
 
             #endregion
