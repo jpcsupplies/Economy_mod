@@ -27,7 +27,7 @@
 
             // Is Server version older than what Client is running, or Server version is newer than Client.
             MessageConnectionResponse.SendMessage(SenderSteamId, 
-                ModCommunicationVersion < EconomyConsts.ModCommunicationVersion, ModCommunicationVersion > EconomyConsts.ModCommunicationVersion);
+                ModCommunicationVersion < EconomyConsts.ModCommunicationVersion, ModCommunicationVersion > EconomyConsts.ModCommunicationVersion, EconomyScript.Instance.Config.TradeNetworkName);
 
             var account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(
                 a => a.SteamId == SenderSteamId);

@@ -11,6 +11,19 @@
         [ProtoMember(2)]
         public bool NewCommunicationVersion;
 
+        [ProtoMember(3)]
+        public string TradeNetworkName;
+
+        public static void SendMessage(ulong steamdId, bool oldCommunicationVersion, bool newCommunicationVersion, string tradeNetworkName)
+        {
+            ConnectionHelper.SendMessageToPlayer(steamdId, new MessageConnectionResponse
+            {
+                OldCommunicationVersion = oldCommunicationVersion,
+                NewCommunicationVersion = newCommunicationVersion,
+                TradeNetworkName = tradeNetworkName
+            });
+        }
+
         public override void ProcessClient()
         {
             // stop further requests
@@ -19,6 +32,10 @@
                 EconomyScript.Instance.DelayedConnectionRequestTimer.Stop();
                 EconomyScript.Instance.DelayedConnectionRequestTimer.Close();
             }
+
+            MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
+            MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Trade Network!", TradeNetworkName);
+            MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/ehelp' for more informations about available commands");
 
             if (OldCommunicationVersion)
             {
@@ -43,11 +60,6 @@
         public override void ProcessServer()
         {
             // never processed on server
-        }
-
-        public static void SendMessage(ulong steamdId, bool oldCommunicationVersion, bool newCommunicationVersion)
-        {
-            ConnectionHelper.SendMessageToPlayer(steamdId, new MessageConnectionResponse { OldCommunicationVersion = oldCommunicationVersion, NewCommunicationVersion = newCommunicationVersion });
         }
     }
 }
