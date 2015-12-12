@@ -735,7 +735,7 @@ namespace Economy.scripts
             if (split[0].Equals("/pricelist", StringComparison.InvariantCultureIgnoreCase))
             {
                 // TODO: add optional parameters.
-                // doesnt exist yet MessageMarketPriceList.SendMessage();
+                 MessageMarketPriceList.SendMessage();
             }
 
             #endregion
