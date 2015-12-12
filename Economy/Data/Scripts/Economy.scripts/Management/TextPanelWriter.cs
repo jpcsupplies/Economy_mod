@@ -182,7 +182,8 @@
         // TODO: display n to m lines.
         public void UpdatePublic(bool show = true)
         {
-            _panel.SetValueFloat("FontSize", FontSize);
+            if (FontSize != _panel.GetValueFloat("FontSize"))
+                _panel.SetValueFloat("FontSize", FontSize);
             LastUpdate = DateTime.Now;
 
             // no need to update if the text has not changed.
@@ -225,7 +226,8 @@
 
         public void UpdatePrivate(bool show = false)
         {
-            _panel.SetValueFloat("FontSize", FontSize);
+            if (FontSize != _panel.GetValueFloat("FontSize"))
+                _panel.SetValueFloat("FontSize", FontSize);
 
             // no need to update if the text has not changed.
             if (_panel.GetPrivateText() != _privateString.ToString())
