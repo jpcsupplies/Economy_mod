@@ -129,6 +129,7 @@
                         {
                             // Someone hacking, and passing bad data?
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you specified doesn't exist!");
+                            EconomyScript.Instance.ServerLogger.Write("Definition could not be found for item during '/sell'; '{0}' '{1}'.", ItemTypeId, ItemSubTypeName);
                             return;
                         }
 
@@ -205,9 +206,9 @@
                             var blocks = new List<IMySlimBlock>();
                             foreach (var grid in grids)
                             {
-                                grid.GetBlocks(blocks, b=> b != null 
-                                    && b.FatBlock != null 
-                                    && !b.FatBlock.BlockDefinition.TypeId.IsNull 
+                                grid.GetBlocks(blocks, b => b != null
+                                    && b.FatBlock != null
+                                    && !b.FatBlock.BlockDefinition.TypeId.IsNull
                                     && b.FatBlock is IMyCargoContainer);
 
                                 foreach (var block in blocks)
@@ -300,7 +301,7 @@
                             if (accountToBuy.BankBalance >= transactionAmount || !EconomyScript.Instance.Config.LimitedSupply)
                             {
                                 // here we look up item price and transfer items and money as appropriate
-                                RemoveInventory(playerInventory, cargoBlocks, definition, amount);
+                                RemoveInventory(playerInventory, cargoBlocks, amount, definition.Id);
                                 marketItem.Quantity += ItemQuantity; // increment Market content.
 
                                 accountToBuy.BankBalance -= transactionAmount;
@@ -362,7 +363,7 @@
                             MarketManager.CreateTradeOffer(SenderSteamId, ItemTypeId, ItemSubTypeName, ItemQuantity, ItemPrice, accountToBuy.SteamId);
 
                             // remove items from inventory.
-                            RemoveInventory(playerInventory, cargoBlocks, definition, amount);
+                            RemoveInventory(playerInventory, cargoBlocks, amount, definition.Id);
 
                             // Only send message to targeted player if this is the only offer pending for them.
                             // Otherwise it will be sent when the have with previous orders in their order Queue.
@@ -379,10 +380,6 @@
 
                             return;
                         }
-
-                        // Later actions..
-                        // https://github.com/jpcsupplies/Economy_mod/issues/31
-                        // https://github.com/jpcsupplies/Economy_mod/issues/46
                     }
                     break;
 
@@ -431,6 +428,7 @@
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
 
                             // trade has been finalized, so we can exit safely.
+                            EconomyScript.Instance.ServerLogger.Write("Definition could not be found for item during '/sell accept'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
                             return;
                         }
 
@@ -439,19 +437,19 @@
                         MessageClientTextMessage.SendMessage(accountToSell.SteamId, "SELL", "You just sold {0} {3} worth of {2} ({1} units)", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.Config.CurrencyName);
 
                         var collectingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
-                        var inventory = collectingPlayer.GetPlayerInventory();
+                        var playerInventory = collectingPlayer.GetPlayerInventory();
                         bool hasAddedToInventory = true;
 
-                        if (inventory != null)
+                        if (playerInventory != null)
                         {
                             MyFixedPoint amount = (MyFixedPoint)order.Quantity;
-                            hasAddedToInventory = Support.InventoryAdd(inventory, amount, definition.Id);
+                            hasAddedToInventory = Support.InventoryAdd(playerInventory, amount, definition.Id);
                         }
 
                         if (hasAddedToInventory)
                         {
                             EconomyScript.Instance.Data.OrderBook.Remove(order); // item has been collected, so the order is finalized.
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units) which are now in your inventory.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.Config.CurrencyName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units) which are now in your player inventory.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.Config.CurrencyName);
                         }
                         else
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units). Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.Config.CurrencyName);
@@ -466,26 +464,20 @@
                     {
                         var collectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
                             (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellTimedout)
+                            || (e.TraderId == SenderSteamId && e.TradeState == TradeState.Holding)
                             || (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellRejected)
                             || (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellAccepted)).ToArray();
 
                         if (collectableOrders.Length == 0)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "There is nothing to collect currently.");
-                        }
-
-                        var collectingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
-                        var character = collectingPlayer.GetCharacter();
-                        var inventory = collectingPlayer.GetPlayerInventory();
-
-                        if (inventory == null)
-                        {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You cannot collect items at this time.");
                             return;
                         }
 
+                        var collectingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
+
                         // TODO: this is just for debugging until the message below are completed....
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are collecting items from {0} order/s.", collectableOrders.Length);
+                        //MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are collecting items from {0} order/s.", collectableOrders.Length);
 
                         foreach (var order in collectableOrders)
                         {
@@ -502,19 +494,23 @@
                                 // Someone hacking, and passing bad data?
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
                                 // TODO: more detail on the item.
+                                EconomyScript.Instance.ServerLogger.Write("Definition could not be found for item during '/sell collect'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
                                 continue;
                             }
 
-                            MyFixedPoint amount = (MyFixedPoint)order.Quantity;
-                            if (!Support.InventoryAdd(inventory, amount, definition.Id))
+                            var remainingToCollect = MessageSell.AddToInventories(collectingPlayer, order.Quantity, definition.Id);
+                            var collected = order.Quantity - remainingToCollect;
+
+                            if (remainingToCollect == 0)
                             {
-                                Support.InventoryDrop((IMyEntity)character, amount, definition.Id);
+                                EconomyScript.Instance.Data.OrderBook.Remove(order);
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just collected {0} worth of {2} ({1} units)", order.Price * collected, collected, definition.GetDisplayName());
                             }
-
-                            EconomyScript.Instance.Data.OrderBook.Remove(order);
-
-                            // TODO: display what was collected.
-                            //MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just collected {0} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName());
+                            else
+                            {
+                                order.Quantity = remainingToCollect;
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just collected {0} worth of {2} ({1} units). There are {3} remaining.", order.Price * collected, collected, definition.GetDisplayName(), remainingToCollect);
+                            }
                         }
                         return;
                     }
@@ -542,6 +538,7 @@
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
 
                             // trade has been finalized, so we can exit safely.
+                            EconomyScript.Instance.ServerLogger.Write("Definition could not be found for item during '/sell cancel'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
                             return;
                         }
 
@@ -598,6 +595,7 @@
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
 
                             // trade has been finalized, so we can exit safely.
+                            EconomyScript.Instance.ServerLogger.Write("Definition could not be found for item during '/sell deny'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
                             return;
                         }
 
@@ -648,6 +646,7 @@
             {
                 // Someone hacking, and passing bad data?
                 MessageClientTextMessage.SendMessage(steamdId, "SELL", "Sorry, the item in your order doesn't exist!");
+                EconomyScript.Instance.ServerLogger.Write("Definition could not be found for item during 'DisplayNextOrderToAccept'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
                 return;
             }
 
@@ -656,17 +655,17 @@
                 accountToSell.NickName, order.Quantity, definition.GetDisplayName(), transactionAmount, EconomyScript.Instance.Config.CurrencyName);
         }
 
-        private void RemoveInventory(IMyInventory playerInventory, List<IMySlimBlock> cargoBlocks, MyPhysicalItemDefinition definition, MyFixedPoint amount)
+        private void RemoveInventory(IMyInventory playerInventory, List<IMySlimBlock> cargoBlocks, MyFixedPoint amount, MyDefinitionId definitionId)
         {
-            var available = playerInventory.GetItemAmount(definition.Id);
+            var available = playerInventory.GetItemAmount(definitionId);
             if (amount <= available)
             {
-                playerInventory.RemoveItemsOfType(amount, definition.Id);
+                playerInventory.RemoveItemsOfType(amount, definitionId);
                 amount = 0;
             }
             else
             {
-                playerInventory.RemoveItemsOfType(available, definition.Id);
+                playerInventory.RemoveItemsOfType(available, definitionId);
                 amount -= available;
             }
 
@@ -676,19 +675,90 @@
                 {
                     var cubeBlock = (Sandbox.Game.Entities.MyEntity)block.FatBlock;
                     var cubeInventory = cubeBlock.GetInventory();
-                    available = cubeInventory.GetItemAmount(definition.Id);
+                    available = cubeInventory.GetItemAmount(definitionId);
                     if (amount <= available)
                     {
-                        cubeInventory.RemoveItemsOfType(amount, definition.Id);
+                        cubeInventory.RemoveItemsOfType(amount, definitionId);
                         amount = 0;
                     }
                     else
                     {
-                        cubeInventory.RemoveItemsOfType(available, definition.Id);
+                        cubeInventory.RemoveItemsOfType(available, definitionId);
                         amount -= available;
                     }
                 }
             }
+        }
+
+        internal static decimal AddToInventories(IMyPlayer collectingPlayer, decimal quantity, MyDefinitionId definitionId)
+        {
+            MyFixedPoint amount = (MyFixedPoint)quantity;
+
+            List<IMySlimBlock> cargoBlocks = new List<IMySlimBlock>();
+            var controllingCube = collectingPlayer.Controller.ControlledEntity as IMyCubeBlock;
+            if (controllingCube != null)
+            {
+                var grids = controllingCube.CubeGrid.GetAttachedGrids(AttachedGrids.Static);
+
+                var blocks = new List<IMySlimBlock>();
+                foreach (var grid in grids)
+                {
+                    grid.GetBlocks(blocks, b => b != null
+                        && b.FatBlock != null
+                        && !b.FatBlock.BlockDefinition.TypeId.IsNull
+                        && b.FatBlock is IMyCargoContainer);
+
+                    foreach (var block in blocks)
+                    {
+                        var relation = block.FatBlock.GetUserRelationToOwner(collectingPlayer.PlayerID);
+                        if (relation != MyRelationsBetweenPlayerAndBlock.Enemies
+                            && relation != MyRelationsBetweenPlayerAndBlock.Neutral)
+                            cargoBlocks.Add(block);
+                    }
+                }
+            }
+
+            foreach (var block in cargoBlocks)
+            {
+                if (amount > 0)
+                {
+                    var cubeBlock = (Sandbox.Game.Entities.MyEntity)block.FatBlock;
+                    var cubeInventory = cubeBlock.GetInventory();
+                    var space = cubeInventory.ComputeAmountThatFits(definitionId);
+                    if (amount <= space)
+                    {
+                        if (Support.InventoryAdd(cubeInventory, amount, definitionId))
+                            amount = 0;
+                    }
+                    else
+                    {
+                        if (Support.InventoryAdd(cubeInventory, space, definitionId))
+                            amount -= space;
+                    }
+                }
+            }
+
+            if (amount > 0)
+            {
+                var playerInventory = collectingPlayer.GetPlayerInventory();
+                if (playerInventory != null)
+                {
+                    var space = ((Sandbox.Game.MyInventory)playerInventory).ComputeAmountThatFits(definitionId);
+
+                    if (amount <= space)
+                    {
+                        if (Support.InventoryAdd(playerInventory, amount, definitionId))
+                            amount = 0;
+                    }
+                    else
+                    {
+                        if (Support.InventoryAdd(playerInventory, space, definitionId))
+                            amount -= space;
+                    }
+                }
+            }
+
+            return (decimal)amount;
         }
     }
 }
