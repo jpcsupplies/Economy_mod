@@ -4,6 +4,7 @@
     using System.Linq;
     using System.Text;
     using Economy.scripts;
+    using EconStructures;
     using ProtoBuf;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
@@ -151,6 +152,10 @@
                 return;
             }
 
+            MarketItemStruct configItem = null;
+            if (player.IsAdmin() && MarketId == EconomyConsts.NpcMerchantId)
+                configItem = EconomyScript.Instance.Config.DefaultPrices.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
+
             var msg = new StringBuilder();
             msg.AppendFormat("You just set '{0}'", definition.GetDisplayName());
 
@@ -167,6 +172,12 @@
                 {
                     marketItem.BuyPrice = ItemBuyPrice;
                     msg.AppendFormat(", buy price to {0}", ItemBuyPrice);
+
+                    if (configItem != null)
+                    {
+                        configItem.BuyPrice = ItemBuyPrice;
+                        msg.AppendFormat("; config updated.");
+                    }
                 }
                 else
                     msg.AppendFormat(", could not set buy price to less than 0.");
@@ -179,6 +190,12 @@
                 {
                     marketItem.SellPrice = ItemSellPrice;
                     msg.AppendFormat(", sell price to {0}", ItemSellPrice);
+
+                    if (configItem != null)
+                    {
+                        configItem.SellPrice = ItemSellPrice;
+                        msg.AppendFormat("; config updated.");
+                    }
                 }
                 else
                     msg.AppendFormat(", could not set sell price to less than 0.");
@@ -187,7 +204,13 @@
             if (SetType.HasFlag(SetMarketItemType.Blacklisted))
             {
                 marketItem.IsBlacklisted = !marketItem.IsBlacklisted;
-                msg.AppendFormat(", blacklist to {0}, ", marketItem.IsBlacklisted ? "On" : "Off");
+                msg.AppendFormat(", blacklist to {0}", marketItem.IsBlacklisted ? "On" : "Off");
+
+                if (configItem != null)
+                {
+                    configItem.IsBlacklisted = marketItem.IsBlacklisted;
+                    msg.AppendFormat("; config updated.");
+                }
             }
 
             MessageClientTextMessage.SendMessage(SenderSteamId, "SET", msg.ToString());
