@@ -529,9 +529,9 @@
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>AngleGrinder4Item</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-      <IsBlacklisted>true</IsBlacklisted>
+      <SellPrice>13.16</SellPrice>
+      <BuyPrice>2.76</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
@@ -561,9 +561,9 @@
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>HandDrill4Item</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>1</SellPrice>
-      <BuyPrice>1</BuyPrice>
-      <IsBlacklisted>true</IsBlacklisted>
+      <SellPrice>14.97</SellPrice>
+      <BuyPrice>4.42</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_Ore</TypeId>
