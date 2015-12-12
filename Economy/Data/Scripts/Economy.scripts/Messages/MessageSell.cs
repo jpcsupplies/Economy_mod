@@ -1,17 +1,20 @@
 ﻿namespace Economy.scripts.Messages
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using EconConfig;
     using Economy.scripts;
     using Economy.scripts.EconStructures;
     using ProtoBuf;
+    using Sandbox.Common;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using VRage;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
+    using IMyCargoContainer = Sandbox.ModAPI.Ingame.IMyCargoContainer;
 
     /// <summary>
     /// this is to do the actual work of checking and moving the goods.
@@ -192,16 +195,52 @@
                         //    return;
                         //}
 
-                        var position = ((IMyEntity)character).WorldMatrix.Translation;
-                        var inventory = character.GetPlayerInventory();
-                        MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
+                        // Build list of all cargo blocks that player is attached to as pilot or passenger.
+                        List<IMySlimBlock> cargoBlocks = new List<IMySlimBlock>();
+                        var controllingCube = sellingPlayer.Controller.ControlledEntity as IMyCubeBlock;
+                        if (controllingCube != null)
+                        {
+                            var grids = controllingCube.CubeGrid.GetAttachedGrids(AttachedGrids.Static);
 
-                        var storedAmount = inventory.GetItemAmount(definition.Id);
+                            var blocks = new List<IMySlimBlock>();
+                            foreach (var grid in grids)
+                            {
+                                grid.GetBlocks(blocks, b=> b != null 
+                                    && b.FatBlock != null 
+                                    && !b.FatBlock.BlockDefinition.TypeId.IsNull 
+                                    && b.FatBlock is IMyCargoContainer);
+
+                                foreach (var block in blocks)
+                                {
+                                    var relation = block.FatBlock.GetUserRelationToOwner(sellingPlayer.PlayerID);
+                                    if (relation != MyRelationsBetweenPlayerAndBlock.Enemies
+                                        && relation != MyRelationsBetweenPlayerAndBlock.Neutral)
+                                        cargoBlocks.Add(block);
+                                }
+                            }
+                        }
+
+                        var position = ((IMyEntity)character).WorldMatrix.Translation;
+                        var playerInventory = character.GetPlayerInventory();
+                        MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
+                        var storedAmount = playerInventory.GetItemAmount(definition.Id);
+
+                        foreach (var block in cargoBlocks)
+                        {
+                            var cubeBlock = (Sandbox.Game.Entities.MyEntity)block.FatBlock;
+                            var cubeInventory = cubeBlock.GetInventory();
+                            storedAmount += cubeInventory.GetItemAmount(definition.Id);
+                        }
+
                         if (amount > storedAmount)
                         {
                             // Insufficient items in inventory.
                             // TODO: use of definition.GetDisplayName() isn't localized here.
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your inventory.", ItemQuantity, definition.GetDisplayName(), storedAmount);
+
+                            if (cargoBlocks.Count == 0)
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your inventory.", ItemQuantity, definition.GetDisplayName(), storedAmount);
+                            else
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your player and cargo inventory.", ItemQuantity, definition.GetDisplayName(), storedAmount);
                             return;
                         }
 
@@ -261,7 +300,7 @@
                             if (accountToBuy.BankBalance >= transactionAmount || !EconomyScript.Instance.Config.LimitedSupply)
                             {
                                 // here we look up item price and transfer items and money as appropriate
-                                inventory.RemoveItemsOfType(amount, definition.Id);
+                                RemoveInventory(playerInventory, cargoBlocks, definition, amount);
                                 marketItem.Quantity += ItemQuantity; // increment Market content.
 
                                 accountToBuy.BankBalance -= transactionAmount;
@@ -323,7 +362,7 @@
                             MarketManager.CreateTradeOffer(SenderSteamId, ItemTypeId, ItemSubTypeName, ItemQuantity, ItemPrice, accountToBuy.SteamId);
 
                             // remove items from inventory.
-                            inventory.RemoveItemsOfType(amount, definition.Id);
+                            RemoveInventory(playerInventory, cargoBlocks, definition, amount);
 
                             // Only send message to targeted player if this is the only offer pending for them.
                             // Otherwise it will be sent when the have with previous orders in their order Queue.
@@ -615,6 +654,41 @@
             MessageClientTextMessage.SendMessage(steamdId, "SELL",
                 "You have received an offer from {0} to buy {1} {2} at total price {3} {4} - type '/sell accept' to accept offer (or '/sell deny' to reject and return item to seller)",
                 accountToSell.NickName, order.Quantity, definition.GetDisplayName(), transactionAmount, EconomyScript.Instance.Config.CurrencyName);
+        }
+
+        private void RemoveInventory(IMyInventory playerInventory, List<IMySlimBlock> cargoBlocks, MyPhysicalItemDefinition definition, MyFixedPoint amount)
+        {
+            var available = playerInventory.GetItemAmount(definition.Id);
+            if (amount <= available)
+            {
+                playerInventory.RemoveItemsOfType(amount, definition.Id);
+                amount = 0;
+            }
+            else
+            {
+                playerInventory.RemoveItemsOfType(available, definition.Id);
+                amount -= available;
+            }
+
+            foreach (var block in cargoBlocks)
+            {
+                if (amount > 0)
+                {
+                    var cubeBlock = (Sandbox.Game.Entities.MyEntity)block.FatBlock;
+                    var cubeInventory = cubeBlock.GetInventory();
+                    available = cubeInventory.GetItemAmount(definition.Id);
+                    if (amount <= available)
+                    {
+                        cubeInventory.RemoveItemsOfType(amount, definition.Id);
+                        amount = 0;
+                    }
+                    else
+                    {
+                        cubeInventory.RemoveItemsOfType(available, definition.Id);
+                        amount -= available;
+                    }
+                }
+            }
         }
     }
 }
