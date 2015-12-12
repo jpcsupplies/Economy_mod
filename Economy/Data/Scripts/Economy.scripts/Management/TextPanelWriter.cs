@@ -115,6 +115,8 @@
 
         public float FontSize { get; private set; }
 
+        public DateTime LastUpdate { get; private set; }
+
         #endregion
 
         #region Set Public text
@@ -181,6 +183,7 @@
         public void UpdatePublic(bool show = true)
         {
             _panel.SetValueFloat("FontSize", FontSize);
+            LastUpdate = DateTime.Now;
 
             // no need to update if the text has not changed.
             if (_panel.GetPublicText() != _publicString.ToString())

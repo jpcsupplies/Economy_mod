@@ -44,10 +44,7 @@
             }
 
             foreach (var textPanel in updatelist)
-            {
-                var interval = Math.Max(1f, textPanel.GetValueFloat("ChangeIntervalSlider"));
                 ProcessLcdBlock(textPanel);
-            }
         }
 
         private static void ProcessLcdBlock(IMyTextPanel textPanel)
@@ -92,6 +89,13 @@
             bool showHelp = !showAll && !showOre && !showIngot && !showComponent && !showAmmo && !showTools;
 
             var writer = TextPanelWriter.Create(textPanel);
+
+            // Use the update interval on the LCD Panel to determine how often the display is updated.
+            // It can only go as fast as the timer calling this code is.
+            var interval = Math.Max(1f, textPanel.GetValueFloat("ChangeIntervalSlider"));
+            if (writer.LastUpdate > DateTime.Now.AddSeconds(-interval))
+                return;
+
             showPrices = !showStock || writer.IsWide;
 
 
@@ -224,6 +228,8 @@
             //return;
 
             writer.AddPublicLine(string.Format("'{0}' '{1}' '{2}'", writer.FontSize, writer.WidthModifier, writer.DisplayLines));
+            writer.AddPublicLine(string.Format("Local='{0}'", DateTime.Now));
+            writer.AddPublicLine(string.Format("Elapsed='{0}'", MyAPIGateway.Session.ElapsedGameTime()));
 
             Testline1(writer, "                |");
             Testline1(writer, "!!!!!!!!!!!!!!!!|");

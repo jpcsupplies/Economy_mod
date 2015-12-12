@@ -74,7 +74,12 @@ namespace Economy.scripts
         private bool _isClientRegistered;
         private bool _isServerRegistered;
         private bool _delayedConnectionRequest;
-        private Timer _timerEvents;
+        private Timer _timer1Events; // 1 second.
+        private Timer _timer10Events; // 10 seconds.
+        private Timer _timer3600Events; // 1 hour.
+        private bool _timer1Block;
+        private bool _timer10Block;
+        private bool _timer3600Block;
 
         private readonly Action<byte[]> _messageHandler = new Action<byte[]>(HandleMessage);
 
@@ -178,10 +183,21 @@ namespace Economy.scripts
             Data = EconDataManager.LoadData(Config.DefaultPrices);
 
             // start the timer last, as all data should be loaded before this point.
-            ServerLogger.Write("Attaching Event timer.");
-            _timerEvents = new Timer(10000);
-            _timerEvents.Elapsed += TimerEventsOnElapsed;
-            _timerEvents.Start();
+            // TODO: use a single timer, and a counter.
+            ServerLogger.Write("Attaching Event 1 timer.");
+            _timer1Events = new Timer(1000);
+            _timer1Events.Elapsed += Timer1EventsOnElapsed;
+            _timer1Events.Start();
+
+            ServerLogger.Write("Attaching Event 10 timer.");
+            _timer10Events = new Timer(10000);
+            _timer10Events.Elapsed += Timer10EventsOnElapsed;
+            _timer10Events.Start();
+
+            ServerLogger.Write("Attaching Event 3600 timer.");
+            _timer3600Events = new Timer(3600000);
+            _timer3600Events.Elapsed += Timer3600EventsOnElapsed;
+            _timer3600Events.Start();
         }
 
         #endregion
@@ -218,13 +234,30 @@ namespace Economy.scripts
                 ServerLogger.Write("UnregisterMessageHandler");
                 MyAPIGateway.Multiplayer.UnregisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
 
-                if (_timerEvents != null)
+                if (_timer1Events != null)
                 {
-                    ServerLogger.Write("Stopping Event timer.");
-                    _timerEvents.Stop();
-                    _timerEvents.Elapsed -= TimerEventsOnElapsed;
-                    _timerEvents = null;
+                    ServerLogger.Write("Stopping Event 1 timer.");
+                    _timer1Events.Stop();
+                    _timer1Events.Elapsed -= Timer1EventsOnElapsed;
+                    _timer1Events = null;
                 }
+
+                if (_timer10Events != null)
+                {
+                    ServerLogger.Write("Stopping Event 10 timer.");
+                    _timer10Events.Stop();
+                    _timer10Events.Elapsed -= Timer10EventsOnElapsed;
+                    _timer10Events = null;
+                }
+
+                if (_timer3600Events != null)
+                {
+                    ServerLogger.Write("Stopping Event 3600 timer.");
+                    _timer3600Events.Stop();
+                    _timer3600Events.Elapsed -= Timer3600EventsOnElapsed;
+                    _timer3600Events = null;
+                }
+
 
                 Data = null;
 
@@ -285,18 +318,78 @@ namespace Economy.scripts
             _delayedConnectionRequest = true;
         }
 
-        private void TimerEventsOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
+        private void Timer1EventsOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
         {
             // DO NOT SET ANY IN GAME API CALLS HERE. AT ALL!
-            MyAPIGateway.Utilities.InvokeOnGameThread(delegate ()
+            MyAPIGateway.Utilities.InvokeOnGameThread(delegate
             {
                 // Recheck main Gateway properties, as the Game world my be currently shutting down when the InvokeOnGameThread is called.
                 if (MyAPIGateway.Players == null || MyAPIGateway.Entities == null || MyAPIGateway.Session == null || MyAPIGateway.Utilities == null)
                     return;
 
-                // Any processing needs to occur in here, as it will be on the main thread, and hopefully thread safe.
-                MarketManager.CheckTradeTimeouts();
-                LcdManager.UpdateLcds();
+                if (_timer1Block) // prevent other any additional calls into this code while it may still be running.
+                    return;
+
+                _timer1Block = true;
+                try
+                {
+                    // Any processing needs to occur in here, as it will be on the main thread, and hopefully thread safe.
+                    LcdManager.UpdateLcds();
+                }
+                finally
+                {
+                    _timer1Block = false;
+                }
+            });
+        }
+
+        private void Timer10EventsOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
+        {
+            // DO NOT SET ANY IN GAME API CALLS HERE. AT ALL!
+            MyAPIGateway.Utilities.InvokeOnGameThread(delegate
+            {
+                // Recheck main Gateway properties, as the Game world my be currently shutting down when the InvokeOnGameThread is called.
+                if (MyAPIGateway.Players == null || MyAPIGateway.Entities == null || MyAPIGateway.Session == null || MyAPIGateway.Utilities == null)
+                    return;
+
+                if (_timer10Block) // prevent other any additional calls into this code while it may still be running.
+                    return;
+
+                _timer10Block = true;
+                try
+                {
+                    // Any processing needs to occur in here, as it will be on the main thread, and hopefully thread safe.
+                    MarketManager.CheckTradeTimeouts();
+                }
+                finally
+                {
+                    _timer10Block = false;
+                }
+            });
+        }
+
+        private void Timer3600EventsOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
+        {
+            // DO NOT SET ANY IN GAME API CALLS HERE. AT ALL!
+            MyAPIGateway.Utilities.InvokeOnGameThread(delegate
+            {
+                // Recheck main Gateway properties, as the Game world my be currently shutting down when the InvokeOnGameThread is called.
+                if (MyAPIGateway.Players == null || MyAPIGateway.Entities == null || MyAPIGateway.Session == null || MyAPIGateway.Utilities == null)
+                    return;
+
+                if (_timer3600Block) // prevent other any additional calls into this code while it may still be running.
+                    return;
+
+                _timer3600Block = true;
+                try
+                {
+                    // Any processing needs to occur in here, as it will be on the main thread, and hopefully thread safe.
+                    // TODO: hourly market processing.
+                }
+                finally
+                {
+                    _timer3600Block = false;
+                }
             });
         }
 
@@ -418,7 +511,7 @@ namespace Economy.scripts
             // also will eventually set options like limited or unlimited stock, range checks size (or on or off), currency name
             // and trading on or off.   Or any other options an admin should be able to set in game.
             // we need a /check command maybe to display current blacklist status, price and stock too
-            
+
             if (split[0].Equals("/set", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
                 decimal amount = 0;
@@ -735,7 +828,7 @@ namespace Economy.scripts
             if (split[0].Equals("/pricelist", StringComparison.InvariantCultureIgnoreCase))
             {
                 // TODO: add optional parameters.
-                 MessageMarketPriceList.SendMessage();
+                MessageMarketPriceList.SendMessage();
             }
 
             #endregion

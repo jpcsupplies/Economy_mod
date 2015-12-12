@@ -1,5 +1,6 @@
 namespace Economy.scripts
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using Sandbox.Common.ObjectBuilders;
@@ -364,6 +365,16 @@ namespace Economy.scripts
         }
 
         #endregion
+
+        /// <summary>
+        /// Time elapsed since the start of the game.
+        /// This is saved in checkpoint, instead of GameDateTime.
+        /// </summary>
+        /// <remarks>Copied from Sandbox.Game.World.MySession</remarks>
+        public static TimeSpan ElapsedGameTime(this IMySession session)
+        {
+            return MyAPIGateway.Session.GameDateTime - new DateTime(2081, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        }
 
         #region framework
 
