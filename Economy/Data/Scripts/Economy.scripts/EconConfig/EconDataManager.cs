@@ -432,8 +432,33 @@
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>AutomaticRifleItem</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>7.35</SellPrice>
-      <BuyPrice>6.53</BuyPrice>
+      <SellPrice>10.73</SellPrice>
+      <BuyPrice>0.65</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>PreciseAutomaticRifleItem</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>12.84</SellPrice>
+      <BuyPrice>2.52</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>RapidFireAutomaticRifleItem</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>13.43</SellPrice>
+      <BuyPrice>3.05</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>UltimateAutomaticRifleItem</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>15.94</SellPrice>
+      <BuyPrice>5.28</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
@@ -454,19 +479,91 @@
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>Welder2Item</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>11.36</SellPrice>
+      <BuyPrice>1.21</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>Welder3Item</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>11.84</SellPrice>
+      <BuyPrice>1.63</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>Welder4Item</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>12.16</SellPrice>
+      <BuyPrice>1.92</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>AngleGrinderItem</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>19.23</SellPrice>
-      <BuyPrice>17.09</BuyPrice>
+      <SellPrice>11.92</SellPrice>
+      <BuyPrice>1.71</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>AngleGrinder2Item</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>13.55</SellPrice>
+      <BuyPrice>3.15</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>AngleGrinder3Item</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>12.83</SellPrice>
+      <BuyPrice>2.47</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>AngleGrinder4Item</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>HandDrillItem</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>7.81</SellPrice>
-      <BuyPrice>6.94</BuyPrice>
+      <SellPrice>16.11</SellPrice>
+      <BuyPrice>5.43</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>HandDrill2Item</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>13.73</SellPrice>
+      <BuyPrice>3.32</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>HandDrill3Item</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>14.97</SellPrice>
+      <BuyPrice>4.42</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>HandDrill4Item</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>1</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_Ore</TypeId>
@@ -488,8 +585,8 @@
       <TypeId>MyObjectBuilder_Ore</TypeId>
       <SubtypeName>Ice</SubtypeName>
       <Quantity>10000</Quantity>
-      <SellPrice>3.37</SellPrice>
-      <BuyPrice>2.99</BuyPrice>
+      <SellPrice>0.337</SellPrice>
+      <BuyPrice>0.299</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
