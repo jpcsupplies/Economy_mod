@@ -920,7 +920,7 @@ namespace Economy.scripts
                 {
                     //did we just type ehelp? show what else they can get help on
                     //might be better to make a more detailed help reply here using mission window later on
-                    MyAPIGateway.Utilities.ShowMessage("ehelp", "Commands: ehelp, bal, pay, seen, buy, sell, value, ver, lcd");
+                    MyAPIGateway.Utilities.ShowMessage("ehelp", "Commands: ehelp, bal, pay, seen, buy, sell, value, ver, lcd, news, worth");
                     if (MyAPIGateway.Session.Player.IsAdmin())
                     {
                         MyAPIGateway.Utilities.ShowMessage("Admin ehelp", "Commands: accounts, bal player, reset, set, global, pay player +/-any_amount");
@@ -947,10 +947,17 @@ namespace Economy.scripts
                                 MyAPIGateway.Utilities.ShowMessage("Admin eHelp", "Admins can add or remove any amount from a player, including negative");
                             }
                             return true;
+                        case "worth":
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/worth  Tells you the value of the target object in relation to how much the components used to create it are worth.");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Useful if you want to sell a ship or station and need a price. Example: /worth");
+                            return true;
                         case "seen":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/seen X Displays time and date that economy plugin last saw player X");
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /seen bob");
                             return true;
+                        case "global":
+                            if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin eHelp", "/global displays a mission window message to all online players"); return true; }
+                            else { return false; }
                         case "accounts":
                             if (MyAPIGateway.Session.Player.IsAdmin()) { MyAPIGateway.Utilities.ShowMessage("Admin eHelp", "/accounts displays all player balances"); return true; }
                             else { return false; }
@@ -985,6 +992,10 @@ namespace Economy.scripts
                         case "value":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/value X Y - Looks up item [X] of optional quantity [Y] and reports the buy and sell value.");
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /value Ice 20    or   /value ice");
+                            return true;
+                        case "news":
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/news Displays a news log of the last few signifiant server events");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Eg, Pirate attacks, bounties, server competitions etc Example: /news");
                             return true;
                         case "ver":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/ver Displays the diagnostic version of running Economy script");
