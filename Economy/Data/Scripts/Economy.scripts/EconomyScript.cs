@@ -894,8 +894,8 @@ namespace Economy.scripts
             {
 
                 string announce = "Date Now " + messageText;
-                //messageTexts needs the /global removed, and add a missionbox newline on each \n  then display the formatted
-                //message in a mission box.
+                //messageTexts needs the "/global" removed, and add a missionbox newline on each \n  then display the formatted
+                //message in a mission box. Probably need a way to add new lines from chat eg line1^Line2^Line3
                 MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "News:", announce, null, "Close");
                 return true;
             }
@@ -905,8 +905,7 @@ namespace Economy.scripts
             {
 
                 string announce = "No news is good news?";
-                //messageTexts needs the /global removed, and add a missionbox newline on each \n  then display the formatted
-                //message in a mission box.
+                //messageTexts Displays the last 10 or so /global messages with time stamp or recent events (such as attacks, new markets being registered etc)
                 MyAPIGateway.Utilities.ShowMissionScreen("Economy", "", "News:", announce, null, "Close");
                 return true;
             }
