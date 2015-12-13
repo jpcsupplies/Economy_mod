@@ -59,7 +59,8 @@
         private TextPanelWriter(IMyTextPanel panel)
         {
             _panel = panel;
-            _isWide = _panel.DefinitionDisplayNameText.Contains("Wide") || _panel.DefinitionDisplayNameText == "Computer Monitor";
+            _isWide = _panel.BlockDefinition.SubtypeName.IndexOf("Wide", StringComparison.InvariantCultureIgnoreCase) >= 0 
+                || _panel.BlockDefinition.SubtypeName == "SmallMonitor" || _panel.BlockDefinition.SubtypeName == "LargeMonitor"; // Support for Mod 403922024.
             _publicString = new StringBuilder();
             _privateString = new StringBuilder();
             Clear();
