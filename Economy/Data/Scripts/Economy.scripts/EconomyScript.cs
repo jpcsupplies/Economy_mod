@@ -575,17 +575,34 @@ namespace Economy.scripts
                     {
                         MessageSet.SendMessageSell(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, amount);
                     }
-                    else if (tradezone) //or do we want to move tradezone..?
+                    else if (tradezone) //or do we want to manage tradezone..?
                     {
-                        //we need to either accept a parameter here x,y,z  or lacking a parameter use the invoking players current location
-                        //we should also accept an add or remove parameter if we are adding an additional location for NPC tradezone
-                        //if more than one tradezone exists, and we lack a parameter then fail and prompt player to add or remove coord
-                        //also need a list option
-                        //eg /set tradezone (moves the trade zone to that players location. should write to news log when that works too)
-                        //eg1 /set tradezone add  (adds current location as a trade zone)
-                        //eg2  /set tradezone remove 0,0,0 (removes the entry for market 0,0,0 if no other NPC location exists this effectively disables it)
-                        //eg3 /set tradezone add 123,456,789 (add an addition market for npc ad location x=123, y=456, z=789)
-                        //eg4 /set tradezone list (display a summary (in mission?) of all NPC trade locations)
+                        //first work out what our location is assign to mypos
+                        
+                        //if nothing was typed in after tradezone ("/set tradezone") or we used move ("/set tradezone move 1,2,3")
+                            //if more than one NPC market exists and we didnt specify "move"
+                                //show error sorry dont know which market instance to move
+                            //else
+                                //if move specified 
+                                    //write mypos over the specified market location (1,2,3) (if it exists, show error otherwise)     
+                                //else   
+                                    //write mypos over the top of the single NPC market location
+                        //else 
+                            //if we just typed add ("/set tradezone add")
+                                //add another NPC market entry at location mypos
+                            //else we typed more than just add ("/set tradezone add 1 2 3") 
+                                //add another NPC market entry at location 1 2 3
+                            //if we just typed remove ("/set tradezone remove")
+                                //show error must specify location to remove
+                            //else we typed more than just remove ("/set tradezone remove 1 2 3") 
+                                //remove NPC market entry at location 1 2 3
+                            //if we just typed list ("/set tradezone list")
+                                //display a list of all NPC trade zone coordinates
+                            //else 
+                                //ignore
+                            
+                          
+
                     }
                     else //no we must want to set on hand?
                     {
