@@ -58,9 +58,10 @@
             bool showComponent = false;
             bool showAmmo = false;
             bool showTools = false;
-            bool showTest = false;
             bool showStock = false;
             bool showPrices = true;
+            bool showTest1 = false;
+            bool showTest2 = false;
 
             // removed Linq, to reduce the looping through the array. This should only have to do one loop through all items in the array.
             foreach (var str in checkArray)
@@ -71,8 +72,10 @@
                     showAll = true;
                 if (!showAll)
                 {
-                    if (str.Equals("test", StringComparison.InvariantCultureIgnoreCase))
-                        showTest = true;
+                    if (str.Equals("test1", StringComparison.InvariantCultureIgnoreCase))
+                        showTest1 = true;
+                    if (str.Equals("test2", StringComparison.InvariantCultureIgnoreCase))
+                        showTest2 = true;
                     if (str.Equals("ore", StringComparison.InvariantCultureIgnoreCase))
                         showOre = true;
                     if (str.Equals("ingot", StringComparison.InvariantCultureIgnoreCase))
@@ -98,10 +101,15 @@
 
             showPrices = !showStock || writer.IsWide;
 
-
-            if (showTest)
+            if (showTest1)
             {
-                Test(writer);
+                Test1(writer);
+                writer.UpdatePublic();
+                return;
+            }
+            if (showTest2)
+            {
+                Test2(writer);
                 writer.UpdatePublic();
                 return;
             }
@@ -193,22 +201,22 @@
                     writer.AddPublicLeftTrim(buyColumn - 120, kvp.Value);
                     if (showPrices && showStock)
                     {
-                        writer.AddPublicRightText(buyColumn, kvp.Key.BuyPrice.ToString("0.00"));
-                        writer.AddPublicRightText(sellColumn, kvp.Key.SellPrice.ToString("0.00"));
+                        writer.AddPublicRightText(buyColumn, kvp.Key.BuyPrice.ToString("0.00", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(sellColumn, kvp.Key.SellPrice.ToString("0.00", EconomyScript.ServerCulture));
 
                         // TODO: components and tools should be displayed as whole numbers. Will be hard to align with other values.
-                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("0.000000")); // TODO: recheck number of decimal places.
+                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("0.000000", EconomyScript.ServerCulture)); // TODO: recheck number of decimal places.
                     }
                     else if (showStock)
                     {
                         // TODO: components and tools should be displayed as whole numbers. Will be hard to align with other values.
 
-                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("0.000000")); // TODO: recheck number of decimal places.
+                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("0.000000", EconomyScript.ServerCulture)); // TODO: recheck number of decimal places.
                     }
                     else if (showPrices)
                     {
-                        writer.AddPublicRightText(buyColumn, kvp.Key.BuyPrice.ToString("0.00"));
-                        writer.AddPublicRightText(sellColumn, kvp.Key.SellPrice.ToString("0.00"));
+                        writer.AddPublicRightText(buyColumn, kvp.Key.BuyPrice.ToString("0.00", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(sellColumn, kvp.Key.SellPrice.ToString("0.00", EconomyScript.ServerCulture));
                     }
                     writer.AddPublicLine();
                 }
@@ -217,7 +225,7 @@
             writer.UpdatePublic();
         }
 
-        private static void Test(TextPanelWriter writer)
+        private static void Test1(TextPanelWriter writer)
         {
             //var lines = (int)((writer.DisplayLines / 2f) - 0.5f);
             //for (int i = 0; i < lines; i++)
@@ -227,9 +235,7 @@
             //    writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "|");
             //return;
 
-            writer.AddPublicLine(string.Format("'{0}' '{1}' '{2}'", writer.FontSize, writer.WidthModifier, writer.DisplayLines));
-            writer.AddPublicLine(string.Format("Local='{0}'", DateTime.Now));
-            writer.AddPublicLine(string.Format("Elapsed='{0}'", MyAPIGateway.Session.ElapsedGameTime()));
+            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "'{0}' '{1}' '{2}'", writer.FontSize, writer.WidthModifier, writer.DisplayLines));
 
             Testline1(writer, "                |");
             Testline1(writer, "!!!!!!!!!!!!!!!!|");
@@ -250,18 +256,31 @@
             writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "123456789");
         }
 
+        private static void Test2(TextPanelWriter writer)
+        {
+            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "Culture Ietf Tag: {0}", EconomyScript.ServerCulture.IetfLanguageTag));
+            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "Culture Name: {0}", EconomyScript.ServerCulture.DisplayName));
+
+            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "ShortDatePattern: {0}", EconomyScript.ServerCulture.DateTimeFormat.ShortDatePattern));
+            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "LongDatePattern: {0}", EconomyScript.ServerCulture.DateTimeFormat.LongDatePattern));
+            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "NumberPattern: {0}", (12345678.910d).ToString("N", EconomyScript.ServerCulture)));
+
+            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "Local Date: {0}", DateTime.Now));
+            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "Elapsed Session Time: {0}", MyAPIGateway.Session.ElapsedGameTime()));
+        }
+
         private static void Testline1(TextPanelWriter writer, string text)
         {
             var size = TextPanelWriter.MeasureString(text);
             writer.AddPublicText(text);
-            writer.AddPublicLine("  " + size.ToString());
+            writer.AddPublicLine("  " + size.ToString(EconomyScript.ServerCulture));
         }
 
         private static void Testline2(TextPanelWriter writer, string text)
         {
             var size = TextPanelWriter.MeasureString(text);
             writer.AddPublicLine(text);
-            writer.AddPublicLine(size.ToString());
+            writer.AddPublicLine(size.ToString(EconomyScript.ServerCulture));
         }
     }
 }

@@ -21,6 +21,7 @@
             NPCStartingBalance = EconomyConsts.NPCStartingBalance;
             NpcMerchantName = EconomyConsts.NpcMerchantName;
             DefaultTradeRange = EconomyConsts.DefaultTradeRange;
+            Language = (int)VRage.MyLanguagesEnum.English;
         }
 
         /// <summary>
@@ -62,6 +63,13 @@
         /// Default range of trade zones.
         /// </summary>
         public double DefaultTradeRange;
+
+        /// <summary>
+        /// Indicates what language the Servre uses for text in game.
+        /// Mapped agsint: VRage.MyLanguagesEnum
+        /// Typically retrieved via: MyAPIGateway.Session.Config.Language
+        /// </summary>
+        public int Language;
 
         #region TradeTimeout
 

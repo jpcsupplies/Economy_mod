@@ -99,6 +99,8 @@ namespace Economy.scripts
         /// </summary>
         public bool Debug = false;
 
+        public static CultureInfo ServerCulture;
+
         #endregion
 
         #region attaching events and wiring up
@@ -181,6 +183,8 @@ namespace Economy.scripts
 
             Config = EconDataManager.LoadConfig(); // Load config first.
             Data = EconDataManager.LoadData(Config.DefaultPrices);
+
+            SetLanguage();
 
             // start the timer last, as all data should be loaded before this point.
             // TODO: use a single timer, and a counter.
@@ -995,5 +999,23 @@ namespace Economy.scripts
             return false;
         }
         #endregion command list
+
+        #region SetLanguage
+
+        /// <summary>
+        /// Sets the CultureInfo to use when formatting numbers and dates on the server, and the text resources when fetching names of game objects to display or send back to players.
+        /// </summary>
+        private void SetLanguage()
+        {
+            MyTexts.LanguageDescription language = MyTexts.Languages.ContainsKey(Config.Language) ? MyTexts.Languages[Config.Language] : MyTexts.Languages[0];
+            ServerCulture = CultureInfo.GetCultureInfo(language.FullCultureName);
+
+            // Load resources for that language.
+            // This may acutally interfere with other mods or the server itself that are dependant the Text resources of the game.
+            MyTexts.Clear();
+            MyTexts.LoadTexts(Path.Combine(MyAPIGateway.Utilities.GamePaths.ContentPath, "Data", "Localization"), language.CultureName, language.SubcultureName);
+        } 
+
+        #endregion
     }
 }
