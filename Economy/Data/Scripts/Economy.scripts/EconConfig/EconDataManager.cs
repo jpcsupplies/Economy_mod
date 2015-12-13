@@ -474,7 +474,7 @@
       <SubtypeName>WelderItem</SubtypeName>
       <Quantity>100</Quantity>
       <SellPrice>12.68</SellPrice>
-      <BuyPrice>11.27</BuyPrice>
+      <BuyPrice>1.20</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
