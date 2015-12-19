@@ -352,7 +352,8 @@
 
                 var blocks = new List<IMySlimBlock>();
                 cubeGrid.GetBlocks(blocks, block => block != null && block.FatBlock != null &&
-                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_PistonBase));
+                    (block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_PistonBase) ||
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_ExtendedPistonBase)));
 
                 foreach (var block in blocks)
                 {

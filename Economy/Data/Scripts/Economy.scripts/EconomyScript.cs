@@ -97,7 +97,7 @@ namespace Economy.scripts
         /// <summary>
         /// Set manually to true for testing purposes. No need for this function in general.
         /// </summary>
-        public bool Debug = false;
+        public bool DebugOn = false;
 
         public static CultureInfo ServerCulture;
 
@@ -113,7 +113,7 @@ namespace Economy.scripts
             // It would be nicer to just read a property that indicates this is a dedicated server, and simply return.
             if (!_isInitialized && MyAPIGateway.Session != null && MyAPIGateway.Session.Player != null)
             {
-                Debug = MyAPIGateway.Session.Player.IsExperimentalCreator();
+                DebugOn = MyAPIGateway.Session.Player.IsExperimentalCreator();
                 if (MyAPIGateway.Session.OnlineMode.Equals(MyOnlineModeEnum.OFFLINE)) // pretend single player instance is also server.
                     InitServer();
                 if (!MyAPIGateway.Session.OnlineMode.Equals(MyOnlineModeEnum.OFFLINE) && MyAPIGateway.Multiplayer.IsServer && !MyAPIGateway.Utilities.IsDedicated)

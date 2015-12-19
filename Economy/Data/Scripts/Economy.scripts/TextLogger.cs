@@ -11,6 +11,8 @@
         private string _logFileName;
         private TextWriter _logWriter;
         private bool _isInitialized;
+        private int _delayedWrite;
+        private int _writeCounter;
 
         #endregion
 
@@ -44,13 +46,16 @@
         /// </summary>
         /// <param name="filename"></param>
         /// <param name="addTimestamp"></param>
-        public void Init(string filename, bool addTimestamp = false)
+        /// <param name="delayedWrite"></param>
+        public void Init(string filename, bool addTimestamp = false, int delayedWrite = 0)
         {
             _isInitialized = true;
             if (addTimestamp)
                 _logFileName = string.Format("TextLog_{0}_{1:yyyy-MM-dd_HH-mm-ss}{2}", Path.GetFileNameWithoutExtension(filename), DateTime.Now, Path.GetExtension(filename));
             else
                 _logFileName = filename;
+
+            _delayedWrite = delayedWrite;
         }
 
         ~TextLogger()
@@ -86,8 +91,13 @@
             else
                 message = string.Format(text, args);
 
-            _logWriter.WriteLine("{0:yyyy-MM-dd HH:mm:ss:fff} - {1}", DateTime.Now, message);
-            _logWriter.Flush();
+            _logWriter.WriteLine("{0:yyyy-MM-dd HH:mm:ss.fff} - {1}", DateTime.Now, message);
+            _writeCounter++;
+            if (_delayedWrite == 0 || _writeCounter > _delayedWrite)
+            {
+                _logWriter.Flush();
+                _writeCounter = 0;
+            }
         }
 
         public void WriteRaw(string text, params object[] args)
@@ -117,7 +127,12 @@
                 message = string.Format(text, args);
 
             _logWriter.Write(message);
-            _logWriter.Flush();
+            _writeCounter++;
+            if (_delayedWrite == 0 || _writeCounter > _delayedWrite)
+            {
+                _logWriter.Flush();
+                _writeCounter = 0;
+            }
         }
 
         public void WriteException(Exception ex, string additionalInformation = null)
@@ -129,7 +144,7 @@
             if (_logWriter == null)
                 _logWriter = MyAPIGateway.Utilities.WriteFileInGlobalStorage(_logFileName);
 
-            _logWriter.WriteLine("{0:yyyy-MM-dd HH:mm:ss:fff} Error - {1}", DateTime.Now, ex);
+            _logWriter.WriteLine("{0:yyyy-MM-dd HH:mm:ss.fff} Error - {1}", DateTime.Now, ex);
 
             if (!string.IsNullOrEmpty(additionalInformation))
             {
@@ -137,7 +152,12 @@
                 _logWriter.WriteLine(additionalInformation);
             }
 
-            _logWriter.Flush();
+            _writeCounter++;
+            if (_delayedWrite == 0 || _writeCounter > _delayedWrite)
+            {
+                _logWriter.Flush();
+                _writeCounter = 0;
+            }
         }
 
         public void Terminate()

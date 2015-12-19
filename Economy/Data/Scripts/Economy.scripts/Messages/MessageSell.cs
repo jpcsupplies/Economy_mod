@@ -113,6 +113,7 @@
             {
                 case SellAction.Create:
                     {
+                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Create started by Steam Id '{0}'.", SenderSteamId);
                         //* Logic:                     
                         //* Get player steam ID
                         var sellingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
@@ -147,6 +148,7 @@
                         if (ItemQuantity <= 0)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Invalid quantity, or you dont have any to trade!");
+                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- Invalid quantity.", SenderSteamId);
                             return;
                         }
 
@@ -160,12 +162,14 @@
                         if (accountToBuy == null)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, player does not exist or have an account!");
+                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- account not found.", SenderSteamId);
                             return;
                         }
 
                         if (MarketManager.IsItemBlacklistedOnServer(ItemTypeId, ItemSubTypeName))
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you tried to sell is blacklisted on this server.");
+                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- Item is blacklisted.", SenderSteamId);
                             return;
                         }
 
@@ -181,6 +185,7 @@
                             // Player has no body. Could mean they are dead.
                             // Either way, there is no inventory.
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are dead. You cannot trade while dead.");
+                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- player is dead.", SenderSteamId);
                             return;
                         }
 
@@ -196,39 +201,29 @@
                         //    return;
                         //}
 
+                        EconomyScript.Instance.ServerLogger.Write("Action /Sell finalizing by Steam Id '{0}' -- cataloging cargo cubes.", SenderSteamId);
+
                         // Build list of all cargo blocks that player is attached to as pilot or passenger.
-                        List<IMySlimBlock> cargoBlocks = new List<IMySlimBlock>();
+                        var cargoBlocks = new List<Sandbox.Game.Entities.MyEntity>();
                         var controllingCube = sellingPlayer.Controller.ControlledEntity as IMyCubeBlock;
                         if (controllingCube != null)
                         {
-                            var grids = controllingCube.CubeGrid.GetAttachedGrids(AttachedGrids.Static);
-
-                            var blocks = new List<IMySlimBlock>();
-                            foreach (var grid in grids)
-                            {
-                                grid.GetBlocks(blocks, b => b != null
-                                    && b.FatBlock != null
-                                    && !b.FatBlock.BlockDefinition.TypeId.IsNull
-                                    && b.FatBlock is IMyCargoContainer);
-
-                                foreach (var block in blocks)
-                                {
-                                    var relation = block.FatBlock.GetUserRelationToOwner(sellingPlayer.PlayerID);
-                                    if (relation != MyRelationsBetweenPlayerAndBlock.Enemies
-                                        && relation != MyRelationsBetweenPlayerAndBlock.Neutral)
-                                        cargoBlocks.Add(block);
-                                }
-                            }
+                            var terminalsys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(controllingCube.CubeGrid);
+                            var blocks = new List<Sandbox.ModAPI.Ingame.IMyTerminalBlock>();
+                            terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
+                            foreach (var block in blocks)
+                                cargoBlocks.Add((Sandbox.Game.Entities.MyEntity)block);
                         }
+
+                        EconomyScript.Instance.ServerLogger.Write("Action /Sell finalizing by Steam Id '{0}' -- checking inventory.", SenderSteamId);
 
                         var position = ((IMyEntity)character).WorldMatrix.Translation;
                         var playerInventory = character.GetPlayerInventory();
                         MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
                         var storedAmount = playerInventory.GetItemAmount(definition.Id);
 
-                        foreach (var block in cargoBlocks)
+                        foreach (var cubeBlock in cargoBlocks)
                         {
-                            var cubeBlock = (Sandbox.Game.Entities.MyEntity)block.FatBlock;
                             var cubeInventory = cubeBlock.GetInventory();
                             storedAmount += cubeInventory.GetItemAmount(definition.Id);
                         }
@@ -242,6 +237,8 @@
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your inventory.", ItemQuantity, definition.GetDisplayName(), storedAmount);
                             else
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your player and cargo inventory.", ItemQuantity, definition.GetDisplayName(), storedAmount);
+
+                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- inventory doesn't exist.", SenderSteamId);
                             return;
                         }
 
@@ -253,6 +250,7 @@
                             if (markets.Count == 0)
                             {
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, your are not in range of any markets!");
+                                EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- no market in range.", SenderSteamId);
                                 return;
                             }
 
@@ -262,6 +260,7 @@
                             if (market == null)
                             {
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the market you are accessing does not exist!");
+                                EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- no market found.", SenderSteamId);
                                 return;
                             }
 
@@ -276,6 +275,7 @@
                             if (marketItem.IsBlacklisted)
                             {
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you tried to sell is blacklisted in this market.");
+                                EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- item is blacklisted.", SenderSteamId);
                                 return;
                             }
 
@@ -301,6 +301,7 @@
                             if (accountToBuy.BankBalance >= transactionAmount || !EconomyScript.Instance.Config.LimitedSupply)
                             {
                                 // here we look up item price and transfer items and money as appropriate
+                                EconomyScript.Instance.ServerLogger.Write("Action /Sell finalizing by Steam Id '{0}' -- removing inventory.", SenderSteamId);
                                 RemoveInventory(playerInventory, cargoBlocks, amount, definition.Id);
                                 marketItem.Quantity += ItemQuantity; // increment Market content.
 
@@ -315,6 +316,7 @@
                             {
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "NPC can't afford {0} {4} worth of {2} ({1} units) NPC only has {3} funds!", transactionAmount, ItemQuantity, definition.GetDisplayName(), accountToBuy.BankBalance, EconomyScript.Instance.Config.CurrencyName);
                             }
+                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create completed by Steam Id '{0}' -- to NPC market.", SenderSteamId);
                             return;
                         }
 
@@ -330,6 +332,7 @@
                         {
                             // commented out for testing with myself.
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, you cannot sell to yourself!");
+                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- can't sell to self.", SenderSteamId);
                             return;
                         }
 
@@ -339,6 +342,7 @@
                         if (EconomyScript.Instance.Config.LimitedRange && !Support.RangeCheck(buyingPlayer, sellingPlayer))
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you are not in range of that player!");
+                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- target player not in range.", SenderSteamId);
                             return;
                         }
 
@@ -349,6 +353,7 @@
                             // TODO: other player offline.
 
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You cannot sell to offline players at this time.");
+                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- cannot sell to offline player.", SenderSteamId);
                             return;
 
                             // TODO: we need a way to queue up messages.
@@ -363,6 +368,7 @@
                             MarketManager.CreateTradeOffer(SenderSteamId, ItemTypeId, ItemSubTypeName, ItemQuantity, ItemPrice, accountToBuy.SteamId);
 
                             // remove items from inventory.
+                            EconomyScript.Instance.ServerLogger.Write("Action /Sell finalizing by Steam Id '{0}' -- removing inventory.", SenderSteamId);
                             RemoveInventory(playerInventory, cargoBlocks, amount, definition.Id);
 
                             // Only send message to targeted player if this is the only offer pending for them.
@@ -378,6 +384,7 @@
                             // send message to seller to confirm action, "Your Trade offer has been submitted, and the goods removed from you inventory."
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Your offer of {0} {1} for {2} {4} each has been sent to {3}.", ItemQuantity, definition.GetDisplayName(), ItemPrice, accountToBuy.NickName, EconomyScript.Instance.Config.CurrencyName);
 
+                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create completed by Steam Id '{0}' -- to another player.", SenderSteamId);
                             return;
                         }
                     }
@@ -385,6 +392,7 @@
 
                 case SellAction.Accept:
                     {
+                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Accept started by Steam Id '{0}'.", SenderSteamId);
                         var order = EconomyScript.Instance.Data.OrderBook.FirstOrDefault(e => e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer);
                         if (order == null)
                         {
@@ -457,11 +465,13 @@
                         // Send message to player if additional offers are pending their attention.
                         DisplayNextOrderToAccept(SenderSteamId);
 
+                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Accept completed by Steam Id '{0}'.", SenderSteamId);
                         return;
                     }
 
                 case SellAction.Collect:
                     {
+                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Collect started by Steam Id '{0}'.", SenderSteamId);
                         var collectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
                             (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellTimedout)
                             || (e.TraderId == SenderSteamId && e.TradeState == TradeState.Holding)
@@ -498,6 +508,7 @@
                                 continue;
                             }
 
+                            EconomyScript.Instance.ServerLogger.Write("Action /Sell finalizing by Steam Id '{0}' -- adding to inventories.", SenderSteamId);
                             var remainingToCollect = MessageSell.AddToInventories(collectingPlayer, order.Quantity, definition.Id);
                             var collected = order.Quantity - remainingToCollect;
 
@@ -512,11 +523,14 @@
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just collected {0} worth of {2} ({1} units). There are {3} remaining.", order.Price * collected, collected, definition.GetDisplayName(), remainingToCollect);
                             }
                         }
+
+                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Collect completed by Steam Id '{0}'.", SenderSteamId);
                         return;
                     }
 
                 case SellAction.Cancel:
                     {
+                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Cancel started by Steam Id '{0}'.", SenderSteamId);
                         var cancellableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
                               (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellDirectPlayer)).OrderByDescending(e => e.Created).ToArray();
 
@@ -568,12 +582,15 @@
                         {
                             // TODO: Inform the player of the next order in the queue that can be cancelled.
                         }
+
+                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Cancel completed by Steam Id '{0}'.", SenderSteamId);
                         return;
                     }
                     break;
 
                 case SellAction.Deny:
                     {
+                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Deny started by Steam Id '{0}'.", SenderSteamId);
                         var buyOrdersForMe = EconomyScript.Instance.Data.OrderBook.Where(e =>
                               (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer)).OrderBy(e => e.Created).ToArray();
 
@@ -608,6 +625,8 @@
 
                         // Send message to player if additional offers are pending their attention.
                         DisplayNextOrderToAccept(SenderSteamId);
+
+                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Deny completed by Steam Id '{0}'.", SenderSteamId);
                         return;
                     }
                     break;
@@ -655,7 +674,7 @@
                 accountToSell.NickName, order.Quantity, definition.GetDisplayName(), transactionAmount, EconomyScript.Instance.Config.CurrencyName);
         }
 
-        private void RemoveInventory(IMyInventory playerInventory, List<IMySlimBlock> cargoBlocks, MyFixedPoint amount, MyDefinitionId definitionId)
+        private void RemoveInventory(IMyInventory playerInventory, List<Sandbox.Game.Entities.MyEntity> cargoBlocks, MyFixedPoint amount, MyDefinitionId definitionId)
         {
             var available = playerInventory.GetItemAmount(definitionId);
             if (amount <= available)
@@ -669,11 +688,10 @@
                 amount -= available;
             }
 
-            foreach (var block in cargoBlocks)
+            foreach (var cubeBlock in cargoBlocks)
             {
                 if (amount > 0)
                 {
-                    var cubeBlock = (Sandbox.Game.Entities.MyEntity)block.FatBlock;
                     var cubeInventory = cubeBlock.GetInventory();
                     available = cubeInventory.GetItemAmount(definitionId);
                     if (amount <= available)
@@ -694,35 +712,21 @@
         {
             MyFixedPoint amount = (MyFixedPoint)quantity;
 
-            List<IMySlimBlock> cargoBlocks = new List<IMySlimBlock>();
+            var cargoBlocks = new List<Sandbox.Game.Entities.MyEntity>();
             var controllingCube = collectingPlayer.Controller.ControlledEntity as IMyCubeBlock;
             if (controllingCube != null)
             {
-                var grids = controllingCube.CubeGrid.GetAttachedGrids(AttachedGrids.Static);
-
-                var blocks = new List<IMySlimBlock>();
-                foreach (var grid in grids)
-                {
-                    grid.GetBlocks(blocks, b => b != null
-                        && b.FatBlock != null
-                        && !b.FatBlock.BlockDefinition.TypeId.IsNull
-                        && b.FatBlock is IMyCargoContainer);
-
-                    foreach (var block in blocks)
-                    {
-                        var relation = block.FatBlock.GetUserRelationToOwner(collectingPlayer.PlayerID);
-                        if (relation != MyRelationsBetweenPlayerAndBlock.Enemies
-                            && relation != MyRelationsBetweenPlayerAndBlock.Neutral)
-                            cargoBlocks.Add(block);
-                    }
-                }
+                var terminalsys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(controllingCube.CubeGrid);
+                var blocks = new List<Sandbox.ModAPI.Ingame.IMyTerminalBlock>();
+                terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
+                foreach (var block in blocks)
+                    cargoBlocks.Add((Sandbox.Game.Entities.MyEntity)block);
             }
 
-            foreach (var block in cargoBlocks)
+            foreach (var cubeBlock in cargoBlocks)
             {
                 if (amount > 0)
                 {
-                    var cubeBlock = (Sandbox.Game.Entities.MyEntity)block.FatBlock;
                     var cubeInventory = cubeBlock.GetInventory();
                     var space = cubeInventory.ComputeAmountThatFits(definitionId);
                     if (amount <= space)
