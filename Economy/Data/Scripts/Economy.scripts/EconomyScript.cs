@@ -776,7 +776,9 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("SEEN", "Who are we looking for?");
                 return true;
             }
+            #endregion seen
 
+            #region bal
             // bal command
             if (split[0].Equals("/bal", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -787,7 +789,7 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("BAL", "Incorrect parameters");
                 return true;
             }
-            #endregion seen
+            #endregion bal
 
             #region value
             // value command for looking up the table price of an item.
@@ -849,6 +851,7 @@ namespace Economy.scripts
             if (split[0].Equals("/pricelist", StringComparison.InvariantCultureIgnoreCase))
             {
                 // TODO: add optional parameters.
+                //"tools" "ore" "ingot" and "component"
                 MessageMarketPriceList.SendMessage();
             }
 
