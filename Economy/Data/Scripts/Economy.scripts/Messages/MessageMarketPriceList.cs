@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using Economy.scripts.EconStructures;
-
-namespace Economy.scripts.Messages
+﻿namespace Economy.scripts.Messages
 {
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using EconConfig;
+    using Economy.scripts.EconStructures;
+    using Management;
     using ProtoBuf;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
@@ -55,29 +55,65 @@ namespace Economy.scripts.Messages
                 return;
             }
 
-            var reply = new StringBuilder();
-            reply.AppendFormat("Market: {0}\r\n", market.DisplayName);
+            string reply = null;
 
-            var orderedList = new Dictionary<MarketItemStruct, string>();
-            foreach (var marketItem in market.MarketItems)
+            MyAPIGateway.Parallel.StartBackground(delegate ()
+            // Background processing occurs within this block.
             {
-                if (marketItem.IsBlacklisted)
-                    continue;
 
-                var definition = MyDefinitionManager.Static.GetDefinition(marketItem.TypeId, marketItem.SubtypeName);
-                var name = definition == null ? marketItem.SubtypeName : definition.GetDisplayName();
-                orderedList.Add(marketItem, name);
-            }
+                try
+                {
+                    var orderedList = new Dictionary<MarketItemStruct, string>();
+                    foreach (var marketItem in market.MarketItems)
+                    {
+                        if (marketItem.IsBlacklisted)
+                            continue;
 
-            orderedList = orderedList.OrderBy(kvp => kvp.Value).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                        var definition = MyDefinitionManager.Static.GetDefinition(marketItem.TypeId, marketItem.SubtypeName);
+                        var name = definition == null ? marketItem.SubtypeName : definition.GetDisplayName();
+                        orderedList.Add(marketItem, name);
+                    }
 
-            foreach (var kvp in orderedList)
+                    orderedList = orderedList.OrderBy(kvp => kvp.Value).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+                    var str = new SeTextBuilder();
+                    str.AppendLine("Market: {0}\r\n", market.DisplayName);
+                    str.AddLeftTrim(550, "Item");
+                    str.AddRightText(650, "Buy at");
+                    str.AddRightText(850, "Sell at");
+                    str.AppendLine();
+
+                    foreach (var kvp in orderedList)
+                    {
+                        // TODO: formatting of numbers, and currency name.
+                        str.AddLeftTrim(550, kvp.Value);
+                        str.AddRightText(650, kvp.Key.BuyPrice.ToString("0.00", EconomyScript.ServerCulture));
+                        str.AddRightText(850, kvp.Key.SellPrice.ToString("0.00", EconomyScript.ServerCulture));
+                        str.AppendLine();
+                    }
+                    reply = str.ToString();
+                }
+                catch (Exception ex)
+                {
+                    EconomyScript.Instance.ServerLogger.WriteException(ex);
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "PRICELIST", "Failed and died. Please contact the administrator.");
+                }
+            }, delegate ()
+            // when the background processing is finished, this block will run foreground.
             {
-                // TODO: formatting of numbers, and currency name.
-                reply.AppendFormat("{0} Buy:{1}  Sell:{2}\r\n", kvp.Value, kvp.Key.BuyPrice, kvp.Key.SellPrice);
-            }
-
-            MessageClientDialogMessage.SendMessage(SenderSteamId, "PRICELIST", " ", reply.ToString());
+                if (reply != null)
+                {
+                    try
+                    {
+                        MessageClientDialogMessage.SendMessage(SenderSteamId, "PRICELIST", " ", reply);
+                    }
+                    catch (Exception ex)
+                    {
+                        EconomyScript.Instance.ServerLogger.WriteException(ex);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "PRICELIST", "Failed and died. Please contact the administrator.");
+                    }
+                }
+            });
         }
     }
 }
