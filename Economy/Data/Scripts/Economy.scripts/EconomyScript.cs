@@ -776,7 +776,8 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("SEEN", "Who are we looking for?");
                 return true;
             }
-
+            #endregion seen
+            #region bal
             // bal command
             if (split[0].Equals("/bal", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -787,7 +788,7 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("BAL", "Incorrect parameters");
                 return true;
             }
-            #endregion seen
+            #endregion bal
 
             #region value
             // value command for looking up the table price of an item.
@@ -848,8 +849,30 @@ namespace Economy.scripts
 
             if (split[0].Equals("/pricelist", StringComparison.InvariantCultureIgnoreCase))
             {
+   
                 // TODO: add optional parameters.
-                MessageMarketPriceList.SendMessage();
+                //"tools" "ore" "ingot" and "component"
+                MyAPIGateway.Utilities.ShowMessage("SEEN", "i see {0}", split.Length);
+
+                if (split.Length >=2) {
+                    /* if (split[1].Equals("tool", StringComparison.InvariantCultureIgnoreCase))
+                        MessageMarketPriceList.SendMessage("tool");                    
+                    if (split[1].Equals("ore", StringComparison.InvariantCultureIgnoreCase))
+                        MessageMarketPriceList.SendMessage("ore"); 
+                    if (split[1].Equals("ingot", StringComparison.InvariantCultureIgnoreCase))
+                        MessageMarketPriceList.SendMessage("ingot"); 
+                    if (split[1].Equals("component", StringComparison.InvariantCultureIgnoreCase))
+                        MessageMarketPriceList.SendMessage("component"); 
+                    if (split[1].Equals("tools", StringComparison.InvariantCultureIgnoreCase))
+                        MessageMarketPriceList.SendMessage("tool"); 
+                    if (split[1].Equals("ores", StringComparison.InvariantCultureIgnoreCase))
+                        MessageMarketPriceList.SendMessage("ore"); 
+                    if (split[1].Equals("components", StringComparison.InvariantCultureIgnoreCase))
+                        MessageMarketPriceList.SendMessage("component"); 
+                    if (split[1].Equals("ingots", StringComparison.InvariantCultureIgnoreCase))
+                        MessageMarketPriceList.SendMessage("ingot"); */
+                } 
+                MessageMarketPriceList.SendMessage(); //"all");
             }
 
             #endregion
