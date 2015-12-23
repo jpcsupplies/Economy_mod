@@ -88,14 +88,14 @@
             // Only Admin can change Npc Market prices.
             if (!player.IsAdmin() && MarketId == EconomyConsts.NpcMerchantId)
             {
-                EconomyScript.Instance.ServerLogger.Write("A Player without Admin \"{0}\" {1} attempted to set Default Market characteristics of item {2}/{3} to Quantity={4}.", SenderDisplayName, SenderSteamId, ItemTypeId, ItemSubTypeName, ItemQuantity);
+                EconomyScript.Instance.ServerLogger.WriteWarning("A Player without Admin \"{0}\" {1} attempted to set Default Market characteristics of item {2}/{3} to Quantity={4}.", SenderDisplayName, SenderSteamId, ItemTypeId, ItemSubTypeName, ItemQuantity);
                 return;
             }
 
             // Only Player can change their own Market prices.
             if (SenderSteamId != MarketId && MarketId != EconomyConsts.NpcMerchantId)
             {
-                EconomyScript.Instance.ServerLogger.Write("A Player \"{0}\" {1} attempted to set another Market characteristics of item {2}/{3} to Quantity={4}.", SenderDisplayName, SenderSteamId, ItemTypeId, ItemSubTypeName, ItemQuantity);
+                EconomyScript.Instance.ServerLogger.WriteWarning("A Player \"{0}\" {1} attempted to set another Market characteristics of item {2}/{3} to Quantity={4}.", SenderDisplayName, SenderSteamId, ItemTypeId, ItemSubTypeName, ItemQuantity);
                 return;
             }
 

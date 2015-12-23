@@ -24,11 +24,11 @@
 
                 //ok lets apply it
                 data.Accounts.Add(myNpcAccount);
-                EconomyScript.Instance.ServerLogger.Write("Banker Account Created.");
+                EconomyScript.Instance.ServerLogger.WriteInfo("Banker Account Created.");
             }
             else
             {
-                EconomyScript.Instance.ServerLogger.Write("Banker Account Exists.");
+                EconomyScript.Instance.ServerLogger.WriteInfo("Banker Account Exists.");
             }
         }
     }

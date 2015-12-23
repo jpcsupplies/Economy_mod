@@ -73,7 +73,7 @@
 
         public static void SendMessageToPlayer(ulong steamId, MessageBase message)
         {
-            EconomyScript.Instance.ServerLogger.Write("SendMessageToPlayer {0} {1} {2}.", steamId, message.Side, message.GetType().Name);
+            EconomyScript.Instance.ServerLogger.WriteVerbose("SendMessageToPlayer {0} {1} {2}.", steamId, message.Side, message.GetType().Name);
             message.Side = MessageSide.ClientSide;
             try
             {
@@ -110,7 +110,7 @@
         /// <param name="dataString"></param>
         public static void ProcessData(string dataString)
         {
-            EconomyScript.Instance.ServerLogger.Write("START - Message Serialization");
+            EconomyScript.Instance.ServerLogger.WriteStart("Start Message Serialization");
             MessageContainer message = null;
 
             try
@@ -119,11 +119,11 @@
             }
             catch
             {
-                EconomyScript.Instance.ServerLogger.Write("ERROR - Message cannot Deserialize");
+                EconomyScript.Instance.ServerLogger.WriteError("Message cannot Deserialize");
                 return;
             }
 
-            EconomyScript.Instance.ServerLogger.Write("END - Message Serialization");
+            EconomyScript.Instance.ServerLogger.WriteStop("End Message Serialization");
 
             if (message != null && message.Content != null)
             {
@@ -133,7 +133,7 @@
                 }
                 catch (Exception e)
                 {
-                    EconomyScript.Instance.ServerLogger.Write("Processing message exception. Side: {0}, Exception: {1}", message.Content.Side, e.ToString());
+                    EconomyScript.Instance.ServerLogger.WriteError("Processing message exception. Side: {0}, Exception: {1}", message.Content.Side, e.ToString());
                 }
                 return;
             }
@@ -175,7 +175,7 @@
             message.Content = new byte[count];
             xmlText = MyAPIGateway.Utilities.SerializeToXML<MessageContainer>(new MessageContainer() { Content = message });
             var finalLength = System.Text.Encoding.Unicode.GetBytes(xmlText).Length;
-            EconomyScript.Instance.ServerLogger.Write(string.Format("FinalLength: {0}", finalLength));
+            EconomyScript.Instance.ServerLogger.WriteVerbose(string.Format("FinalLength: {0}", finalLength));
             if (MAX_MESSAGE_SIZE >= finalLength)
                 return count;
             else
@@ -184,7 +184,7 @@
 
         private static void SendMessageParts(byte[] byteData, MessageSide side, ulong receiver = 0)
         {
-            EconomyScript.Instance.ServerLogger.Write("SendMessageParts {0} {1} {2}.", byteData.Length, side, receiver);
+            EconomyScript.Instance.ServerLogger.WriteVerbose("SendMessageParts {0} {1} {2}.", byteData.Length, side, receiver);
 
             var byteList = byteData.ToList();
 

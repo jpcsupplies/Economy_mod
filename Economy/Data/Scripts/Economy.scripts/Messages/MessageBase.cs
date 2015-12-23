@@ -81,7 +81,7 @@
 
         private void InvokeClientProcessing()
         {
-            EconomyScript.Instance.ClientLogger.Write("Received - {0}", this.GetType().Name);
+            EconomyScript.Instance.ClientLogger.WriteVerbose("Received - {0}", this.GetType().Name);
             try
             {
                 ProcessClient();
@@ -95,7 +95,7 @@
 
         private void InvokeServerProcessing()
         {
-            EconomyScript.Instance.ServerLogger.Write("Received - {0}", this.GetType().Name);
+            EconomyScript.Instance.ServerLogger.WriteVerbose("Received - {0}", this.GetType().Name);
             try
             {
                 ProcessServer();

@@ -22,7 +22,7 @@
             // update our own timestamp here
             AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
 
-            EconomyScript.Instance.ServerLogger.Write("Balance Request for '{0}' from '{1}'", UserName, SenderSteamId);
+            EconomyScript.Instance.ServerLogger.WriteVerbose("Balance Request for '{0}' from '{1}'", UserName, SenderSteamId);
 
             if (string.IsNullOrEmpty(UserName)) //did we just type bal? show our balance  
             {
@@ -34,7 +34,7 @@
                 // check if we actually found it, add default if not
                 if (account == null)
                 {
-                    EconomyScript.Instance.ServerLogger.Write("Creating new Bank Account for '{0}'", SenderDisplayName);
+                    EconomyScript.Instance.ServerLogger.WriteInfo("Creating new Bank Account for '{0}'", SenderDisplayName);
                     account = AccountManager.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
                     EconomyScript.Instance.Data.Accounts.Add(account);
                 }

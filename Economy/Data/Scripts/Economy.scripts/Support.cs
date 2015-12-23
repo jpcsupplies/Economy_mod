@@ -34,7 +34,7 @@
             if (_hasBuiltComponentList)
                 return;
 
-            EconomyScript.Instance.ClientLogger.Write("BuildComponentLists");
+            EconomyScript.Instance.ClientLogger.WriteInfo("BuildComponentLists");
 
             var physicalItems = MyDefinitionManager.Static.GetPhysicalItemDefinitions();
             _producedTypeList = new Dictionary<MyDefinitionId, MyObjectBuilder_Base>();

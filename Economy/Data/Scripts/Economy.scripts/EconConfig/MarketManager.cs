@@ -32,7 +32,7 @@
                     {
                         // Need to add new items as Blacklisted.
                         marketItems.Add(new MarketItemStruct { TypeId = item.Id.TypeId.ToString(), SubtypeName = item.Id.SubtypeName, BuyPrice = 1, SellPrice = 1, IsBlacklisted = true });
-                        EconomyScript.Instance.ServerLogger.Write("MarketItem Adding new item: {0} {1}.", item.Id.TypeId.ToString(), item.Id.SubtypeName);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding new item: {0} {1}.", item.Id.TypeId.ToString(), item.Id.SubtypeName);
                     }
                 }
             }
@@ -116,7 +116,7 @@
             if (cancellations.Length == 0)
                 return;
 
-            EconomyScript.Instance.ServerLogger.Write("CheckTradeTimeouts: {0} cancellations", cancellations.Length);
+            EconomyScript.Instance.ServerLogger.WriteVerbose("CheckTradeTimeouts: {0} cancellations", cancellations.Length);
 
             foreach (var order in cancellations)
             {

@@ -77,7 +77,7 @@
 
         public override void ProcessServer()
         {
-            EconomyScript.Instance.ServerLogger.Write("Action /Buy started by Steam Id '{0}'.", SenderSteamId);
+            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy started by Steam Id '{0}'.", SenderSteamId);
 
             // Get player steam ID
             var buyingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
@@ -94,7 +94,7 @@
             {
                 // Someone hacking, and passing bad data?
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the item you specified doesn't exist!");
-                EconomyScript.Instance.ServerLogger.Write("Action /Buy aborted by Steam Id '{0}' -- item doesn't exist.", SenderSteamId);
+                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- item doesn't exist.", SenderSteamId);
                 return;
             }
 
@@ -104,7 +104,7 @@
                 if (ItemQuantity != Math.Truncate(ItemQuantity))
                 {
                     MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You must provide a whole number for the quantity to buy that item.");
-                    EconomyScript.Instance.ServerLogger.Write("Action /Buy aborted by Steam Id '{0}' -- invalid qantity.", SenderSteamId);
+                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- invalid qantity.", SenderSteamId);
                     return;
                 }
                 //ItemQuantity = Math.Round(ItemQuantity, 0);  // Or do we just round the number?
@@ -113,7 +113,7 @@
             if (ItemQuantity <= 0)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You must provide a valid quantity to buy.");
-                EconomyScript.Instance.ServerLogger.Write("Action /Buy aborted by Steam Id '{0}' -- invalid qantity.", SenderSteamId);
+                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- invalid qantity.", SenderSteamId);
                 return;
             }
 
@@ -127,14 +127,14 @@
             if (accountToSell == null)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, player does not exist or have an account!");
-                EconomyScript.Instance.ServerLogger.Write("Action /Buy aborted by Steam Id '{0}' -- no account.", SenderSteamId);
+                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- no account.", SenderSteamId);
                 return;
             }
 
             if (MarketManager.IsItemBlacklistedOnServer(ItemTypeId, ItemSubTypeName))
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the item you tried to buy is blacklisted on this server.");
-                EconomyScript.Instance.ServerLogger.Write("Action /Buy aborted by Steam Id '{0}' -- item blacklisted.", SenderSteamId);
+                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- item blacklisted.", SenderSteamId);
                 return;
             }
 
@@ -147,7 +147,7 @@
                 // Player has no body. Could mean they are dead.
                 // Either way, there is no inventory.
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You are dead. You cannot trade while dead.");
-                EconomyScript.Instance.ServerLogger.Write("Action /Buy aborted by Steam Id '{0}' -- player is dead.", SenderSteamId);
+                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- player is dead.", SenderSteamId);
                 return;
             }
 
@@ -173,7 +173,7 @@
                 if (markets.Count == 0)
                 {
                     MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, your are not in range of any markets!");
-                    EconomyScript.Instance.ServerLogger.Write("Action /Buy aborted by Steam Id '{0}' -- no market in range.", SenderSteamId);
+                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- no market in range.", SenderSteamId);
                     return;
                 }
 
@@ -183,7 +183,7 @@
                 if (market == null)
                 {
                     MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the market you are accessing does not exist!");
-                    EconomyScript.Instance.ServerLogger.Write("Action /Buy aborted by Steam Id '{0}' -- no market found.", SenderSteamId);
+                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- no market found.", SenderSteamId);
                     return;
                 }
 
@@ -198,7 +198,7 @@
                 if (marketItem.IsBlacklisted)
                 {
                     MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the item you tried to buy is blacklisted in this market.");
-                    EconomyScript.Instance.ServerLogger.Write("Action /Buy aborted by Steam Id '{0}' -- item is blacklisted in market.", SenderSteamId);
+                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- item is blacklisted in market.", SenderSteamId);
                     return;
                 }
 
@@ -223,7 +223,7 @@
             if (accountToBuy.BankBalance < transactionAmount)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you cannot afford {0} {1}!", transactionAmount, EconomyScript.Instance.Config.CurrencyName);
-                EconomyScript.Instance.ServerLogger.Write("Action /Buy aborted by Steam Id '{0}' -- not enough money.", SenderSteamId);
+                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- not enough money.", SenderSteamId);
                 return;
             }
 
@@ -234,7 +234,7 @@
                 if (marketItem.Quantity >= ItemQuantity || !EconomyScript.Instance.Config.LimitedSupply)
                 {
                     marketItem.Quantity -= ItemQuantity; // reduce Market content.
-                    EconomyScript.Instance.ServerLogger.Write("Action /Buy finalizing by Steam Id '{0}' -- adding to inventory.", SenderSteamId);
+                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy finalizing by Steam Id '{0}' -- adding to inventory.", SenderSteamId);
                     var remainingToCollect = MessageSell.AddToInventories(buyingPlayer, ItemQuantity, definition.Id);
 
                     //EconomyScript.Instance.Config.LimitedSupply
@@ -252,12 +252,12 @@
                         // TODO: there should be a common command to collect items. Not use /sell.
                         MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There are {0} remaining to collect. Use '/sell collect'", remainingToCollect);
                     }
-                    EconomyScript.Instance.ServerLogger.Write("Action /Buy complete by Steam Id '{0}' -- items bought.", SenderSteamId);
+                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy complete by Steam Id '{0}' -- items bought.", SenderSteamId);
                 }
                 else
                 {
                     MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There isn't '{0}' of {1} available to purchase! Only {2} available to buy!", ItemQuantity, definition.GetDisplayName(), marketItem.Quantity);
-                    EconomyScript.Instance.ServerLogger.Write("Action /Buy aborted by Steam Id '{0}' -- not enough stock.", SenderSteamId);
+                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- not enough stock.", SenderSteamId);
                 }
 
                 return;

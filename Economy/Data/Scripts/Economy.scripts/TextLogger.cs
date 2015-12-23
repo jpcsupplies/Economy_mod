@@ -1,9 +1,13 @@
 ﻿namespace Economy.scripts
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using Sandbox.ModAPI;
 
+    /// <summary>
+    /// Generic text file logger devloped by Midspace for Space Engineers mods.
+    /// </summary>
     public class TextLogger
     {
         #region fields
@@ -65,95 +69,86 @@
 
         #endregion
 
-        public void Write(string text, params object[] args)
+        public void WriteStart(string text, params object[] args)
         {
-            if (!_isInitialized)
-                return;
-
-            // we create the writer when it is needed to prevent the creation of empty files
-            if (_logWriter == null)
-            {
-                try
-                {
-                    _logWriter = MyAPIGateway.Utilities.WriteFileInGlobalStorage(_logFileName);
-                }
-                catch (Exception ex)
-                {
-                    Terminate();
-                    WriteGameLog("## TextLogger Exception caught in mod. Message: {0}", ex.Message);
-                    return;
-                }
-            }
-
-            string message;
-            if (args == null || args.Length == 0)
-                message = text;
-            else
-                message = string.Format(text, args);
-
-            _logWriter.WriteLine("{0:yyyy-MM-dd HH:mm:ss.fff} - {1}", DateTime.Now, message);
-            _writeCounter++;
-            if (_delayedWrite == 0 || _writeCounter > _delayedWrite)
-            {
-                _logWriter.Flush();
-                _writeCounter = 0;
-            }
+            Write(TraceEventType.Start, false, text, args);
         }
 
-        public void WriteRaw(string text, params object[] args)
+        public void WriteStop(string text, params object[] args)
         {
-            if (!_isInitialized)
-                return;
+            Write(TraceEventType.Stop, false, text, args);
+        }
 
-            // we create the writer when it is needed to prevent the creation of empty files
-            if (_logWriter == null)
-            {
-                try
-                {
-                    _logWriter = MyAPIGateway.Utilities.WriteFileInGlobalStorage(_logFileName);
-                }
-                catch (Exception ex)
-                {
-                    Terminate();
-                    WriteGameLog("## TextLogger Exception caught in mod. Message: {0}", ex.Message);
-                    return;
-                }
-            }
+        public void WriteVerbose(string text, params object[] args)
+        {
+            Write(TraceEventType.Verbose, false, text, args);
+        }
 
-            string message;
-            if (args == null || args.Length == 0)
-                message = text;
-            else
-                message = string.Format(text, args);
+        public void WriteInfo(string text, params object[] args)
+        {
+            Write(TraceEventType.Information, false, text, args);
+        }
 
-            _logWriter.Write(message);
-            _writeCounter++;
-            if (_delayedWrite == 0 || _writeCounter > _delayedWrite)
-            {
-                _logWriter.Flush();
-                _writeCounter = 0;
-            }
+        public void WriteWarning(string text, params object[] args)
+        {
+            Write(TraceEventType.Warning, false, text, args);
+        }
+
+        public void WriteError(string text, params object[] args)
+        {
+            Write(TraceEventType.Error, false, text, args);
+        }
+
+        public void WriteRaw(TraceEventType eventType, string text, params object[] args)
+        {
+            Write(eventType, true, text, args);
         }
 
         public void WriteException(Exception ex, string additionalInformation = null)
         {
+            string msg = ex + "\r\n";
+
+            if (!string.IsNullOrEmpty(additionalInformation))
+            {
+                msg += string.Format("Additional information on {0}:\r\n", ex.Message);
+                msg += additionalInformation + "\r\n";
+            }
+
+            Write(TraceEventType.Error, false, msg);
+        }
+
+        private void Write(TraceEventType eventType, bool writeRaw, string text, params object[] args)
+        {
             if (!_isInitialized)
                 return;
 
             // we create the writer when it is needed to prevent the creation of empty files
             if (_logWriter == null)
-                _logWriter = MyAPIGateway.Utilities.WriteFileInGlobalStorage(_logFileName);
-
-            _logWriter.WriteLine("{0:yyyy-MM-dd HH:mm:ss.fff} Error - {1}", DateTime.Now, ex);
-
-            if (!string.IsNullOrEmpty(additionalInformation))
             {
-                _logWriter.WriteLine("Additional information on {0}:", ex.Message);
-                _logWriter.WriteLine(additionalInformation);
+                try
+                {
+                    _logWriter = MyAPIGateway.Utilities.WriteFileInGlobalStorage(_logFileName);
+                }
+                catch (Exception ex)
+                {
+                    Terminate();
+                    WriteGameLog("## TextLogger Exception caught in mod. Message: {0}", ex.Message);
+                    return;
+                }
             }
 
+            string message;
+            if (args == null || args.Length == 0)
+                message = text;
+            else
+                message = string.Format(text, args);
+
+            if (writeRaw)
+                _logWriter.Write(message);
+            else
+                _logWriter.WriteLine("{0:yyyy-MM-dd HH:mm:ss.fff} - {1}", DateTime.Now, message);
             _writeCounter++;
-            if (_delayedWrite == 0 || _writeCounter > _delayedWrite)
+            if (_delayedWrite == 0 || _writeCounter > _delayedWrite || eventType <= TraceEventType.Error)
             {
                 _logWriter.Flush();
                 _writeCounter = 0;

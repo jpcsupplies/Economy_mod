@@ -112,7 +112,7 @@
 
             foreach (var account in deadAccounts)
             {
-                EconomyScript.Instance.ServerLogger.Write("Removing Dead Account '{0}' with {1} {2}.", account.NickName, account.BankBalance, EconomyScript.Instance.Config.CurrencyName);
+                EconomyScript.Instance.ServerLogger.WriteInfo("Removing Dead Account '{0}' with {1} {2}.", account.NickName, account.BankBalance, EconomyScript.Instance.Config.CurrencyName);
                 data.Accounts.Remove(account);
 
                 // EconomyScript.Instance.Data would not have been set for the first run though.

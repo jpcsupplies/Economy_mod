@@ -44,12 +44,12 @@
             try
             {
                 config = MyAPIGateway.Utilities.SerializeFromXML<EconConfigStruct>(xmlText);
-                EconomyScript.Instance.ServerLogger.Write("Loading existing EconConfigStruct.");
+                EconomyScript.Instance.ServerLogger.WriteInfo("Loading existing EconConfigStruct.");
             }
             catch
             {
                 // config failed to deserialize.
-                EconomyScript.Instance.ServerLogger.Write("Failed to deserialize EconConfigStruct. Creating new EconConfigStruct.");
+                EconomyScript.Instance.ServerLogger.WriteError("Failed to deserialize EconConfigStruct. Creating new EconConfigStruct.");
                 config = InitConfig();
             }
 
@@ -62,7 +62,7 @@
 
         private static void ValidateAndUpdateConfig(EconConfigStruct config)
         {
-            EconomyScript.Instance.ServerLogger.Write("Validating and Updating Config.");
+            EconomyScript.Instance.ServerLogger.WriteInfo("Validating and Updating Config.");
 
             // Sync in whatever is defined in the game (may contain new cubes, and modded cubes).
             MarketManager.SyncMarketItems(ref config.DefaultPrices);
@@ -70,13 +70,13 @@
             if (config.TradeTimeout.TotalSeconds < 1f)
             {
                 config.TradeTimeout = new TimeSpan(0, 0, 1); // limit minimum trade timeout to 1 second.
-                EconomyScript.Instance.ServerLogger.Write("TradeTimeout has been reset, as it was below 1 second.");
+                EconomyScript.Instance.ServerLogger.WriteWarning("TradeTimeout has been reset, as it was below 1 second.");
             }
         }
 
         private static EconConfigStruct InitConfig()
         {
-            EconomyScript.Instance.ServerLogger.Write("Creating new EconConfigStruct.");
+            EconomyScript.Instance.ServerLogger.WriteInfo("Creating new EconConfigStruct.");
             EconConfigStruct config = new EconConfigStruct();
             config.DefaultPrices = new List<MarketItemStruct>();
 
@@ -826,12 +826,12 @@
             try
             {
                 data = MyAPIGateway.Utilities.SerializeFromXML<EconDataStruct>(xmlText);
-                EconomyScript.Instance.ServerLogger.Write("Loading existing EconDataStruct.");
+                EconomyScript.Instance.ServerLogger.WriteInfo("Loading existing EconDataStruct.");
             }
             catch
             {
                 // data failed to deserialize.
-                EconomyScript.Instance.ServerLogger.Write("Failed to deserialize EconDataStruct. Creating new EconDataStruct.");
+                EconomyScript.Instance.ServerLogger.WriteError("Failed to deserialize EconDataStruct. Creating new EconDataStruct.");
                 data = InitData();
             }
 
@@ -842,7 +842,7 @@
 
         private static void CheckDefaultMarket(EconDataStruct data, List<MarketItemStruct> defaultPrices)
         {
-            EconomyScript.Instance.ServerLogger.Write("Checking Default Market Data.");
+            EconomyScript.Instance.ServerLogger.WriteInfo("Checking Default Market Data.");
 
             var market = data.Markets.FirstOrDefault(m => m.MarketId == EconomyConsts.NpcMerchantId);
             if (market == null)
@@ -868,7 +868,7 @@
                 if (item == null)
                 {
                     market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = defaultItem.Quantity });
-                    EconomyScript.Instance.ServerLogger.Write("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
+                    EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
                 }
                 else
                 {
@@ -881,7 +881,7 @@
 
         private static void ValidateAndUpdateData(EconDataStruct data, List<MarketItemStruct> defaultPrices)
         {
-            EconomyScript.Instance.ServerLogger.Write("Validating and Updating Data.");
+            EconomyScript.Instance.ServerLogger.WriteInfo("Validating and Updating Data.");
 
             // Add missing items that are covered by Default items.
             foreach (var defaultItem in defaultPrices)
@@ -892,7 +892,7 @@
                     if (item == null)
                     {
                         market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = defaultItem.Quantity });
-                        EconomyScript.Instance.ServerLogger.Write("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
                     }
                     else
                     {
@@ -912,7 +912,7 @@
 
         private static EconDataStruct InitData()
         {
-            EconomyScript.Instance.ServerLogger.Write("Creating new EconDataStruct.");
+            EconomyScript.Instance.ServerLogger.WriteInfo("Creating new EconDataStruct.");
             EconDataStruct data = new EconDataStruct();
             data.Accounts = new List<BankAccountStruct>();
             data.Markets = new List<MarketStruct>();

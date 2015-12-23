@@ -113,7 +113,7 @@
             {
                 case SellAction.Create:
                     {
-                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Create started by Steam Id '{0}'.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create started by Steam Id '{0}'.", SenderSteamId);
                         //* Logic:                     
                         //* Get player steam ID
                         var sellingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
@@ -130,7 +130,7 @@
                         {
                             // Someone hacking, and passing bad data?
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you specified doesn't exist!");
-                            EconomyScript.Instance.ServerLogger.Write("Definition could not be found for item during '/sell'; '{0}' '{1}'.", ItemTypeId, ItemSubTypeName);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Definition could not be found for item during '/sell'; '{0}' '{1}'.", ItemTypeId, ItemSubTypeName);
                             return;
                         }
 
@@ -148,7 +148,7 @@
                         if (ItemQuantity <= 0)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Invalid quantity, or you dont have any to trade!");
-                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- Invalid quantity.", SenderSteamId);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- Invalid quantity.", SenderSteamId);
                             return;
                         }
 
@@ -162,14 +162,14 @@
                         if (accountToBuy == null)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, player does not exist or have an account!");
-                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- account not found.", SenderSteamId);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- account not found.", SenderSteamId);
                             return;
                         }
 
                         if (MarketManager.IsItemBlacklistedOnServer(ItemTypeId, ItemSubTypeName))
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you tried to sell is blacklisted on this server.");
-                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- Item is blacklisted.", SenderSteamId);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- Item is blacklisted.", SenderSteamId);
                             return;
                         }
 
@@ -185,7 +185,7 @@
                             // Player has no body. Could mean they are dead.
                             // Either way, there is no inventory.
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are dead. You cannot trade while dead.");
-                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- player is dead.", SenderSteamId);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- player is dead.", SenderSteamId);
                             return;
                         }
 
@@ -201,7 +201,7 @@
                         //    return;
                         //}
 
-                        EconomyScript.Instance.ServerLogger.Write("Action /Sell finalizing by Steam Id '{0}' -- cataloging cargo cubes.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- cataloging cargo cubes.", SenderSteamId);
 
                         // Build list of all cargo blocks that player is attached to as pilot or passenger.
                         var cargoBlocks = new List<Sandbox.Game.Entities.MyEntity>();
@@ -215,7 +215,7 @@
                                 cargoBlocks.Add((Sandbox.Game.Entities.MyEntity)block);
                         }
 
-                        EconomyScript.Instance.ServerLogger.Write("Action /Sell finalizing by Steam Id '{0}' -- checking inventory.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- checking inventory.", SenderSteamId);
 
                         var position = ((IMyEntity)character).WorldMatrix.Translation;
                         var playerInventory = character.GetPlayerInventory();
@@ -238,7 +238,7 @@
                             else
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your player and cargo inventory.", ItemQuantity, definition.GetDisplayName(), storedAmount);
 
-                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- inventory doesn't exist.", SenderSteamId);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- inventory doesn't exist.", SenderSteamId);
                             return;
                         }
 
@@ -250,7 +250,7 @@
                             if (markets.Count == 0)
                             {
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, your are not in range of any markets!");
-                                EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- no market in range.", SenderSteamId);
+                                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- no market in range.", SenderSteamId);
                                 return;
                             }
 
@@ -260,7 +260,7 @@
                             if (market == null)
                             {
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the market you are accessing does not exist!");
-                                EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- no market found.", SenderSteamId);
+                                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- no market found.", SenderSteamId);
                                 return;
                             }
 
@@ -275,7 +275,7 @@
                             if (marketItem.IsBlacklisted)
                             {
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item you tried to sell is blacklisted in this market.");
-                                EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- item is blacklisted.", SenderSteamId);
+                                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- item is blacklisted.", SenderSteamId);
                                 return;
                             }
 
@@ -301,7 +301,7 @@
                             if (accountToBuy.BankBalance >= transactionAmount || !EconomyScript.Instance.Config.LimitedSupply)
                             {
                                 // here we look up item price and transfer items and money as appropriate
-                                EconomyScript.Instance.ServerLogger.Write("Action /Sell finalizing by Steam Id '{0}' -- removing inventory.", SenderSteamId);
+                                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- removing inventory.", SenderSteamId);
                                 RemoveInventory(playerInventory, cargoBlocks, amount, definition.Id);
                                 marketItem.Quantity += ItemQuantity; // increment Market content.
 
@@ -316,7 +316,7 @@
                             {
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "NPC can't afford {0} {4} worth of {2} ({1} units) NPC only has {3} funds!", transactionAmount, ItemQuantity, definition.GetDisplayName(), accountToBuy.BankBalance, EconomyScript.Instance.Config.CurrencyName);
                             }
-                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create completed by Steam Id '{0}' -- to NPC market.", SenderSteamId);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create completed by Steam Id '{0}' -- to NPC market.", SenderSteamId);
                             return;
                         }
 
@@ -332,7 +332,7 @@
                         {
                             // commented out for testing with myself.
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, you cannot sell to yourself!");
-                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- can't sell to self.", SenderSteamId);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- can't sell to self.", SenderSteamId);
                             return;
                         }
 
@@ -342,7 +342,7 @@
                         if (EconomyScript.Instance.Config.LimitedRange && !Support.RangeCheck(buyingPlayer, sellingPlayer))
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you are not in range of that player!");
-                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- target player not in range.", SenderSteamId);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- target player not in range.", SenderSteamId);
                             return;
                         }
 
@@ -353,7 +353,7 @@
                             // TODO: other player offline.
 
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You cannot sell to offline players at this time.");
-                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create aborted by Steam Id '{0}' -- cannot sell to offline player.", SenderSteamId);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- cannot sell to offline player.", SenderSteamId);
                             return;
 
                             // TODO: we need a way to queue up messages.
@@ -368,7 +368,7 @@
                             MarketManager.CreateTradeOffer(SenderSteamId, ItemTypeId, ItemSubTypeName, ItemQuantity, ItemPrice, accountToBuy.SteamId);
 
                             // remove items from inventory.
-                            EconomyScript.Instance.ServerLogger.Write("Action /Sell finalizing by Steam Id '{0}' -- removing inventory.", SenderSteamId);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- removing inventory.", SenderSteamId);
                             RemoveInventory(playerInventory, cargoBlocks, amount, definition.Id);
 
                             // Only send message to targeted player if this is the only offer pending for them.
@@ -384,7 +384,7 @@
                             // send message to seller to confirm action, "Your Trade offer has been submitted, and the goods removed from you inventory."
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Your offer of {0} {1} for {2} {4} each has been sent to {3}.", ItemQuantity, definition.GetDisplayName(), ItemPrice, accountToBuy.NickName, EconomyScript.Instance.Config.CurrencyName);
 
-                            EconomyScript.Instance.ServerLogger.Write("Action /Sell Create completed by Steam Id '{0}' -- to another player.", SenderSteamId);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create completed by Steam Id '{0}' -- to another player.", SenderSteamId);
                             return;
                         }
                     }
@@ -392,7 +392,7 @@
 
                 case SellAction.Accept:
                     {
-                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Accept started by Steam Id '{0}'.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Accept started by Steam Id '{0}'.", SenderSteamId);
                         var order = EconomyScript.Instance.Data.OrderBook.FirstOrDefault(e => e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer);
                         if (order == null)
                         {
@@ -436,7 +436,7 @@
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
 
                             // trade has been finalized, so we can exit safely.
-                            EconomyScript.Instance.ServerLogger.Write("Definition could not be found for item during '/sell accept'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Definition could not be found for item during '/sell accept'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
                             return;
                         }
 
@@ -465,13 +465,13 @@
                         // Send message to player if additional offers are pending their attention.
                         DisplayNextOrderToAccept(SenderSteamId);
 
-                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Accept completed by Steam Id '{0}'.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Accept completed by Steam Id '{0}'.", SenderSteamId);
                         return;
                     }
 
                 case SellAction.Collect:
                     {
-                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Collect started by Steam Id '{0}'.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Collect started by Steam Id '{0}'.", SenderSteamId);
                         var collectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
                             (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellTimedout)
                             || (e.TraderId == SenderSteamId && e.TradeState == TradeState.Holding)
@@ -504,11 +504,11 @@
                                 // Someone hacking, and passing bad data?
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
                                 // TODO: more detail on the item.
-                                EconomyScript.Instance.ServerLogger.Write("Definition could not be found for item during '/sell collect'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
+                                EconomyScript.Instance.ServerLogger.WriteVerbose("Definition could not be found for item during '/sell collect'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
                                 continue;
                             }
 
-                            EconomyScript.Instance.ServerLogger.Write("Action /Sell finalizing by Steam Id '{0}' -- adding to inventories.", SenderSteamId);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- adding to inventories.", SenderSteamId);
                             var remainingToCollect = MessageSell.AddToInventories(collectingPlayer, order.Quantity, definition.Id);
                             var collected = order.Quantity - remainingToCollect;
 
@@ -524,13 +524,13 @@
                             }
                         }
 
-                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Collect completed by Steam Id '{0}'.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Collect completed by Steam Id '{0}'.", SenderSteamId);
                         return;
                     }
 
                 case SellAction.Cancel:
                     {
-                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Cancel started by Steam Id '{0}'.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Cancel started by Steam Id '{0}'.", SenderSteamId);
                         var cancellableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
                               (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellDirectPlayer)).OrderByDescending(e => e.Created).ToArray();
 
@@ -552,7 +552,7 @@
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
 
                             // trade has been finalized, so we can exit safely.
-                            EconomyScript.Instance.ServerLogger.Write("Definition could not be found for item during '/sell cancel'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Definition could not be found for item during '/sell cancel'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
                             return;
                         }
 
@@ -583,14 +583,14 @@
                             // TODO: Inform the player of the next order in the queue that can be cancelled.
                         }
 
-                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Cancel completed by Steam Id '{0}'.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Cancel completed by Steam Id '{0}'.", SenderSteamId);
                         return;
                     }
                     break;
 
                 case SellAction.Deny:
                     {
-                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Deny started by Steam Id '{0}'.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Deny started by Steam Id '{0}'.", SenderSteamId);
                         var buyOrdersForMe = EconomyScript.Instance.Data.OrderBook.Where(e =>
                               (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellDirectPlayer)).OrderBy(e => e.Created).ToArray();
 
@@ -612,7 +612,7 @@
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
 
                             // trade has been finalized, so we can exit safely.
-                            EconomyScript.Instance.ServerLogger.Write("Definition could not be found for item during '/sell deny'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Definition could not be found for item during '/sell deny'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
                             return;
                         }
 
@@ -626,7 +626,7 @@
                         // Send message to player if additional offers are pending their attention.
                         DisplayNextOrderToAccept(SenderSteamId);
 
-                        EconomyScript.Instance.ServerLogger.Write("Action /Sell Deny completed by Steam Id '{0}'.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Deny completed by Steam Id '{0}'.", SenderSteamId);
                         return;
                     }
                     break;
@@ -665,7 +665,7 @@
             {
                 // Someone hacking, and passing bad data?
                 MessageClientTextMessage.SendMessage(steamdId, "SELL", "Sorry, the item in your order doesn't exist!");
-                EconomyScript.Instance.ServerLogger.Write("Definition could not be found for item during 'DisplayNextOrderToAccept'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
+                EconomyScript.Instance.ServerLogger.WriteVerbose("Definition could not be found for item during 'DisplayNextOrderToAccept'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
                 return;
             }
 

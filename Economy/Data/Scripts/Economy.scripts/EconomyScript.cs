@@ -10,7 +10,6 @@ namespace Economy.scripts
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -85,8 +84,8 @@ namespace Economy.scripts
 
         public static EconomyScript Instance;
 
-        public TextLogger ServerLogger = new TextLogger();
-        public TextLogger ClientLogger = new TextLogger();
+        public TextLogger ServerLogger = new TextLogger(); // This is a dummy logger until Init() is called.
+        public TextLogger ClientLogger = new TextLogger(); // This is a dummy logger until Init() is called.
         public Timer DelayedConnectionRequestTimer;
 
         /// Ideally this data should be persistent until someone buys/sells/pays/joins but
@@ -131,7 +130,7 @@ namespace Economy.scripts
 
             if (_delayedConnectionRequest)
             {
-                ClientLogger.Write("Delayed Connection Request");
+                ClientLogger.WriteInfo("Delayed Connection Request");
                 _delayedConnectionRequest = false;
                 MessageConnectionRequest.SendMessage(EconomyConsts.ModCommunicationVersion);
             }
@@ -144,9 +143,9 @@ namespace Economy.scripts
             _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
             _isClientRegistered = true;
 
-            ClientLogger.Init("EconomyClient.Log"); // comment this out if logging is not required for the Client.
-            ClientLogger.Write("Economy Client Log Started");
-            ClientLogger.Write("Economy Client Version {0}", EconomyConsts.ModCommunicationVersion);
+            ClientLogger.Init("EconomyClient.Log", false, 20); // comment this out if logging is not required for the Client.
+            ClientLogger.WriteStart("Economy Client Log Started");
+            ClientLogger.WriteInfo("Economy Client Version {0}", EconomyConsts.ModCommunicationVersion);
             if (ClientLogger.IsActive)
                 VRage.Utils.MyLog.Default.WriteLine(String.Format("##Mod## Economy Client Logging File: {0}", ClientLogger.LogFile));
 
@@ -154,7 +153,7 @@ namespace Economy.scripts
 
             if (MyAPIGateway.Multiplayer.MultiplayerActive && !_isServerRegistered) // if not the server, also need to register the messagehandler.
             {
-                ClientLogger.Write("RegisterMessageHandler");
+                ClientLogger.WriteStart("RegisterMessageHandler");
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
             }
 
@@ -170,16 +169,16 @@ namespace Economy.scripts
         {
             _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
             _isServerRegistered = true;
-            ServerLogger.Init("EconomyServer.Log"); // comment this out if logging is not required for the Server.
-            ServerLogger.Write("Economy Server Log Started");
-            ServerLogger.Write("Economy Server Version {0}", EconomyConsts.ModCommunicationVersion);
+            ServerLogger.Init("EconomyServer.Log", false, 20); // comment this out if logging is not required for the Server.
+            ServerLogger.WriteStart("Economy Server Log Started");
+            ServerLogger.WriteInfo("Economy Server Version {0}", EconomyConsts.ModCommunicationVersion);
             if (ServerLogger.IsActive)
                 VRage.Utils.MyLog.Default.WriteLine(String.Format("##Mod## Economy Server Logging File: {0}", ServerLogger.LogFile));
 
-            ServerLogger.Write("RegisterMessageHandler");
+            ServerLogger.WriteStart("RegisterMessageHandler");
             MyAPIGateway.Multiplayer.RegisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
 
-            ServerLogger.Write("LoadBankContent");
+            ServerLogger.WriteStart("LoadBankContent");
 
             Config = EconDataManager.LoadConfig(); // Load config first.
             Data = EconDataManager.LoadData(Config.DefaultPrices);
@@ -188,17 +187,17 @@ namespace Economy.scripts
 
             // start the timer last, as all data should be loaded before this point.
             // TODO: use a single timer, and a counter.
-            ServerLogger.Write("Attaching Event 1 timer.");
+            ServerLogger.WriteStart("Attaching Event 1 timer.");
             _timer1Events = new Timer(1000);
             _timer1Events.Elapsed += Timer1EventsOnElapsed;
             _timer1Events.Start();
 
-            ServerLogger.Write("Attaching Event 10 timer.");
+            ServerLogger.WriteStart("Attaching Event 10 timer.");
             _timer10Events = new Timer(10000);
             _timer10Events.Elapsed += Timer10EventsOnElapsed;
             _timer10Events.Start();
 
-            ServerLogger.Write("Attaching Event 3600 timer.");
+            ServerLogger.WriteStart("Attaching Event 3600 timer.");
             _timer3600Events = new Timer(3600000);
             _timer3600Events.Elapsed += Timer3600EventsOnElapsed;
             _timer3600Events.Start();
@@ -219,7 +218,7 @@ namespace Economy.scripts
 
                 if (!_isServerRegistered) // if not the server, also need to unregister the messagehandler.
                 {
-                    ClientLogger.Write("UnregisterMessageHandler");
+                    ClientLogger.WriteStop("UnregisterMessageHandler");
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
                 }
 
@@ -229,18 +228,18 @@ namespace Economy.scripts
                     DelayedConnectionRequestTimer.Close();
                 }
 
-                ClientLogger.Write("Closed");
+                ClientLogger.WriteStop("Log Closed");
                 ClientLogger.Terminate();
             }
 
             if (_isServerRegistered)
             {
-                ServerLogger.Write("UnregisterMessageHandler");
+                ServerLogger.WriteStop("UnregisterMessageHandler");
                 MyAPIGateway.Multiplayer.UnregisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
 
                 if (_timer1Events != null)
                 {
-                    ServerLogger.Write("Stopping Event 1 timer.");
+                    ServerLogger.WriteStop("Stopping Event 1 timer.");
                     _timer1Events.Stop();
                     _timer1Events.Elapsed -= Timer1EventsOnElapsed;
                     _timer1Events = null;
@@ -248,7 +247,7 @@ namespace Economy.scripts
 
                 if (_timer10Events != null)
                 {
-                    ServerLogger.Write("Stopping Event 10 timer.");
+                    ServerLogger.WriteStop("Stopping Event 10 timer.");
                     _timer10Events.Stop();
                     _timer10Events.Elapsed -= Timer10EventsOnElapsed;
                     _timer10Events = null;
@@ -256,7 +255,7 @@ namespace Economy.scripts
 
                 if (_timer3600Events != null)
                 {
-                    ServerLogger.Write("Stopping Event 3600 timer.");
+                    ServerLogger.WriteStop("Stopping Event 3600 timer.");
                     _timer3600Events.Stop();
                     _timer3600Events.Elapsed -= Timer3600EventsOnElapsed;
                     _timer3600Events = null;
@@ -265,7 +264,7 @@ namespace Economy.scripts
 
                 Data = null;
 
-                ServerLogger.Write("Closed");
+                ServerLogger.WriteStop("Log Closed");
                 ServerLogger.Terminate();
             }
 
@@ -280,13 +279,13 @@ namespace Economy.scripts
             {
                 if (Data != null)
                 {
-                    ServerLogger.Write("Save Data");
+                    ServerLogger.WriteInfo("Save Data");
                     EconDataManager.SaveData(Data);
                 }
 
                 if (Config != null)
                 {
-                    ServerLogger.Write("Save Config");
+                    ServerLogger.WriteInfo("Save Config");
                     EconDataManager.SaveConfig(Config);
                 }
             }
@@ -312,8 +311,8 @@ namespace Economy.scripts
 
         private static void HandleMessage(byte[] message)
         {
-            EconomyScript.Instance.ServerLogger.Write("HandleMessage");
-            EconomyScript.Instance.ClientLogger.Write("HandleMessage");
+            EconomyScript.Instance.ServerLogger.WriteVerbose("HandleMessage");
+            EconomyScript.Instance.ClientLogger.WriteVerbose("HandleMessage");
             ConnectionHelper.ProcessData(message);
         }
 

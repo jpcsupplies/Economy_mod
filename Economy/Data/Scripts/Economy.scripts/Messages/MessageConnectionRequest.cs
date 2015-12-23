@@ -16,7 +16,7 @@
 
         public override void ProcessServer()
         {
-            EconomyScript.Instance.ServerLogger.Write("Player '{0}' connected", SenderDisplayName);
+            EconomyScript.Instance.ServerLogger.WriteVerbose("Player '{0}' connected", SenderDisplayName);
 
             if (ModCommunicationVersion != EconomyConsts.ModCommunicationVersion)
             {
@@ -35,7 +35,7 @@
             // Create the Bank Account when the player first joins.
             if (account == null)
             {
-                EconomyScript.Instance.ServerLogger.Write("Creating new Bank Account for '{0}'", SenderDisplayName);
+                EconomyScript.Instance.ServerLogger.WriteInfo("Creating new Bank Account for '{0}'", SenderDisplayName);
                 account = AccountManager.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
                 EconomyScript.Instance.Data.Accounts.Add(account);
             }

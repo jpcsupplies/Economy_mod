@@ -34,7 +34,7 @@
         {
             // update our own timestamp here
             AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
-            EconomyScript.Instance.ServerLogger.Write("Value Request for '{0}:{1}' from '{2}'", TypeId, SubtypeName, SenderSteamId);
+            EconomyScript.Instance.ServerLogger.WriteVerbose("Value Request for '{0}:{1}' from '{2}'", TypeId, SubtypeName, SenderSteamId);
 
             var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
             var character = player.GetCharacter();

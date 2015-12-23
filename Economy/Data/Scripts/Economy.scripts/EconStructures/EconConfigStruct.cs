@@ -104,7 +104,7 @@
                 catch (Exception)
                 {
                     _tradeTimeout = EconomyConsts.TradeTimeout;
-                    EconomyScript.Instance.ServerLogger.Write("TradeTimeout has been reset, as the stored value '{0}' was invalid.", value);
+                    EconomyScript.Instance.ServerLogger.WriteWarning("TradeTimeout has been reset, as the stored value '{0}' was invalid.", value);
                 }
             }
         }
@@ -144,7 +144,7 @@
                 catch (Exception)
                 {
                     _accountExpiry = EconomyConsts.AccountExpiry;
-                    EconomyScript.Instance.ServerLogger.Write("AccountExpiry has been reset, as the stored value '{0}' was invalid.", value);
+                    EconomyScript.Instance.ServerLogger.WriteWarning("AccountExpiry has been reset, as the stored value '{0}' was invalid.", value);
                 }
             }
         }

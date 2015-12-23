@@ -95,7 +95,7 @@
                 MessageClientTextMessage.SendMessage(SenderSteamId, "PAY",
                     string.Format("You just paid {0} {1}, {3} for {2}", account.NickName, TransactionAmount, Reason, EconomyScript.Instance.Config.CurrencyName));
 
-                EconomyScript.Instance.ServerLogger.Write("Pay: '{0}' sent {1} {3} to '{2}'", accountToSpend.NickName, TransactionAmount, ToUserName, EconomyScript.Instance.Config.CurrencyName);
+                EconomyScript.Instance.ServerLogger.WriteVerbose("Pay: '{0}' sent {1} {3} to '{2}'", accountToSpend.NickName, TransactionAmount, ToUserName, EconomyScript.Instance.Config.CurrencyName);
 
 
                 //*      if false/otherwise throw error you dont have enough money

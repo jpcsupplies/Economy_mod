@@ -40,7 +40,7 @@
         {
             // update our own timestamp here
             AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
-            EconomyScript.Instance.ServerLogger.Write("Worth Request for {0} from '{1}'", EntityId, SenderSteamId);
+            EconomyScript.Instance.ServerLogger.WriteVerbose("Worth Request for {0} from '{1}'", EntityId, SenderSteamId);
 
             var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
             var character = player.GetCharacter();
@@ -284,7 +284,7 @@
                 var item = market.MarketItems.FirstOrDefault(e => e.TypeId == kvp.Key.TypeId.ToString() && e.SubtypeName == kvp.Key.SubtypeName);
                 if (item == null)
                 {
-                    EconomyScript.Instance.ServerLogger.Write("Component Item could not be found in Market for Worth '{0}' '{1}'.", kvp.Key.TypeId, kvp.Key.SubtypeName);
+                    EconomyScript.Instance.ServerLogger.WriteWarning("Component Item could not be found in Market for Worth '{0}' '{1}'.", kvp.Key.TypeId, kvp.Key.SubtypeName);
                     // can ignore for worth.
                 }
                 else
