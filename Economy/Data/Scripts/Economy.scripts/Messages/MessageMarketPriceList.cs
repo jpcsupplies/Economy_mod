@@ -7,16 +7,34 @@
     using Economy.scripts.EconStructures;
     using Management;
     using ProtoBuf;
+    using Sandbox.Common.ObjectBuilders;
+    using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using VRage.ModAPI;
+    using VRage.ObjectBuilders;
 
     [ProtoContract]
     public class MessageMarketPriceList : MessageBase
     {
-        public static void SendMessage()
+        [ProtoMember(1)]
+        public bool ShowOre;
+
+        [ProtoMember(2)]
+        public bool ShowIngot;
+
+        [ProtoMember(3)]
+        public bool ShowComponent;
+
+        [ProtoMember(4)]
+        public bool ShowAmmo;
+
+        [ProtoMember(5)]
+        public bool ShowTools;
+
+        public static void SendMessage(bool showOre, bool showIngot, bool showComponent, bool showAmmo, bool showTools)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketPriceList());
+            ConnectionHelper.SendMessageToServer(new MessageMarketPriceList { ShowAmmo = showAmmo, ShowComponent = showComponent, ShowIngot = showIngot, ShowOre = showOre, ShowTools = showTools });
         }
 
         public override void ProcessClient()
@@ -63,15 +81,35 @@
 
                 try
                 {
+                    bool showAll = !ShowOre && !ShowIngot && !ShowComponent && !ShowAmmo && !ShowTools;
+
                     var orderedList = new Dictionary<MarketItemStruct, string>();
                     foreach (var marketItem in market.MarketItems)
                     {
                         if (marketItem.IsBlacklisted)
                             continue;
 
-                        var definition = MyDefinitionManager.Static.GetDefinition(marketItem.TypeId, marketItem.SubtypeName);
-                        var name = definition == null ? marketItem.SubtypeName : definition.GetDisplayName();
-                        orderedList.Add(marketItem, name);
+                        MyObjectBuilderType result;
+                        if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
+                        {
+                            var id = new MyDefinitionId(result, marketItem.SubtypeName);
+                            var content = Support.ProducedType(id);
+
+                            // Cannot check the Type of the item, without having to use MyObjectBuilderSerializer.CreateNewObject().
+
+                            if (showAll ||
+                                (ShowOre && content is MyObjectBuilder_Ore) ||
+                                (ShowIngot && content is MyObjectBuilder_Ingot) ||
+                                (ShowComponent && content is MyObjectBuilder_Component) ||
+                                (ShowAmmo && content is MyObjectBuilder_AmmoMagazine) ||
+                                (ShowTools && content is MyObjectBuilder_PhysicalGunObject) ||
+                                (ShowTools && content is MyObjectBuilder_GasContainerObject)) // Type check here allows mods that inherit from the same type to also appear in the lists.
+                            {
+                                var definition = MyDefinitionManager.Static.GetDefinition(marketItem.TypeId, marketItem.SubtypeName);
+                                var name = definition == null ? marketItem.SubtypeName : definition.GetDisplayName();
+                                orderedList.Add(marketItem, name);
+                            }
+                        }
                     }
 
                     orderedList = orderedList.OrderBy(kvp => kvp.Value).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

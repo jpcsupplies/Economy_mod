@@ -849,9 +849,26 @@ namespace Economy.scripts
 
             if (split[0].Equals("/pricelist", StringComparison.InvariantCultureIgnoreCase))
             {
-                // TODO: add optional parameters.
-                //"tools" "ore" "ingot" and "component"
-                MessageMarketPriceList.SendMessage();
+                bool showOre = false;
+                bool showIngot = false;
+                bool showComponent = false;
+                bool showAmmo = false;
+                bool showTools = false;
+
+                foreach (var str in split)
+                {
+                    if (str.StartsWith("ore", StringComparison.InvariantCultureIgnoreCase))
+                        showOre = true;
+                    if (str.StartsWith("ingot", StringComparison.InvariantCultureIgnoreCase))
+                        showIngot = true;
+                    if (str.StartsWith("component", StringComparison.InvariantCultureIgnoreCase))
+                        showComponent = true;
+                    if (str.StartsWith("ammo", StringComparison.InvariantCultureIgnoreCase))
+                        showAmmo = true;
+                    if (str.StartsWith("tool", StringComparison.InvariantCultureIgnoreCase))
+                        showTools = true;
+                }
+                MessageMarketPriceList.SendMessage(showOre, showIngot, showComponent, showAmmo, showTools);
             }
 
             #endregion
