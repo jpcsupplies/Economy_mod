@@ -219,11 +219,10 @@
 
                                 #endregion
                             }
-
-                            shipValue += SumComponents(market, gridComponents);
-                            inventoryValue += SumComponents(market, inventoryComponents);
                         }
                     }
+                    shipValue += SumComponents(market, gridComponents);
+                    inventoryValue += SumComponents(market, inventoryComponents);
                 }
                 catch (Exception ex)
                 {
