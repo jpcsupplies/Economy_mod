@@ -956,7 +956,7 @@ namespace Economy.scripts
                 {
                     //did we just type ehelp? show what else they can get help on
                     //might be better to make a more detailed help reply here using mission window later on
-                    MyAPIGateway.Utilities.ShowMessage("ehelp", "Commands: ehelp, bal, pay, seen, buy, sell, value, ver, lcd, news, worth");
+                    MyAPIGateway.Utilities.ShowMessage("ehelp", "Commands: ehelp, bal, pay, seen, buy, sell, value, ver, lcd, news, worth, pricelist");
                     if (MyAPIGateway.Session.Player.IsAdmin())
                     {
                         MyAPIGateway.Utilities.ShowMessage("Admin ehelp", "Commands: accounts, bal player, reset, set, global, pay player +/-any_amount");
@@ -1035,6 +1035,18 @@ namespace Economy.scripts
                             return true;
                         case "ver":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/ver Displays the diagnostic version of running Economy script");
+                            return true;
+                        case "pricelist":
+                            helpreply = "/pricelist X\r\n Displays current market zone prices of item type [X]\r\n" +
+                                "Eg X can be one or more of ore, ingot, component, ammo, tools\r\n" +
+                                " ie /pricelist ore ingot (for ore AND ingot prices)\r\n" +
+                                " /pricelist ore  (for ore prices only)\r\n" +
+                                " /pricelist ingot (for ingot prices only)\r\n" +
+                                " /pricelist component (lists component pricing only)\r\n" +
+                                " /pricelist ammo (for ammunition prices only)\r\n" +
+                                " /pricelist tools (lists tool prices only)\r\n";
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /pricelist [optional item type] ore/ingot/component/ammmo/tools etc");
+                            MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "pricelist command", helpreply, null, "Close");
                             return true;
 
                     }
