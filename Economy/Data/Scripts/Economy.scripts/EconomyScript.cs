@@ -869,6 +869,7 @@ namespace Economy.scripts
                         showTools = true;
                 }
                 MessageMarketPriceList.SendMessage(showOre, showIngot, showComponent, showAmmo, showTools);
+                return true;
             }
 
             #endregion
