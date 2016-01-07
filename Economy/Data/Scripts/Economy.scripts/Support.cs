@@ -453,7 +453,7 @@
 
                 if (findReplicable)
                 {
-                    var replicable = entity as Sandbox.Game.Entities.MyReplicableEntity;
+                    var replicable = entity as Sandbox.Game.Entities.MyInventoryBagEntity;
                     if (replicable != null && ray.Intersects(entity.WorldAABB).HasValue)
                     {
                         var distance = (startPosition - entity.GetPosition()).Length();
