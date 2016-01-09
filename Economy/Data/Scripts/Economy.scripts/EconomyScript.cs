@@ -893,7 +893,28 @@ namespace Economy.scripts
             // accounts command.  For Admins only.
             if (split[0].Equals("/accounts", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
-                MessageListAccounts.SendMessage();
+                 //add a day/week/month filter to accounts   OR just sort accounts list by date? OR accept a integer for number of days to filter by?
+                if (split.Length <= 1) { MessageListAccounts.SendMessage(); }
+                else {
+                    switch (split[1].ToLowerInvariant())
+                    {
+                        case "date":
+                            //sort accounts by date - (by default sort by name?)
+                            return true;
+                        case "today":
+                            //show players seen today
+                            return true;
+                        case "day":
+                            //show players seen today
+                            return true;
+                        case "week":
+                            //show players seen last 7 days
+                            return true;
+                        case "month":
+                            //show players seen last 30 days
+                            return true;
+                    }
+                }
                 return true;
                 // don't respond to non-admins.
             }
