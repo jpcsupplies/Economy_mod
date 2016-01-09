@@ -23,6 +23,11 @@
 
             string reply;
 
+            if (account == null) // extra check for substring if no match found ie /seen fox also matches starfox case sensitive as tolowerinvariant wont work for me
+            {
+                account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.NickName.Contains(UserName));
+            }
+
             if (account == null)
                 reply = "Player not found";
             else
