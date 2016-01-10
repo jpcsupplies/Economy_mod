@@ -1,6 +1,6 @@
 ﻿/*
- *  Economy Mod V1.0A 
- *  by PhoenixX (JPC Dev), Tangentspy, Screaming Angels
+ *  Economy Mod %EconomyConsts.MajorVer%
+ *  by PhoenixX (JPC Dev), Screaming Angels (Midspace), Tangentspy
  *  For use with Space Engineers Game
  *  Refer to github issues or steam/git dev guide/wiki or the team notes
  *  for direction what needs to be worked on next
@@ -48,14 +48,8 @@ namespace Economy.scripts
         /// </summary>
         const string SellPattern = @"(?<command>/sell)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<qtyall>ALL))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
 
-        //set is for admins to configure things like on hand, npc market pricing, toggle blacklist, turn on limited or unlimited stock mode
-        //set their currency name, player default starting balance, enable or diable limited range mode, and set default trade range
-        //at the moment all it does is set the on hand figures -
-        //possible examples /set limitedsupply true,  /set limitedrange true, /set 1000 metal, /set starting 200, /set blacklist organic false, /set traderange 1000, /set currency credits
-        // /set reset etc  the syntax may not be exactly as above these are just hypothetical examples
-        // see https://github.com/jpcsupplies/Economy_mod/issues/66
-        //current functionality is just to alter the market on hand of a single item, eg /set 10000 ice
-        //or /set blacklist ice   or /set buy item price
+        //set is for admins to configure things like on hand, npc market pricing, toggle blacklist
+        //Examples: eg /set 10000 ice    or /set blacklist ice   or /set buy item price
 
         const string SetPattern = @"(?<command>/set)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<blacklist>blacklist)|(?<tradezone>tradezone)|(?<buy>buy)|(?<sell>sell))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+))))?";
 
@@ -429,11 +423,6 @@ namespace Economy.scripts
             // buy command
             if (split[0].Equals("/buy", StringComparison.InvariantCultureIgnoreCase))
             {
-                //initially we should work only with a players inventory size
-                //worst case scenario overflow gets dropped at the players feet which if they
-                //are standing on a collector should be adequte for Alpha milestone compliance.
-                //Alternately we setup an "item bank" which works like the bank account, but allows 
-                //materials to be stored too.. but that makes raids somewhat pointless.
                 //buy command should be pretty basic since we are buying from appropriate market at requested price.
                 //if in range of valid trade region
                 //examples: /buy 100 uranium (buy 100 uranium starting at lowest offer price if you can afford it, give error if you cant)
@@ -502,17 +491,22 @@ namespace Economy.scripts
             }
             #endregion buy
 
+            #region eoptions
+
+            //Todo https://github.com/jpcsupplies/Economy_mod/issues/88
+            // Set options like limited or unlimited stock, range checks size (or on or off), currency name
+            // and trading on or off.   Or any other options an admin should be able to set in game.
+
+            #endregion eoptions
+
             #region set
-            // set command - must be admin this may prove to be our most fiddly command may need a rewrite eventually
-            // perhaps we limit set command to item managment and add another command like /option for the constant settings
+            //Item managment -
             // allows an admin to maintain on hand, blacklist, buy and sell prices of npc market
             // The regex needs fine tuning but should basically work
             //Usage: /set <qty> "item name"   (to set the on hand stock of an item)
             //       /set blacklist "item name" (to toggle blacklist on or off (depending on current state))
             //       /set buy "item name"  <price>
             //       /set sell "item name" <price>
-            // also will eventually set options like limited or unlimited stock, range checks size (or on or off), currency name
-            // and trading on or off.   Or any other options an admin should be able to set in game.
             // we need a /check command maybe to display current blacklist status, price and stock too
 
             if (split[0].Equals("/set", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
@@ -556,10 +550,6 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("SET", "Configuring {0} {1}", content.TypeId.ToString(), content.SubtypeName);
 
                     // TODO: do range checks for the market, using MarketManager.FindMarketsFromLocation()
-
-                    // TODO: get more from the /SET command to set prices and Blacklist.
-                    // aha i see what you did there SetMarketItemType.Quantity, SetMarketItemType.Prices, SetMarketItemType.Blacklisted
-                    // on it soon hopefully
                     //SendMessage(ulong marketId, string itemTypeId, string itemSubTypeName, SetMarketItemType setType,
                     // decimal itemQuantity, decimal itemBuyPrice, decimal itemSellPrice, bool blackListed)
                     if (blacklist) //we want to black list
@@ -574,35 +564,6 @@ namespace Economy.scripts
                     {
                         MessageSet.SendMessageSell(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, amount);
                     }
-                    else if (tradezone) //or do we want to manage tradezone..?
-                    {
-                        //first work out what our location is assign to mypos
-                        
-                        //if nothing was typed in after tradezone ("/set tradezone") or we used move ("/set tradezone move 1,2,3")
-                            //if more than one NPC market exists and we didnt specify "move"
-                                //show error sorry dont know which market instance to move
-                            //else
-                                //if move specified 
-                                    //write mypos over the specified market location (1,2,3) (if it exists, show error otherwise)     
-                                //else   
-                                    //write mypos over the top of the single NPC market location
-                        //else 
-                            //if we just typed add ("/set tradezone add")
-                                //add another NPC market entry at location mypos
-                            //else we typed more than just add ("/set tradezone add 1 2 3") 
-                                //add another NPC market entry at location 1 2 3
-                            //if we just typed remove ("/set tradezone remove")
-                                //show error must specify location to remove
-                            //else we typed more than just remove ("/set tradezone remove 1 2 3") 
-                                //remove NPC market entry at location 1 2 3
-                            //if we just typed list ("/set tradezone list")
-                                //display a list of all NPC trade zone coordinates
-                            //else 
-                                //ignore
-                            
-                          
-
-                    }
                     else //no we must want to set on hand?
                     {
                         MessageSet.SendMessageQuantity(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, amount);
@@ -610,9 +571,6 @@ namespace Economy.scripts
                     //whatever we did we are done now
                     return true;
                 }
-
-
-
 
                 MyAPIGateway.Utilities.ShowMessage("SET", "/set #1 #2 #3");
                 //MyAPIGateway.Utilities.ShowMessage("SET", "#1 is quantity, #2 is item");
@@ -793,8 +751,7 @@ namespace Economy.scripts
             #region value
             // value command for looking up the table price of an item.
             // eg /value itemname optionalqty
-            // !!!is it possible to make this work more like the bal or pay command so
-            // that the same item search can be reused in buy and sell too!!! ?
+
             if (split[0].Equals("/value", StringComparison.InvariantCultureIgnoreCase))
             {
                 match = Regex.Match(messageText, ValuePattern, RegexOptions.IgnoreCase);
@@ -941,7 +898,7 @@ namespace Economy.scripts
             #endregion ver
 
             #region news system
-            //news reply - early proof of concept work
+            //news reply - early proof of concept work https://github.com/jpcsupplies/Economy_mod/issues/70
             //this should fire a sub with the parameter as the message to be displayed, that way if we get other things like bounties or
             //navigation hazard warnings and random frontier news working, we can just throw the generated news report at 
             //the global news sub to make it display
