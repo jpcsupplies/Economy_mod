@@ -516,14 +516,13 @@ namespace Economy.scripts
                 bool setbuy = false;
                 bool setsell = false;
                 bool blacklist = false;
-                bool tradezone = false;
+                
                 match = Regex.Match(messageText, SetPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     itemName = match.Groups["item"].Value.Trim();
                     setbuy = match.Groups["buy"].Value.Equals("buy", StringComparison.InvariantCultureIgnoreCase);
                     setsell = match.Groups["sell"].Value.Equals("sell", StringComparison.InvariantCultureIgnoreCase);
-                    blacklist = match.Groups["tradezone"].Value.Equals("tradezone", StringComparison.InvariantCultureIgnoreCase);
                     blacklist = match.Groups["blacklist"].Value.Equals("blacklist", StringComparison.InvariantCultureIgnoreCase);
                     if (!blacklist && !setbuy && !setsell) // must be setting on hand
                         if (!decimal.TryParse(match.Groups["qty"].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
