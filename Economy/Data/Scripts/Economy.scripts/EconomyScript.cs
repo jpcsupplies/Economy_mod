@@ -51,7 +51,7 @@ namespace Economy.scripts
         //set is for admins to configure things like on hand, npc market pricing, toggle blacklist
         //Examples: eg /set 10000 ice    or /set blacklist ice   or /set buy item price
 
-        const string SetPattern = @"(?<command>/set)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<blacklist>blacklist)|(?<tradezone>tradezone)|(?<buy>buy)|(?<sell>sell))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+))))?";
+        const string SetPattern = @"(?<command>/set)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<blacklist>blacklist)|(?<buy>buy)|(?<sell>sell))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+))))?";
 
         /// <summary>
         ///  buy pattern no "all" required.   reusing sell  
