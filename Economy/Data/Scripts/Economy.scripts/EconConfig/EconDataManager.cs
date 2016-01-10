@@ -879,6 +879,49 @@
             }
         }
 
+        public static void CreateNpcMarket(string marketName, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)
+        {
+            EconomyScript.Instance.ServerLogger.WriteInfo("Creating Npc Market.");
+
+
+            var market = new MarketStruct
+            {
+                MarketId = EconomyConsts.NpcMerchantId,
+                DisplayName = marketName,
+                MarketItems = new List<MarketItemStruct>(),
+                MarketZoneType = shape
+            };
+            switch (shape)
+            {
+                case MarketZoneType.FixedSphere:
+                    market.MarketZoneSphere = new BoundingSphereD(new Vector3D((double)x, (double)y, (double)z), (double)size);
+                    break;
+                case MarketZoneType.FixedBox:
+                    var sz = (double)(size / 2);
+                    market.MarketZoneBox = new BoundingBoxD(new Vector3D((double)x - sz, (double)y - sz, (double)z - sz), new Vector3D((double)x + sz, (double)y + sz, (double)z + sz));
+                    break;
+            }
+
+            EconomyScript.Instance.Data.Markets.Add(market);
+
+            // Add missing items that are covered by Default items.
+            foreach (var defaultItem in EconomyScript.Instance.Config.DefaultPrices)
+            {
+                var item = market.MarketItems.FirstOrDefault(e => e.TypeId.Equals(defaultItem.TypeId) && e.SubtypeName.Equals(defaultItem.SubtypeName));
+                if (item == null)
+                {
+                    market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = defaultItem.Quantity });
+                    EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
+                }
+                else
+                {
+                    // Disable any blackmarket items.
+                    if (!defaultItem.IsBlacklisted)
+                        item.IsBlacklisted = false;
+                }
+            }
+        }
+
         private static void ValidateAndUpdateData(EconDataStruct data, List<MarketItemStruct> defaultPrices)
         {
             EconomyScript.Instance.ServerLogger.WriteInfo("Validating and Updating Data.");

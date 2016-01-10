@@ -88,6 +88,7 @@
     <Compile Include="Management\SeTextBuilder.cs" />
     <Compile Include="Management\TextPanelWriter.cs" />
     <Compile Include="Messages\MessageBuy.cs" />
+    <Compile Include="Messages\MessageMarketManageNpc.cs" />
     <Compile Include="Messages\MessageMarketPriceList.cs" />
     <Compile Include="Messages\MessageSet.cs" />
     <Compile Include="Messages\MessageSell.cs" />

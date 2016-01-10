@@ -1,5 +1,5 @@
 ﻿/*
- *  Economy Mod %EconomyConsts.MajorVer%
+ *  Economy Mod <see cref="EconomyConsts.MajorVer"/>
  *  by PhoenixX (JPC Dev), Screaming Angels (Midspace), Tangentspy
  *  For use with Space Engineers Game
  *  Refer to github issues or steam/git dev guide/wiki or the team notes
@@ -58,6 +58,18 @@ namespace Economy.scripts
         /// /buy 10 "iron ingot" || /buy 10 "iron ingot" 1 || /buy 10 "iron ingot" 1 fred
         /// </summary>
         const string BuyPattern = @"(?<command>/buy)\s+(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>[^\s]*))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+)))(?:\s+(?:(?:""(?<user>[^""]|.*?)"")|(?<user>[^\s]*)))?)?";
+
+        /// <summary>
+        /// pattern defines how to create a new NPC Market.
+        /// /npc add|create {name} {x} {y} {z} {size} {shape}
+        /// </summary>
+        const string NpcAddPattern = @"(?<command>/npc)\s+((add)|(create))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<X>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Y>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Z>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Size>(\d+(\.\d*)?))\s+(?<shape>(round)|(cicle)(sphere)|(spherical)|(box)|(cube)|(cubic))";
+
+        /// <summary>
+        /// pattern defines how to delete an existing NPC Market by name.
+        /// /npc del|delete|remove "{name}" or {name}
+        /// </summary>
+        const string NpcDeletePattern = @"(?<command>/npc)\s+((del)|(delete)|(remove))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>.*))";
 
         #endregion
 
@@ -516,7 +528,7 @@ namespace Economy.scripts
                 bool setbuy = false;
                 bool setsell = false;
                 bool blacklist = false;
-                
+
                 match = Regex.Match(messageText, SetPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
@@ -845,11 +857,69 @@ namespace Economy.scripts
             }
             #endregion
 
+            #region npc trade zones
+
+            // npc command.  For Admins only.
+            if (split[0].Equals("/npc", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
+            {
+                // Example: /npc list
+                //          /npc add/create <name> <x> <y> <z> <size> <shape>
+                //          /npc delete/remove <name>
+
+                match = Regex.Match(messageText, NpcAddPattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    string marketName = match.Groups["name"].Value;
+                    decimal x = Convert.ToDecimal(match.Groups["X"].Value, CultureInfo.InvariantCulture);
+                    decimal y = Convert.ToDecimal(match.Groups["Y"].Value, CultureInfo.InvariantCulture);
+                    decimal z = Convert.ToDecimal(match.Groups["Z"].Value, CultureInfo.InvariantCulture);
+                    decimal size = Convert.ToDecimal(match.Groups["Size"].Value, CultureInfo.InvariantCulture);
+                    string shapeName = match.Groups["shape"].Value;
+
+                    MarketZoneType shape = MarketZoneType.FixedSphere;
+                    switch (shapeName)
+                    {
+                        case "sphere":
+                        case "spherical":
+                        case "round":
+                        case "cicle":
+                            shape = MarketZoneType.FixedSphere;
+                            break;
+                        case "box":
+                        case "cube":
+                        case "cubic":
+                            shape = MarketZoneType.FixedBox;
+                            break;
+                    }
+
+                    MessageMarketManageNpc.SendAddMessage(marketName, x, y, z, size, shape);
+                    return true;
+                }
+
+                match = Regex.Match(messageText, NpcDeletePattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    string marketName = match.Groups["name"].Value;
+                    MessageMarketManageNpc.SendDeleteMessage(marketName);
+                    return true;
+                }
+
+                if (split.Length > 1 && split[1].Equals("list", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    MessageMarketManageNpc.SendListMessage();
+                    return true;
+                }
+
+                // TODO: report back bad command.
+            }
+
+            #endregion
+
             #region accounts
             // accounts command.  For Admins only.
             if (split[0].Equals("/accounts", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
-                 //add a day/week/month filter to accounts   OR just sort accounts list by date? OR accept a integer for number of days to filter by?
+                //add a day/week/month filter to accounts   OR just sort accounts list by date? OR accept a integer for number of days to filter by?
                 if (split.Length <= 1) { MessageListAccounts.SendMessage(); }
                 else {
                     switch (split[1].ToLowerInvariant())

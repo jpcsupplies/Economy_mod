@@ -185,6 +185,18 @@
     }
 
     /// <summary>
+    /// Commands to be used when managing Npc Market zones.
+    /// </summary>
+    public enum MarketManage : byte
+    {
+        Add,
+        Delete,
+        List,
+        Rename,
+        Move
+    }
+
+    /// <summary>
     /// Names need to be explicitly set, as they will be written to the Data file.
     /// Otherwise if we change the names, they will break.
     /// </summary>
