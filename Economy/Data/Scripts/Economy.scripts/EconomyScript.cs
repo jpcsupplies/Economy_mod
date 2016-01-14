@@ -28,11 +28,12 @@ namespace Economy.scripts
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Interfaces;
     using VRage;
+    using VRage.Game.Components;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
 
-    [Sandbox.Common.MySessionComponentDescriptor(Sandbox.Common.MyUpdateOrder.AfterSimulation)]
+    [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     public class EconomyScript : MySessionComponentBase
     {
         #region constants
@@ -1120,7 +1121,7 @@ namespace Economy.scripts
             // This may acutally interfere with other mods or the server itself that are dependant the Text resources of the game.
             MyTexts.Clear();
             MyTexts.LoadTexts(Path.Combine(MyAPIGateway.Utilities.GamePaths.ContentPath, "Data", "Localization"), language.CultureName, language.SubcultureName);
-        } 
+        }
 
         #endregion
     }
