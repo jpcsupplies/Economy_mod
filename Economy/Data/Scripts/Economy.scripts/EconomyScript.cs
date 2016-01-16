@@ -62,15 +62,21 @@ namespace Economy.scripts
 
         /// <summary>
         /// pattern defines how to create a new NPC Market.
-        /// /npc add|create {name} {x} {y} {z} {size} {shape}
+        /// /npczone add|create {name} {x} {y} {z} {size} {shape}
         /// </summary>
-        const string NpcAddPattern = @"(?<command>/npc)\s+((add)|(create))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<X>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Y>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Z>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Size>(\d+(\.\d*)?))\s+(?<shape>(round)|(cicle)(sphere)|(spherical)|(box)|(cube)|(cubic))";
+        const string NpcAddPattern = @"(?<command>/npczone)\s+((add)|(create))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<X>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Y>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Z>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Size>(\d+(\.\d*)?))\s+(?<shape>(round)|(cicle)(sphere)|(spherical)|(box)|(cube)|(cubic))";
 
         /// <summary>
         /// pattern defines how to delete an existing NPC Market by name.
-        /// /npc del|delete|remove "{name}" or {name}
+        /// /npczone del|delete|remove "{name}" or {name}
         /// </summary>
-        const string NpcDeletePattern = @"(?<command>/npc)\s+((del)|(delete)|(remove))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>.*))";
+        const string NpcDeletePattern = @"(?<command>/npczone)\s+((del)|(delete)|(remove))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>.*))";
+
+        /// <summary>
+        /// pattern defines how to rename an existing NPC Market name.
+        /// /npczone ren|rename|name "{nameold}" or {nameold} "{namenew}" or {namenew}
+        /// </summary>
+        const string NpcRenamePattern = @"(?<command>/npczone)\s+((ren)|(rename)|(name))\s+(?:(?:""(?<nameold>[^""]|.*?)"")|(?<nameold>.*))\s+(?:(?:""(?<namenew>[^""]|.*?)"")|(?<namenew>.*))";
 
         #endregion
 
@@ -861,11 +867,11 @@ namespace Economy.scripts
             #region npc trade zones
 
             // npc command.  For Admins only.
-            if (split[0].Equals("/npc", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
+            if (split[0].Equals("/npczone", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
-                // Example: /npc list
-                //          /npc add/create <name> <x> <y> <z> <size> <shape>
-                //          /npc delete/remove <name>
+                // Example: /npczone list
+                //          /npczone add/create <name> <x> <y> <z> <size> <shape>
+                //          /npczone delete/remove <name>
 
                 match = Regex.Match(messageText, NpcAddPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
@@ -902,6 +908,13 @@ namespace Economy.scripts
                 {
                     string marketName = match.Groups["name"].Value;
                     MessageMarketManageNpc.SendDeleteMessage(marketName);
+                    return true;
+                }
+
+                match = Regex.Match(messageText, NpcRenamePattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    MessageMarketManageNpc.SendRenameMessage(match.Groups["nameold"].Value, match.Groups["namenew"].Value);
                     return true;
                 }
 

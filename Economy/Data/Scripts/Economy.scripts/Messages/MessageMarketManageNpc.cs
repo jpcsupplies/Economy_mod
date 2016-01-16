@@ -31,6 +31,9 @@
         [ProtoMember(7)]
         public MarketZoneType Shape;
 
+        [ProtoMember(8)]
+        public string OldMarketName;
+
         public static void SendAddMessage(string marketName, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)
         {
             ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = MarketManage.Add, MarketName = marketName, X = x, Y = y, Z = z, Size = size, Shape = shape });
@@ -39,6 +42,11 @@
         public static void SendDeleteMessage(string marketName)
         {
             ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = MarketManage.Delete, MarketName = marketName });
+        }
+
+        public static void SendRenameMessage(string oldMarketName, string newMarketName)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = MarketManage.Rename, OldMarketName = oldMarketName, MarketName = newMarketName });
         }
 
         public static void SendListMessage()
@@ -65,10 +73,16 @@
             {
                 case MarketManage.Add:
                     {
-                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase));
-                        if (market != null)
+                        if (string.IsNullOrWhiteSpace(MarketName) || MarketName == "*")
                         {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "NPC ADD", "A market of name '{0}' already exists.", market.DisplayName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "NPC ADD", "Invalid name supplied for the market name.");
+                            return;
+                        }
+
+                        var checkMarket = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase));
+                        if (checkMarket != null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "NPC ADD", "A market of name '{0}' already exists.", checkMarket.DisplayName);
                             return;
                         }
 
@@ -126,7 +140,46 @@
                     break;
 
                 case MarketManage.Rename:
-                    // TODO:
+                    {
+                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(OldMarketName, StringComparison.InvariantCultureIgnoreCase));
+                        if (market == null)
+                        {
+                            var markets = EconomyScript.Instance.Data.Markets.Where(m => m.DisplayName.IndexOf(OldMarketName, StringComparison.InvariantCultureIgnoreCase) >= 0).ToArray();
+                            if (markets.Length == 0)
+                            {
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "NPC RENAME", "The specified market name could not be found.");
+                                return;
+                            }
+                            if (markets.Length > 1)
+                            {
+                                var str = new StringBuilder();
+                                str.Append("The specified market name could not be found.\r\n    Which did you mean?\r\n");
+                                foreach (var m in markets)
+                                    str.AppendLine(m.DisplayName);
+                                MessageClientDialogMessage.SendMessage(SenderSteamId, "NPC RENAME", " ", str.ToString());
+                                return;
+                            }
+                            market = markets[0];
+                        }
+
+
+                        if (string.IsNullOrWhiteSpace(MarketName) || MarketName == "*")
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "NPC RENAME", "Invalid name supplied for the market name.");
+                            return;
+                        }
+
+                        var checkMarket = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase));
+                        if (checkMarket != null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "NPC RENAME", "A market of name '{0}' already exists.", checkMarket.DisplayName);
+                            return;
+                        }
+
+                        var oldName = market.DisplayName;
+                        market.DisplayName = MarketName;
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "NPC RENAME", "The market '{0}' has been renamed to '{1}.", oldName, market.DisplayName);
+                    }
                     break;
 
                 case MarketManage.Move:
