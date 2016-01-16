@@ -52,7 +52,7 @@ namespace Economy.scripts
         //set is for admins to configure things like on hand, npc market pricing, toggle blacklist
         //Examples: eg /set 10000 ice    or /set blacklist ice   or /set buy item price
 
-        const string SetPattern = @"(?<command>/set)\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<blacklist>blacklist)|(?<buy>buy)|(?<sell>sell))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+))))?";
+        const string SetPattern = @"(?<command>/set)(?:\s+(?:(?:""(?<market>[^""]|.*?)"")|(?<market>[^\s]*)))?\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<blacklist>blacklist)|(?<buy>buy)|(?<sell>sell))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+))))?";
 
         /// <summary>
         ///  buy pattern no "all" required.   reusing sell  
@@ -526,23 +526,21 @@ namespace Economy.scripts
             //       /set blacklist "item name" (to toggle blacklist on or off (depending on current state))
             //       /set buy "item name"  <price>
             //       /set sell "item name" <price>
+            //       /set * sell "item name" <price>
+            //       /set "market zone" sell "item name" <price>
             // we need a /check command maybe to display current blacklist status, price and stock too
 
             if (split[0].Equals("/set", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
-                decimal amount = 0;
-                string itemName = "";
-                bool setbuy = false;
-                bool setsell = false;
-                bool blacklist = false;
-
                 match = Regex.Match(messageText, SetPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
-                    itemName = match.Groups["item"].Value.Trim();
-                    setbuy = match.Groups["buy"].Value.Equals("buy", StringComparison.InvariantCultureIgnoreCase);
-                    setsell = match.Groups["sell"].Value.Equals("sell", StringComparison.InvariantCultureIgnoreCase);
-                    blacklist = match.Groups["blacklist"].Value.Equals("blacklist", StringComparison.InvariantCultureIgnoreCase);
+                    string marketZone = match.Groups["market"].Value.Trim();
+                    string itemName = match.Groups["item"].Value.Trim();
+                    bool setbuy = match.Groups["buy"].Value.Equals("buy", StringComparison.InvariantCultureIgnoreCase);
+                    bool setsell = match.Groups["sell"].Value.Equals("sell", StringComparison.InvariantCultureIgnoreCase);
+                    bool blacklist = match.Groups["blacklist"].Value.Equals("blacklist", StringComparison.InvariantCultureIgnoreCase);
+                    decimal amount = 0;
                     if (!blacklist && !setbuy && !setsell) // must be setting on hand
                         if (!decimal.TryParse(match.Groups["qty"].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
                             amount = 0;
@@ -565,26 +563,25 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options.Keys) + " ?");
                         return true;
                     }
-                    MyAPIGateway.Utilities.ShowMessage("SET", "Configuring {0} {1}", content.TypeId.ToString(), content.SubtypeName);
 
                     // TODO: do range checks for the market, using MarketManager.FindMarketsFromLocation()
                     //SendMessage(ulong marketId, string itemTypeId, string itemSubTypeName, SetMarketItemType setType,
                     // decimal itemQuantity, decimal itemBuyPrice, decimal itemSellPrice, bool blackListed)
                     if (blacklist) //we want to black list
                     {
-                        MessageSet.SendMessage(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Blacklisted, 0, 0, 0);
+                        MessageSet.SendMessage(EconomyConsts.NpcMerchantId, marketZone, content.TypeId.ToString(), content.SubtypeName, SetMarketItemType.Blacklisted, 0, 0, 0);
                     }
                     else if (setbuy) // do we want to set buy price..?
                     {
-                        MessageSet.SendMessageBuy(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, amount);
+                        MessageSet.SendMessageBuy(EconomyConsts.NpcMerchantId, marketZone, content.TypeId.ToString(), content.SubtypeName, amount);
                     }
                     else if (setsell) //or do we want to set sell price..?
                     {
-                        MessageSet.SendMessageSell(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, amount);
+                        MessageSet.SendMessageSell(EconomyConsts.NpcMerchantId, marketZone, content.TypeId.ToString(), content.SubtypeName, amount);
                     }
                     else //no we must want to set on hand?
                     {
-                        MessageSet.SendMessageQuantity(EconomyConsts.NpcMerchantId, content.TypeId.ToString(), content.SubtypeName, amount);
+                        MessageSet.SendMessageQuantity(EconomyConsts.NpcMerchantId, marketZone, content.TypeId.ToString(), content.SubtypeName, amount);
                     }
                     //whatever we did we are done now
                     return true;

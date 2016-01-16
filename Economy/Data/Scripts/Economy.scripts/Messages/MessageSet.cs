@@ -1,14 +1,17 @@
 ﻿namespace Economy.scripts.Messages
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using EconConfig;
     using Economy.scripts;
     using EconStructures;
     using ProtoBuf;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
+    using VRage.ModAPI;
     using VRage.ObjectBuilders;
 
     /// <summary>
@@ -17,6 +20,8 @@
     [ProtoContract]
     public class MessageSet : MessageBase
     {
+        #region properties
+
         /// <summary>
         /// The market to set prices in.
         /// </summary>
@@ -24,56 +29,64 @@
         public ulong MarketId;
 
         /// <summary>
-        /// item id we are setting
+        /// The market name to set prices in.
         /// </summary>
         [ProtoMember(2)]
+        public string MarketZone;
+
+        /// <summary>
+        /// item id we are setting
+        /// </summary>
+        [ProtoMember(3)]
         public string ItemTypeId;
 
         /// <summary>
         /// item subid we are setting
         /// </summary>
-        [ProtoMember(3)]
+        [ProtoMember(4)]
         public string ItemSubTypeName;
 
-        [ProtoMember(4)]
+        [ProtoMember(5)]
         public SetMarketItemType SetType;
 
         /// <summary>
         /// qty of item
         /// </summary>
-        [ProtoMember(5)]
+        [ProtoMember(6)]
         public decimal ItemQuantity;
 
         /// <summary>
         /// unit price to buy item at.
         /// </summary>
-        [ProtoMember(6)]
+        [ProtoMember(7)]
         public decimal ItemBuyPrice;
 
         /// <summary>
         /// unit price to sell item at.
         /// </summary>
-        [ProtoMember(7)]
+        [ProtoMember(8)]
         public decimal ItemSellPrice;
 
-        public static void SendMessage(ulong marketId, string itemTypeId, string itemSubTypeName, SetMarketItemType setType, decimal itemQuantity, decimal itemBuyPrice, decimal itemSellPrice)
+        #endregion
+
+        public static void SendMessage(ulong marketId, string marketZone, string itemTypeId, string itemSubTypeName, SetMarketItemType setType, decimal itemQuantity, decimal itemBuyPrice, decimal itemSellPrice)
         {
-            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = setType, ItemQuantity = itemQuantity, ItemBuyPrice = itemBuyPrice, ItemSellPrice = itemSellPrice });
+            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, MarketZone = marketZone, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = setType, ItemQuantity = itemQuantity, ItemBuyPrice = itemBuyPrice, ItemSellPrice = itemSellPrice });
         }
 
-        public static void SendMessageBuy(ulong marketId, string itemTypeId, string itemSubTypeName, decimal itemBuyPrice)
+        public static void SendMessageBuy(ulong marketId, string marketZone, string itemTypeId, string itemSubTypeName, decimal itemBuyPrice)
         {
-            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = SetMarketItemType.BuyPrice, ItemBuyPrice = itemBuyPrice });
+            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, MarketZone = marketZone, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = SetMarketItemType.BuyPrice, ItemBuyPrice = itemBuyPrice });
         }
 
-        public static void SendMessageSell(ulong marketId, string itemTypeId, string itemSubTypeName, decimal itemSellPrice)
+        public static void SendMessageSell(ulong marketId, string marketZone, string itemTypeId, string itemSubTypeName, decimal itemSellPrice)
         {
-            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = SetMarketItemType.SellPrice, ItemSellPrice = itemSellPrice });
+            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, MarketZone = marketZone, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = SetMarketItemType.SellPrice, ItemSellPrice = itemSellPrice });
         }
 
-        public static void SendMessageQuantity(ulong marketId, string itemTypeId, string itemSubTypeName, decimal itemQuantity)
+        public static void SendMessageQuantity(ulong marketId, string marketZone, string itemTypeId, string itemSubTypeName, decimal itemQuantity)
         {
-            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = SetMarketItemType.Quantity, ItemQuantity = itemQuantity });
+            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, MarketZone = marketZone, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = SetMarketItemType.Quantity, ItemQuantity = itemQuantity });
         }
 
         public override void ProcessClient()
@@ -137,83 +150,110 @@
             }
 
             // Find the specified market.
-            var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.MarketId == MarketId);
-            if (market == null)
+            List<MarketStruct> markets;
+            if (string.IsNullOrEmpty(MarketZone))
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "Sorry, the market you are accessing does not exist!");
-                return;
+                var character = player.GetCharacter();
+
+                if (character == null)
+                {
+                    // Player has no body. Could mean they are dead.
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "There is no market at your location to set.");
+                    return;
+                }
+
+                var position = ((IMyEntity)character).WorldMatrix.Translation;
+                markets = MarketManager.FindMarketsFromLocation(position).Where(m => m.MarketId == MarketId).ToList();
+            }
+            else
+            {
+                markets = EconomyScript.Instance.Data.Markets.Where(m => m.MarketId == MarketId && (MarketZone == "*" || m.DisplayName.Equals(MarketZone, StringComparison.InvariantCultureIgnoreCase))).ToList();
             }
 
-            var marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
-            if (marketItem == null)
+            if (markets.Count == 0)
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "Sorry, the items you are trying to set doesn't have a market entry!");
-                // In reality, this shouldn't happen as all markets have their items synced up on start up of the mod.
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "Sorry, you are not near any markets currently or the market does not exist!");
                 return;
             }
-
-            MarketItemStruct configItem = null;
-            if (player.IsAdmin() && MarketId == EconomyConsts.NpcMerchantId)
-                configItem = EconomyScript.Instance.Config.DefaultPrices.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
 
             var msg = new StringBuilder();
-            msg.AppendFormat("You just set '{0}'", definition.GetDisplayName());
 
-            if (SetType.HasFlag(SetMarketItemType.Quantity))
-            {
-                marketItem.Quantity = ItemQuantity;
-                msg.AppendFormat(", stock on hand to {0} units", ItemQuantity);
-            }
+            msg.AppendFormat("Applying changes to : '{0}' {1}/{2}\r\n\r\n", definition.GetDisplayName(), ItemTypeId, ItemSubTypeName);
 
-            // Validation to prevent admins setting prices too low for items.
-            if (SetType.HasFlag(SetMarketItemType.BuyPrice))
+            foreach (var market in markets)
             {
-                if (ItemBuyPrice >= 0)
+                msg.AppendFormat("Market: '{0}'\r\n", market.DisplayName);
+
+                var marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
+                if (marketItem == null)
                 {
-                    marketItem.BuyPrice = ItemBuyPrice;
-                    msg.AppendFormat(", buy price to {0}", ItemBuyPrice);
+                    msg.AppendLine("Sorry, the items you are trying to set doesn't have a market entry!");
+                    // In reality, this shouldn't happen as all markets have their items synced up on start up of the mod.
+                    continue;
+                }
+
+                MarketItemStruct configItem = null;
+                if (player.IsAdmin() && MarketId == EconomyConsts.NpcMerchantId)
+                    configItem = EconomyScript.Instance.Config.DefaultPrices.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
+
+                if (SetType.HasFlag(SetMarketItemType.Quantity))
+                {
+                    marketItem.Quantity = ItemQuantity;
+                    msg.AppendFormat("Stock on hand to {0} units", ItemQuantity);
+                }
+
+                // Validation to prevent admins setting prices too low for items.
+                if (SetType.HasFlag(SetMarketItemType.BuyPrice))
+                {
+                    if (ItemBuyPrice >= 0)
+                    {
+                        marketItem.BuyPrice = ItemBuyPrice;
+                        msg.AppendFormat("Buy price to {0}", ItemBuyPrice);
+
+                        if (configItem != null)
+                        {
+                            configItem.BuyPrice = ItemBuyPrice;
+                            msg.AppendFormat("; config updated.");
+                        }
+                    }
+                    else
+                        msg.AppendFormat("Could not set buy price to less than 0.");
+                }
+
+                // Validation to prevent admins setting prices too low for items.
+                if (SetType.HasFlag(SetMarketItemType.SellPrice))
+                {
+                    if (ItemSellPrice >= 0)
+                    {
+                        marketItem.SellPrice = ItemSellPrice;
+                        msg.AppendFormat("Sell price to {0}", ItemSellPrice);
+
+                        if (configItem != null)
+                        {
+                            configItem.SellPrice = ItemSellPrice;
+                            msg.AppendFormat("; config updated.");
+                        }
+                    }
+                    else
+                        msg.AppendFormat("Could not set sell price to less than 0.");
+                }
+
+                if (SetType.HasFlag(SetMarketItemType.Blacklisted))
+                {
+                    marketItem.IsBlacklisted = !marketItem.IsBlacklisted;
+                    msg.AppendFormat("Blacklist to {0}", marketItem.IsBlacklisted ? "On" : "Off");
 
                     if (configItem != null)
                     {
-                        configItem.BuyPrice = ItemBuyPrice;
+                        configItem.IsBlacklisted = marketItem.IsBlacklisted;
                         msg.AppendFormat("; config updated.");
                     }
                 }
-                else
-                    msg.AppendFormat(", could not set buy price to less than 0.");
+                msg.AppendLine();
+                msg.AppendLine();
             }
 
-            // Validation to prevent admins setting prices too low for items.
-            if (SetType.HasFlag(SetMarketItemType.SellPrice))
-            {
-                if (ItemSellPrice >= 0)
-                {
-                    marketItem.SellPrice = ItemSellPrice;
-                    msg.AppendFormat(", sell price to {0}", ItemSellPrice);
-
-                    if (configItem != null)
-                    {
-                        configItem.SellPrice = ItemSellPrice;
-                        msg.AppendFormat("; config updated.");
-                    }
-                }
-                else
-                    msg.AppendFormat(", could not set sell price to less than 0.");
-            }
-
-            if (SetType.HasFlag(SetMarketItemType.Blacklisted))
-            {
-                marketItem.IsBlacklisted = !marketItem.IsBlacklisted;
-                msg.AppendFormat(", blacklist to {0}", marketItem.IsBlacklisted ? "On" : "Off");
-
-                if (configItem != null)
-                {
-                    configItem.IsBlacklisted = marketItem.IsBlacklisted;
-                    msg.AppendFormat("; config updated.");
-                }
-            }
-
-            MessageClientTextMessage.SendMessage(SenderSteamId, "SET", msg.ToString());
+            MessageClientDialogMessage.SendMessage(SenderSteamId, "SET", " ", msg.ToString());
         }
     }
 }
