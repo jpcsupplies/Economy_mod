@@ -64,7 +64,7 @@ namespace Economy.scripts
         /// pattern defines how to create a new NPC Market.
         /// /npczone add|create {name} {x} {y} {z} {size} {shape}
         /// </summary>
-        const string NpcAddPattern = @"(?<command>/npczone)\s+((add)|(create))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<X>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Y>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Z>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Size>(\d+(\.\d*)?))\s+(?<shape>(round)|(cicle)(sphere)|(spherical)|(box)|(cube)|(cubic))";
+        const string NpcAddPattern = @"(?<command>/npczone)\s+((add)|(create))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<X>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Y>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Z>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Size>(\d+(\.\d*)?))\s+(?<shape>(round)|(circle)|(sphere)|(spherical)|(box)|(cube)|(cubic))";
 
         /// <summary>
         /// pattern defines how to delete an existing NPC Market by name.
@@ -886,7 +886,7 @@ namespace Economy.scripts
                         case "sphere":
                         case "spherical":
                         case "round":
-                        case "cicle":
+                        case "circle":
                             shape = MarketZoneType.FixedSphere;
                             break;
                         case "box":
