@@ -11,8 +11,10 @@
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
+    using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
     using VRage.Game;
+    using VRage.Game.Entity;
     using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
 
@@ -154,7 +156,7 @@
 
                             if (block.FatBlock != null)
                             {
-                                var cube = (Sandbox.Game.Entities.MyEntity)block.FatBlock;
+                                var cube = (MyEntity)block.FatBlock;
 
                                 #region Go through Gasses for tanks and cockpits.
 

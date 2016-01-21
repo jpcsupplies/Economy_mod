@@ -10,8 +10,10 @@
     using Sandbox.Common;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
+    using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
     using VRage;
+    using VRage.Game.Entity;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using IMyCargoContainer = Sandbox.ModAPI.Ingame.IMyCargoContainer;
@@ -204,7 +206,7 @@
                         EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- cataloging cargo cubes.", SenderSteamId);
 
                         // Build list of all cargo blocks that player is attached to as pilot or passenger.
-                        var cargoBlocks = new List<Sandbox.Game.Entities.MyEntity>();
+                        var cargoBlocks = new List<MyEntity>();
                         var controllingCube = sellingPlayer.Controller.ControlledEntity as IMyCubeBlock;
                         if (controllingCube != null)
                         {
@@ -212,7 +214,7 @@
                             var blocks = new List<Sandbox.ModAPI.Ingame.IMyTerminalBlock>();
                             terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
                             foreach (var block in blocks)
-                                cargoBlocks.Add((Sandbox.Game.Entities.MyEntity)block);
+                                cargoBlocks.Add((MyEntity)block);
                         }
 
                         EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- checking inventory.", SenderSteamId);
@@ -674,7 +676,7 @@
                 accountToSell.NickName, order.Quantity, definition.GetDisplayName(), transactionAmount, EconomyScript.Instance.Config.CurrencyName);
         }
 
-        private void RemoveInventory(IMyInventory playerInventory, List<Sandbox.Game.Entities.MyEntity> cargoBlocks, MyFixedPoint amount, MyDefinitionId definitionId)
+        private void RemoveInventory(IMyInventory playerInventory, List<MyEntity> cargoBlocks, MyFixedPoint amount, MyDefinitionId definitionId)
         {
             var available = playerInventory.GetItemAmount(definitionId);
             if (amount <= available)
@@ -712,7 +714,7 @@
         {
             MyFixedPoint amount = (MyFixedPoint)quantity;
 
-            var cargoBlocks = new List<Sandbox.Game.Entities.MyEntity>();
+            var cargoBlocks = new List<MyEntity>();
             var controllingCube = collectingPlayer.Controller.ControlledEntity as IMyCubeBlock;
             if (controllingCube != null)
             {
@@ -720,7 +722,7 @@
                 var blocks = new List<Sandbox.ModAPI.Ingame.IMyTerminalBlock>();
                 terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
                 foreach (var block in blocks)
-                    cargoBlocks.Add((Sandbox.Game.Entities.MyEntity)block);
+                    cargoBlocks.Add((MyEntity)block);
             }
 
             foreach (var cubeBlock in cargoBlocks)
