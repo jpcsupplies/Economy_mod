@@ -1096,15 +1096,19 @@ namespace Economy.scripts
                         case "ver":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/ver Displays the diagnostic version of running Economy script");
                             return true;
-                        case "npczone":
+                        case "npczone":  
                             helpreply = "/npczone list   -  Displays list of all defined NPC market portals\r\n" +
                                 "/npczone add [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]  -  Add a new NPC market zone\r\n" +
                                 " shape can be sphere or box. Eg /npczone add GunShop 1000 2000 4000 200 box\r\n" +
                                 " /npczone delete [zone name]  - removes the named zone eg. /npczone delete freds\r\n" +
                                 " /npczone rename oldname newname  -  change the ID name of the trade zone\r\n";
-                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /npczone (add)/list/([remove])/[rename oldname newname] ([zone]) (x y z size shape)");
-                            MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "npczone command", helpreply, null, "Close");
-                            return true;
+                            if (MyAPIGateway.Session.Player.IsAdmin())
+                            {   //but only if you are admin!
+                                MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /npczone (add)/list/([remove])/[rename oldname newname] ([zone]) (x y z size shape)");
+                                MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "npczone command", helpreply, null, "Close");
+                                return true;
+                            } else return false; //i know that is mean...
+                            
                         case "pricelist":
                             helpreply = "/pricelist X\r\n Displays current market zone prices of item type [X]\r\n" +
                                 "Eg X can be one or more of ore, ingot, component, ammo, tools\r\n" +
