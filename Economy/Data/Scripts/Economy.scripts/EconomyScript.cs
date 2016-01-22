@@ -922,6 +922,8 @@ namespace Economy.scripts
                 }
 
                 // TODO: report back bad command.
+                MyAPIGateway.Utilities.ShowMessage("/npczone list/[add]/remove zone [x y z radius shape]", "Manages your NPC trading zone portal locations.");
+                return true;
             }
 
             #endregion
@@ -1093,6 +1095,15 @@ namespace Economy.scripts
                             return true;
                         case "ver":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/ver Displays the diagnostic version of running Economy script");
+                            return true;
+                        case "npczone":
+                            helpreply = "/npczone list   -  Displays list of all defined NPC market portals\r\n" +
+                                "/npczone add [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]  -  Add a new NPC market zone\r\n" +
+                                " shape can be sphere or box. Eg /npczone add GunShop 1000 2000 4000 200 box\r\n" +
+                                " /npczone delete [zone name]  - removes the named zone eg. /npczone delete freds\r\n" +
+                                " /npczone rename oldname newname  -  change the ID name of the trade zone\r\n";
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /npczone (add)/list/([remove])/[rename oldname newname] ([zone]) (x y z size shape)");
+                            MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "npczone command", helpreply, null, "Close");
                             return true;
                         case "pricelist":
                             helpreply = "/pricelist X\r\n Displays current market zone prices of item type [X]\r\n" +
