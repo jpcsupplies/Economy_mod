@@ -32,10 +32,18 @@
                 EconomyScript.Instance.DelayedConnectionRequestTimer.Stop();
                 EconomyScript.Instance.DelayedConnectionRequestTimer.Close();
             }
+#region Initialise trade network hud
+            MyAPIGateway.Utilities.GetObjectiveLine().Title = "";
+            MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
+            MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("");
 
             MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
             MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Trade Network!", TradeNetworkName);
             MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/ehelp' for more informations about available commands");
+            MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyConsts.TradeNetworkName;
+            MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = ".";
+            MyAPIGateway.Utilities.GetObjectiveLine().Show();
+#endregion Initialise trade network hud
 
             if (OldCommunicationVersion)
             {

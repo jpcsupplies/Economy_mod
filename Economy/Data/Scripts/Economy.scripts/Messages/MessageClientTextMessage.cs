@@ -15,6 +15,7 @@
         public override void ProcessClient()
         {
             MyAPIGateway.Utilities.ShowMessage(Prefix, Content);
+            //need this to update balance on their HUD too
         }
 
         public override void ProcessServer()

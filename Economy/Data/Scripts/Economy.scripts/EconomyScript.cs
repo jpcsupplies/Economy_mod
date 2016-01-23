@@ -320,7 +320,30 @@ namespace Economy.scripts
                 ClientLogger.WriteException(ex);
                 MyAPIGateway.Utilities.ShowMessage("Error", "An exception has been logged in the file: {0}", ClientLogger.LogFileName);
             }
+            if (!hud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
         }
+
+        #region hud
+        private bool  hud()
+        {
+            //Hud, displays users balance, trade network name, and optionally faction and free storage space (% or unit?) in cargo and/or inventory
+            //may also eventually be used to display info about completed objectives in missions/jobs/bounties/employment etc
+            //be nice if we can set Left justified alignment too but i cant see any way not to conflict with other mods using ObjectiveLine()
+            //short of pushing all the text down 3 or 4 lines to MyAPIGateway.Utilities.GetObjectiveLine().Objectives[3] etc
+            //needs to call this at init (working needs correct balance), and at each call to message handling(done), and on recieving any notification of payment(cant access until public level).
+            //since other balance altering scenarios such as selling stock requires a command or prompt by player calling this
+            //at message handler should update in those scenarios automatically.
+            //not sure how to make it fire in init client/server safely so need help here
+            //that should avoid need for a timing loop and have no obvious sim impact
+            var lang = 0;  //probably should look up the real localisation here..
+            var bankbalance = "100"; //demo value atm as I cant get a number out of account manager for some reason i just get a string the same as the script call used?
+            //not working? var bankbalance = AccountManager.FindOrCreateAccount(MyAPIGateway.Session.Player.SteamUserId, MyAPIGateway.Session.Player.DisplayName, lang);
+            string readout = "Balance: " + bankbalance + " " + EconomyConsts.CurrencyName;
+            MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;
+            return true;  //probably need a catch of some sort for a return false, but anything going wrong here is probably part of another issue.
+            //and I am only using a bool to be lazy.  This should probably be HudManager.cs to make it public level
+        }
+        #endregion hud
 
         private static void HandleMessage(byte[] message)
         {
@@ -414,6 +437,7 @@ namespace Economy.scripts
         #region command list
         private bool ProcessMessage(string messageText)
         {
+
             Match match; // used by the Regular Expression to test user input.
                          // this list is going to get messy since the help and commands themself tell user the same thing 
             string[] split = messageText.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
