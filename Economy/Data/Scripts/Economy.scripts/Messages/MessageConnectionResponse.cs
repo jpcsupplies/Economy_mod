@@ -33,15 +33,25 @@
                 EconomyScript.Instance.DelayedConnectionRequestTimer.Close();
             }
 #region Initialise trade network hud
-            MyAPIGateway.Utilities.GetObjectiveLine().Title = "";
+            MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyConsts.TradeNetworkName;
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
-            MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("");
+            MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Type /bal to connect to network");
+            // if we wanted a 2nd mission add it like this MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission");
+            MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission: Survive | Deadline: Unlimited");
+              
 
-            MyAPIGateway.Utilities.ShowMessage("Economy", "loaded!");
+            MyAPIGateway.Utilities.ShowMessage("Economy", "Network Connected!");
             MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Trade Network!", TradeNetworkName);
             MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/ehelp' for more informations about available commands");
-            MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyConsts.TradeNetworkName;
-            MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = ".";
+
+            // if we need to switch to next mission use this MyAPIGateway.Utilities.GetObjectiveLine().AdvanceObjective();
+            //text of current objective useful for showmissionscreen string etc MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective;
+            // bool?? MyAPIGateway.Utilities.GetObjectiveLine().Equals;
+            // turn hud off MyAPIGateway.Utilities.GetObjectiveLine().Hide();
+            //change objectives text in array MyAPIGateway.Utilities.GetObjectiveLine().Objectives[element]="blah";
+            // increment decrement not sure how MyAPIGateway.Utilities.GetObjectiveLine().Visible;
+            // probably easier to clear() then repopulate, i cant see how to decriment properly 
+            //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.add|remove etc
             MyAPIGateway.Utilities.GetObjectiveLine().Show();
 #endregion Initialise trade network hud
 
