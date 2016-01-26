@@ -327,30 +327,31 @@ namespace Economy.scripts
         }
 
         private bool  hud()
-        {
+        {    // temp /* disabled */some questionable calls that may need server/client layers for DS  
+            //(hud does work single player  wierd errors DS)
             //Hud, displays users balance, trade network name, and optionally faction and free storage space (% or unit?) in cargo and/or inventory
             //may also eventually be used to display info about completed objectives in missions/jobs/bounties/employment etc
             //needs to call this at init (working), and at each call to message handling(working), and on recieving any notification of payment(cant access until public level).
             //since other balance altering scenarios such as selling stock requires a command or prompt by player calling this
             //at message handler should update in those scenarios automatically. That should avoid need for a timing loop and have no obvious sim impact
-            var SenderLanguage = 0;  //probably should look up the real localisation here..
+            /*var SenderLanguage = 0;  //probably should look up the real localisation here..
             var SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
-            string SenderDisplayName = MyAPIGateway.Session.Player.DisplayName;
+            string SenderDisplayName = MyAPIGateway.Session.Player.DisplayName; */
     
-            AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
+            //AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
             //EconomyScript.Instance.ServerLogger.WriteVerbose("Hud Balance Request for '{0}' ID '{1}'", SenderDisplayName, SenderSteamId);
             // lets grab the current player data from our bankfile ready for next step
             // we look up our Steam Id/
-            var account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == SenderSteamId);
+            /* var account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == SenderSteamId);
 
             // check if we actually found it, add default if not
-            if (account == null)
+           if (account == null)
                 {
                     EconomyScript.Instance.ServerLogger.WriteInfo("Creating new Bank Account for '{0}'", SenderDisplayName);
                     account = AccountManager.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
                     EconomyScript.Instance.Data.Accounts.Add(account);
                 }
-
+            */
                 string faction = "Free agent";
                 IMyFaction plFaction;
                 //IMyPlayer Me = MyAPIGateway.Session.Player; why waste the bytes
@@ -360,12 +361,13 @@ namespace Economy.scripts
                     faction = plFaction.Name;  //should this show tag or full name? depends on screen size i suppose
                 }
 
-            var bankbalance = account.BankBalance.ToString("0.######");
+                var bankbalance = 0;
+                /* account.BankBalance.ToString("0.######"); */
 
             //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
             string readout = " | " + bankbalance + " " + EconomyConsts.CurrencyName + " | Contracts: 0 | Cargo ? of ? | Employment: " + faction;
             MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyConsts.TradeNetworkName + readout;
-            //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;
+            //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;  //using title not mission text now
             return true;  //probably need a catch of some sort for a return false, but anything going wrong here is probably part of another issue.
             //and I am only using a bool to be lazy.  This should probably be HudManager.cs to make it public level
         }
@@ -806,7 +808,7 @@ namespace Economy.scripts
             // bal command
             if (split[0].Equals("/bal", StringComparison.InvariantCultureIgnoreCase))
             {
-                //a little on connect mission ;)
+                //a little on connect mission ;) should make it pay 5 credits or something just to be more missionlike.
                 if (MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network") MyAPIGateway.Utilities.GetObjectiveLine().AdvanceObjective();
                 match = Regex.Match(messageText, BalPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
