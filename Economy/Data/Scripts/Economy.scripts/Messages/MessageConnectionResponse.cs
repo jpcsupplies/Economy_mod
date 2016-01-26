@@ -32,13 +32,13 @@
                 EconomyScript.Instance.DelayedConnectionRequestTimer.Stop();
                 EconomyScript.Instance.DelayedConnectionRequestTimer.Close();
             }
-#region Initialise trade network hud
-            MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyConsts.TradeNetworkName;
+            #region Initialise trade network hud
+            MyAPIGateway.Utilities.GetObjectiveLine().Title = TradeNetworkName;
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Type /bal to connect to network");
             // if we wanted a 2nd mission add it like this MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission");
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission: Survive | Deadline: Unlimited");
-              
+
 
             MyAPIGateway.Utilities.ShowMessage("Economy", "Network Connected!");
             MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Trade Network!", TradeNetworkName);
@@ -53,7 +53,7 @@
             // probably easier to clear() then repopulate, i cant see how to decriment properly 
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.add|remove etc
             MyAPIGateway.Utilities.GetObjectiveLine().Show();
-#endregion Initialise trade network hud
+            #endregion Initialise trade network hud
 
             if (OldCommunicationVersion)
             {
