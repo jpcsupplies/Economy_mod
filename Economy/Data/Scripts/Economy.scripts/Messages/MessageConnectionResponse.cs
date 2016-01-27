@@ -43,6 +43,11 @@
                     MyAPIGateway.Utilities.ShowMissionScreen("Economy", "Warning", " ", "The version of Economy running on your Server is out of date.\r\nPlease update and restart your server.");
                     MyAPIGateway.Utilities.ShowNotification("Warning: The version of Economy running on your Server is out of date.", 5000, Sandbox.Common.MyFontEnum.Blue);
                 }
+                else
+                {
+                    MyAPIGateway.Utilities.ShowMissionScreen("Economy", "Warning", " ", "The Economy mod is currently unavailable as it is out of date.\r\nPlease contact your server Administrator.");
+                    MyAPIGateway.Utilities.ShowNotification("Warning: The Economy mod is currently unavailable as it is out of date.", 5000, Sandbox.Common.MyFontEnum.Blue);
+                }
                 return;
             }
 
@@ -83,6 +88,8 @@
                 }
                 else
                 {
+                    MyAPIGateway.Utilities.ShowMissionScreen("Economy", "Warning", " ", "The Economy mod is currently unavailable as it is out of date.\r\nPlease contact your server Administrator.");
+                    MyAPIGateway.Utilities.ShowNotification("Warning: The Economy mod is currently unavailable as it is out of date.", 5000, Sandbox.Common.MyFontEnum.Blue);
                     // TODO: display OldCommunicationVersion.
                 }
             }
