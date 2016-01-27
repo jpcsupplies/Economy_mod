@@ -193,17 +193,6 @@
             return marketItem.IsBlacklisted;
         }
 
-        //private static MyDefinitionId? GetDefinitionId(MarketItemStruct marketItem)
-        //{
-        //    MyObjectBuilderType result;
-        //    if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
-        //    {
-        //        return new MyDefinitionId(result, marketItem.SubtypeName);
-        //    }
-
-        //    return null;
-        //}
-
         #endregion
     }
 }

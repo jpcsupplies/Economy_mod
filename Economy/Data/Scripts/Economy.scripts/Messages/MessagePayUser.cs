@@ -25,15 +25,6 @@
 
         public override void ProcessServer()
         {
-            // flag used when transferring funds eg /pay bob 10 - indicates if bob even has an account record yet
-            //bool hasAccount = false;
-
-            //string alias; //represents players current in game nickname
-            //string timestamp; //will be used for seen command later maybe
-            //int records; //number of record lines in bank file replaced by "BankConfigData.Accounts.Count.ToString()"
-            //int count; //counter for iterating over records no longer used
-
-
             // did we at least type /pay someone something . . .
             //* Logic:                     
             //* Get player steam ID
@@ -71,8 +62,6 @@
                 }
 
                 //*          if hasaccount bool true   
-
-                // is there a modify property to save the need to remove then re-add? 
                 // admins can give or take money, normal players can only give money so convert negative to positive
                 // here we add the players bank record again with the updated balance minus what they spent
                 accountToSpend.BankBalance -= TransactionAmount;
