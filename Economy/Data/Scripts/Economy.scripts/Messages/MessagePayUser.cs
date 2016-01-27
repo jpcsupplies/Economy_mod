@@ -83,6 +83,9 @@
                 account.BankBalance += TransactionAmount;
                 account.Date = DateTime.Now;
 
+                MessageUpdateClient.SendMessage(accountToSpend);
+                MessageUpdateClient.SendMessage(account);
+
                 // if this works this is a very sexy way to work with our file
                 // testing: it does indeed work, if i was a teenager id probably need to change my underwear at this point
 
@@ -90,19 +93,19 @@
                 // which needs to not send if the player isnt online - pity ive no idea how to write to the faction chat system
                 // be a good place to send the player a faction message as it would work even if they were offline..
                 MessageClientTextMessage.SendMessage(account.SteamId, "PAY",
-                    string.Format("{0}, {1} just paid you {2} {4} for {3}", account.NickName, SenderDisplayName, TransactionAmount, Reason, EconomyScript.Instance.Config.CurrencyName));
+                    string.Format("{0}, {1} just paid you {2} {4} for {3}", account.NickName, SenderDisplayName, TransactionAmount, Reason, EconomyScript.Instance.ServerConfig.CurrencyName));
 
                 MessageClientTextMessage.SendMessage(SenderSteamId, "PAY",
-                    string.Format("You just paid {0} {1}, {3} for {2}", account.NickName, TransactionAmount, Reason, EconomyScript.Instance.Config.CurrencyName));
+                    string.Format("You just paid {0} {1}, {3} for {2}", account.NickName, TransactionAmount, Reason, EconomyScript.Instance.ServerConfig.CurrencyName));
 
-                EconomyScript.Instance.ServerLogger.WriteVerbose("Pay: '{0}' sent {1} {3} to '{2}'", accountToSpend.NickName, TransactionAmount, ToUserName, EconomyScript.Instance.Config.CurrencyName);
+                EconomyScript.Instance.ServerLogger.WriteVerbose("Pay: '{0}' sent {1} {3} to '{2}'", accountToSpend.NickName, TransactionAmount, ToUserName, EconomyScript.Instance.ServerConfig.CurrencyName);
 
 
                 //*      if false/otherwise throw error you dont have enough money
             }
             else
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "PAY", "Sorry you don't have enough {0}", EconomyScript.Instance.Config.CurrencyName);
+                MessageClientTextMessage.SendMessage(SenderSteamId, "PAY", "Sorry you don't have enough {0}", EconomyScript.Instance.ServerConfig.CurrencyName);
             }
         }
 

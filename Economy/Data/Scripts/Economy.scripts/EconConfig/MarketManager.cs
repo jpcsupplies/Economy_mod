@@ -103,10 +103,10 @@
         {
             var processingTime = DateTime.Now;
 
-            if (EconomyScript.Instance.Config == null)
+            if (EconomyScript.Instance.ServerConfig == null)
                 return;
 
-            var expiration = EconomyScript.Instance.Config.TradeTimeout;
+            var expiration = EconomyScript.Instance.ServerConfig.TradeTimeout;
 
             if (EconomyScript.Instance.Data == null || EconomyScript.Instance.Data.OrderBook.Count == 0)
                 return;
@@ -186,7 +186,7 @@
 
         public static bool IsItemBlacklistedOnServer(string itemTypeId, string itemSubTypeName)
         {
-            var marketItem = EconomyScript.Instance.Config.DefaultPrices.FirstOrDefault(e => e.TypeId == itemTypeId && e.SubtypeName == itemSubTypeName);
+            var marketItem = EconomyScript.Instance.ServerConfig.DefaultPrices.FirstOrDefault(e => e.TypeId == itemTypeId && e.SubtypeName == itemSubTypeName);
             if (marketItem == null)
                 return true; // does't exist. Same as been blacklisted.
 

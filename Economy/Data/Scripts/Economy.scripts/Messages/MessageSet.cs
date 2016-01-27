@@ -194,7 +194,7 @@
 
                 MarketItemStruct configItem = null;
                 if (player.IsAdmin() && MarketId == EconomyConsts.NpcMerchantId)
-                    configItem = EconomyScript.Instance.Config.DefaultPrices.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
+                    configItem = EconomyScript.Instance.ServerConfig.DefaultPrices.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
 
                 if (SetType.HasFlag(SetMarketItemType.Quantity))
                 {

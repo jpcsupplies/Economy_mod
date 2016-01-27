@@ -24,6 +24,8 @@
             Language = (int)VRage.MyLanguagesEnum.English;
         }
 
+        #region properties
+
         /// <summary>
         /// Name our money.
         /// </summary>
@@ -70,6 +72,8 @@
         /// Typically retrieved via: MyAPIGateway.Session.Config.Language
         /// </summary>
         public int Language;
+
+        #endregion
 
         #region TradeTimeout
 

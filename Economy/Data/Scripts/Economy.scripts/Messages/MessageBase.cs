@@ -11,6 +11,7 @@
     [XmlInclude(typeof(MessagePayUser))]
     [XmlInclude(typeof(MessagePlayerSeen))]
     [XmlInclude(typeof(MessageBankBalance))]
+    [XmlInclude(typeof(MessageUpdateClient))]
     [XmlInclude(typeof(MessageMarketItemValue))]
     [XmlInclude(typeof(MessageMarketManageNpc))]
     [XmlInclude(typeof(MessageMarketPriceList))]

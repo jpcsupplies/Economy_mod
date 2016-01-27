@@ -300,7 +300,7 @@
                         if (SellToMerchant) // && (merchant has enough money  || !EconomyScript.Instance.Config.LimitedSupply)
                                             //this is also a quick fix ideally npc should buy what it can afford and the rest is posted as a sell offer
                         {
-                            if (accountToBuy.BankBalance >= transactionAmount || !EconomyScript.Instance.Config.LimitedSupply)
+                            if (accountToBuy.BankBalance >= transactionAmount || !EconomyScript.Instance.ServerConfig.LimitedSupply)
                             {
                                 // here we look up item price and transfer items and money as appropriate
                                 EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- removing inventory.", SenderSteamId);
@@ -312,11 +312,14 @@
 
                                 accountToSell.BankBalance += transactionAmount;
                                 accountToSell.Date = DateTime.Now;
-                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} {3} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.Config.CurrencyName);
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} {3} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
+
+                                MessageUpdateClient.SendMessage(accountToBuy);
+                                MessageUpdateClient.SendMessage(accountToSell);
                             }
                             else
                             {
-                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "NPC can't afford {0} {4} worth of {2} ({1} units) NPC only has {3} funds!", transactionAmount, ItemQuantity, definition.GetDisplayName(), accountToBuy.BankBalance, EconomyScript.Instance.Config.CurrencyName);
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "NPC can't afford {0} {4} worth of {2} ({1} units) NPC only has {3} funds!", transactionAmount, ItemQuantity, definition.GetDisplayName(), accountToBuy.BankBalance, EconomyScript.Instance.ServerConfig.CurrencyName);
                             }
                             EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create completed by Steam Id '{0}' -- to NPC market.", SenderSteamId);
                             return;
@@ -341,7 +344,7 @@
                         // check if buying player is online and in range?
                         var buyingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(accountToBuy.SteamId);
 
-                        if (EconomyScript.Instance.Config.LimitedRange && !Support.RangeCheck(buyingPlayer, sellingPlayer))
+                        if (EconomyScript.Instance.ServerConfig.LimitedRange && !Support.RangeCheck(buyingPlayer, sellingPlayer))
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you are not in range of that player!");
                             EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- target player not in range.", SenderSteamId);
@@ -379,12 +382,12 @@
                             {
                                 MessageClientTextMessage.SendMessage(accountToBuy.SteamId, "SELL",
                                     "You have received an offer from {0} to buy {1} {2} at price {3} {4} each - type '/sell accept' to accept offer (or '/sell deny' to reject and return item to seller)",
-                                    SenderDisplayName, ItemQuantity, definition.GetDisplayName(), ItemPrice, EconomyScript.Instance.Config.CurrencyName);
+                                    SenderDisplayName, ItemQuantity, definition.GetDisplayName(), ItemPrice, EconomyScript.Instance.ServerConfig.CurrencyName);
                             }
 
                             // TODO: Improve the message here, to say who were are trading to, and that the item is gone from inventory.
                             // send message to seller to confirm action, "Your Trade offer has been submitted, and the goods removed from you inventory."
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Your offer of {0} {1} for {2} {4} each has been sent to {3}.", ItemQuantity, definition.GetDisplayName(), ItemPrice, accountToBuy.NickName, EconomyScript.Instance.Config.CurrencyName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Your offer of {0} {1} for {2} {4} each has been sent to {3}.", ItemQuantity, definition.GetDisplayName(), ItemPrice, accountToBuy.NickName, EconomyScript.Instance.ServerConfig.CurrencyName);
 
                             EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create completed by Steam Id '{0}' -- to another player.", SenderSteamId);
                             return;
@@ -415,7 +418,7 @@
 
                         if (accountToBuy.BankBalance < transactionAmount)
                         {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You cannot afford {0} {1} at this time.", transactionAmount, EconomyScript.Instance.Config.CurrencyName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You cannot afford {0} {1} at this time.", transactionAmount, EconomyScript.Instance.ServerConfig.CurrencyName);
                             return;
                         }
 
@@ -427,6 +430,9 @@
 
                         accountToSell.BankBalance += transactionAmount;
                         accountToSell.Date = DateTime.Now;
+
+                        MessageUpdateClient.SendMessage(accountToBuy);
+                        MessageUpdateClient.SendMessage(accountToSell);
 
                         order.TradeState = TradeState.SellAccepted;
 
@@ -444,7 +450,7 @@
 
                         // TODO: Improve the messages.
                         // message back "Your Trade offer of xxx to yyy has been accepted. You have recieved zzzz"
-                        MessageClientTextMessage.SendMessage(accountToSell.SteamId, "SELL", "You just sold {0} {3} worth of {2} ({1} units)", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.Config.CurrencyName);
+                        MessageClientTextMessage.SendMessage(accountToSell.SteamId, "SELL", "You just sold {0} {3} worth of {2} ({1} units)", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
 
                         var collectingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
                         var playerInventory = collectingPlayer.GetPlayerInventory();
@@ -459,10 +465,10 @@
                         if (hasAddedToInventory)
                         {
                             EconomyScript.Instance.Data.OrderBook.Remove(order); // item has been collected, so the order is finalized.
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units) which are now in your player inventory.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.Config.CurrencyName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units) which are now in your player inventory.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
                         }
                         else
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units). Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.Config.CurrencyName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units). Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
 
                         // Send message to player if additional offers are pending their attention.
                         DisplayNextOrderToAccept(SenderSteamId);
@@ -572,10 +578,10 @@
                         if (hasAddedToInventory)
                         {
                             EconomyScript.Instance.Data.OrderBook.Remove(order); // item has been collected, so the order is finalized.
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just cancelled the sale of {2} ({1} units) for a total of {0} {3} which are now in your inventory.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.Config.CurrencyName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just cancelled the sale of {2} ({1} units) for a total of {0} {3} which are now in your inventory.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
                         }
                         else
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just cancelled the sale of {2} ({1} units) for a total of {0} {3}. Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.Config.CurrencyName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just cancelled the sale of {2} ({1} units) for a total of {0} {3}. Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
 
                         cancellableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
                               (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellDirectPlayer)).OrderByDescending(e => e.Created).ToArray();
@@ -620,10 +626,10 @@
 
                         var transactionAmount = order.Price * order.Quantity;
                         var buyerId = ulong.Parse(order.OptionalId);
-                        MessageClientTextMessage.SendMessage(buyerId, "SELL", "You just rejected the purchase of {2} ({1} units) for a total of {0} {3}.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.Config.CurrencyName);
+                        MessageClientTextMessage.SendMessage(buyerId, "SELL", "You just rejected the purchase of {2} ({1} units) for a total of {0} {3}.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
 
                         // TODO: return items to inventory automatically to Trader inventory if there is space.
-                        MessageClientTextMessage.SendMessage(order.TraderId, "SELL", "{3} has just rejected your offer of {2} ({1} units) for a total of {0} {4}. Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), SenderDisplayName, EconomyScript.Instance.Config.CurrencyName);
+                        MessageClientTextMessage.SendMessage(order.TraderId, "SELL", "{3} has just rejected your offer of {2} ({1} units) for a total of {0} {4}. Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), SenderDisplayName, EconomyScript.Instance.ServerConfig.CurrencyName);
 
                         // Send message to player if additional offers are pending their attention.
                         DisplayNextOrderToAccept(SenderSteamId);
@@ -673,7 +679,7 @@
 
             MessageClientTextMessage.SendMessage(steamdId, "SELL",
                 "You have received an offer from {0} to buy {1} {2} at total price {3} {4} - type '/sell accept' to accept offer (or '/sell deny' to reject and return item to seller)",
-                accountToSell.NickName, order.Quantity, definition.GetDisplayName(), transactionAmount, EconomyScript.Instance.Config.CurrencyName);
+                accountToSell.NickName, order.Quantity, definition.GetDisplayName(), transactionAmount, EconomyScript.Instance.ServerConfig.CurrencyName);
         }
 
         private void RemoveInventory(IMyInventory playerInventory, List<MyEntity> cargoBlocks, MyFixedPoint amount, MyDefinitionId definitionId)

@@ -104,7 +104,13 @@ namespace Economy.scripts
         /// Ideally this data should be persistent until someone buys/sells/pays/joins but
         /// lacking other options it will triggers read on these events instead. bal/buy/sell/pay/join
         public EconDataStruct Data;
-        public EconConfigStruct Config;
+        public EconConfigStruct ServerConfig;
+
+        /// <summary>
+        /// This will temporarily store Client side details while the client is connected.
+        /// It will receive periodic updates from the server.
+        /// </summary>
+        public ClientConfig ClientConfig = null;
 
         /// <summary>
         /// Set manually to true for testing purposes. No need for this function in general.
@@ -155,8 +161,7 @@ namespace Economy.scripts
         {
             _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
             _isClientRegistered = true;
-
-            ClientLogger.Init("EconomyClient.Log", false, 20); // comment this out if logging is not required for the Client.
+            ClientLogger.Init("EconomyClient.Log", false, DebugOn ? 0 : 20); // comment this out if logging is not required for the Client.
             ClientLogger.WriteStart("Economy Client Log Started");
             ClientLogger.WriteInfo("Economy Client Version {0}", EconomyConsts.ModCommunicationVersion);
             if (ClientLogger.IsActive)
@@ -182,7 +187,7 @@ namespace Economy.scripts
         {
             _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
             _isServerRegistered = true;
-            ServerLogger.Init("EconomyServer.Log", false, 20); // comment this out if logging is not required for the Server.
+            ServerLogger.Init("EconomyServer.Log", false, DebugOn ? 0 : 20); // comment this out if logging is not required for the Server.
             ServerLogger.WriteStart("Economy Server Log Started");
             ServerLogger.WriteInfo("Economy Server Version {0}", EconomyConsts.ModCommunicationVersion);
             if (ServerLogger.IsActive)
@@ -193,8 +198,8 @@ namespace Economy.scripts
 
             ServerLogger.WriteStart("LoadBankContent");
 
-            Config = EconDataManager.LoadConfig(); // Load config first.
-            Data = EconDataManager.LoadData(Config.DefaultPrices);
+            ServerConfig = EconDataManager.LoadConfig(); // Load config first.
+            Data = EconDataManager.LoadData(ServerConfig.DefaultPrices);
 
             SetLanguage();
 
@@ -296,10 +301,10 @@ namespace Economy.scripts
                     EconDataManager.SaveData(Data);
                 }
 
-                if (Config != null)
+                if (ServerConfig != null)
                 {
                     ServerLogger.WriteInfo("Save Config");
-                    EconDataManager.SaveConfig(Config);
+                    EconDataManager.SaveConfig(ServerConfig);
                 }
             }
         }
@@ -326,47 +331,34 @@ namespace Economy.scripts
             if (!hud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
         }
 
-        private bool  hud()
-        {    // temp /* disabled */some questionable calls that may need server/client layers for DS  
+        private bool hud()
+        {
+            // client config has not been received from server yet.
+            if (ClientConfig == null)
+                return true;
+
             //(hud does work single player  wierd errors DS)
             //Hud, displays users balance, trade network name, and optionally faction and free storage space (% or unit?) in cargo and/or inventory
             //may also eventually be used to display info about completed objectives in missions/jobs/bounties/employment etc
             //needs to call this at init (working), and at each call to message handling(working), and on recieving any notification of payment(cant access until public level).
             //since other balance altering scenarios such as selling stock requires a command or prompt by player calling this
             //at message handler should update in those scenarios automatically. That should avoid need for a timing loop and have no obvious sim impact
-            /*var SenderLanguage = 0;  //probably should look up the real localisation here..
-            var SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
-            string SenderDisplayName = MyAPIGateway.Session.Player.DisplayName; */
-    
-            //AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
-            //EconomyScript.Instance.ServerLogger.WriteVerbose("Hud Balance Request for '{0}' ID '{1}'", SenderDisplayName, SenderSteamId);
-            // lets grab the current player data from our bankfile ready for next step
-            // we look up our Steam Id/
-            /* var account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == SenderSteamId);
 
-            // check if we actually found it, add default if not
-           if (account == null)
-                {
-                    EconomyScript.Instance.ServerLogger.WriteInfo("Creating new Bank Account for '{0}'", SenderDisplayName);
-                    account = AccountManager.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
-                    EconomyScript.Instance.Data.Accounts.Add(account);
-                }
-            */
-                string faction = "Free agent";
-                IMyFaction plFaction;
-                //IMyPlayer Me = MyAPIGateway.Session.Player; why waste the bytes
-                plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.PlayerID);
-                if (plFaction != null)
-                {
-                    faction = plFaction.Name;  //should this show tag or full name? depends on screen size i suppose
-                }
 
-                var bankbalance = 0;
-                /* account.BankBalance.ToString("0.######"); */
+            string faction = "Free agent";
+            IMyFaction plFaction;
+            //IMyPlayer Me = MyAPIGateway.Session.Player; why waste the bytes
+            plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.PlayerID);
+            if (plFaction != null)
+            {
+                faction = plFaction.Name;  //should this show tag or full name? depends on screen size i suppose
+            }
+
+            /* account.BankBalance.ToString("0.######"); */
 
             //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
-            string readout = " | " + bankbalance + " " + EconomyConsts.CurrencyName + " | Contracts: 0 | Cargo ? of ? | Employment: " + faction;
-            MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyConsts.TradeNetworkName + readout;
+            string readout = " | " + ClientConfig.BankBalance + " " + ClientConfig.CurrencyName + " | Contracts: 0 | Cargo ? of ? | Employment: " + faction;
+            MyAPIGateway.Utilities.GetObjectiveLine().Title = ClientConfig.TradeNetworkName + readout;
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;  //using title not mission text now
             return true;  //probably need a catch of some sort for a return false, but anything going wrong here is probably part of another issue.
             //and I am only using a bool to be lazy.  This should probably be HudManager.cs to make it public level
@@ -382,9 +374,16 @@ namespace Economy.scripts
         #endregion message handling
 
         #region timers
-        void DelayedConnectionRequestTimer_Elapsed(object sender, ElapsedEventArgs e)
+
+        private void DelayedConnectionRequestTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            _delayedConnectionRequest = true;
+            if (ClientConfig == null)
+                _delayedConnectionRequest = true;
+            else if (ClientConfig != null && DelayedConnectionRequestTimer != null)
+            {
+                DelayedConnectionRequestTimer.Stop();
+                DelayedConnectionRequestTimer.Close();
+            }
         }
 
         private void Timer1EventsOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
@@ -1195,7 +1194,7 @@ namespace Economy.scripts
         /// </summary>
         private void SetLanguage()
         {
-            MyTexts.LanguageDescription language = MyTexts.Languages.ContainsKey(Config.Language) ? MyTexts.Languages[Config.Language] : MyTexts.Languages[0];
+            MyTexts.LanguageDescription language = MyTexts.Languages.ContainsKey(ServerConfig.Language) ? MyTexts.Languages[ServerConfig.Language] : MyTexts.Languages[0];
             ServerCulture = CultureInfo.GetCultureInfo(language.FullCultureName);
 
             // Load resources for that language.

@@ -262,9 +262,9 @@
                     str.AppendFormat("{0}: {1}\r\n", selectedShip.IsStatic ? "Station" : selectedShip.GridSizeEnum.ToString() + " Ship", selectedShip.DisplayName);
                     str.AppendFormat("Grids={2}\r\nArmor Blocks={0}\r\nTerminal Blocks={1}\r\n", armorBlocks, terminalBlocks, gridCount);
                     str.AppendLine("-----------------------------------");
-                    str.AppendFormat("Ship Value: {0:#,##0.00000} {1}.\r\n", shipValue, EconomyScript.Instance.Config.CurrencyName);
-                    str.AppendFormat("Inventory Value: {0:#,##0.00000} {1}.\r\n", inventoryValue, EconomyScript.Instance.Config.CurrencyName);
-                    str.AppendFormat("Final Value: {0:#,##0.00000} {1}.\r\n", shipValue + inventoryValue, EconomyScript.Instance.Config.CurrencyName);
+                    str.AppendFormat("Ship Value: {0:#,##0.00000} {1}.\r\n", shipValue, EconomyScript.Instance.ServerConfig.CurrencyName);
+                    str.AppendFormat("Inventory Value: {0:#,##0.00000} {1}.\r\n", inventoryValue, EconomyScript.Instance.ServerConfig.CurrencyName);
+                    str.AppendFormat("Final Value: {0:#,##0.00000} {1}.\r\n", shipValue + inventoryValue, EconomyScript.Instance.ServerConfig.CurrencyName);
                     MessageClientDialogMessage.SendMessage(SenderSteamId, "WORTH", selectedShip.DisplayName, str.ToString());
                 }
                 catch (Exception ex)

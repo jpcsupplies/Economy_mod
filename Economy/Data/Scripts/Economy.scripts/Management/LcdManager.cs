@@ -137,7 +137,7 @@
             var markets = MarketManager.FindMarketsFromLocation(textPanel.WorldMatrix.Translation);
             if (markets.Count == 0)
             {
-                writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "« {0} »", EconomyScript.Instance.Config.TradeNetworkName);
+                writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "« {0} »", EconomyScript.Instance.ServerConfig.TradeNetworkName);
                 writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "« No market in range »");
             }
             else

@@ -852,7 +852,7 @@
                     MarketId = EconomyConsts.NpcMerchantId,
                     MarketZoneType = MarketZoneType.FixedSphere,
                     DisplayName = EconomyConsts.NpcMarketName,
-                    MarketZoneSphere = new BoundingSphereD(Vector3D.Zero, EconomyScript.Instance.Config.DefaultTradeRange), // Center of the game world.
+                    MarketZoneSphere = new BoundingSphereD(Vector3D.Zero, EconomyScript.Instance.ServerConfig.DefaultTradeRange), // Center of the game world.
                     MarketItems = new List<MarketItemStruct>()
                 };
                 data.Markets.Add(market);
@@ -905,7 +905,7 @@
             EconomyScript.Instance.Data.Markets.Add(market);
 
             // Add missing items that are covered by Default items.
-            foreach (var defaultItem in EconomyScript.Instance.Config.DefaultPrices)
+            foreach (var defaultItem in EconomyScript.Instance.ServerConfig.DefaultPrices)
             {
                 var item = market.MarketItems.FirstOrDefault(e => e.TypeId.Equals(defaultItem.TypeId) && e.SubtypeName.Equals(defaultItem.SubtypeName));
                 if (item == null)

@@ -12,6 +12,11 @@
         [ProtoMember(1)]
         public string UserName;
 
+        public static void SendMessage(string userName)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageBankBalance { UserName = userName });
+        }
+
         public override void ProcessClient()
         {
             // never processed on client
@@ -61,9 +66,5 @@
             }
         }
 
-        public static void SendMessage(string userName)
-        {
-            ConnectionHelper.SendMessageToServer(new MessageBankBalance { UserName = userName });
-        }
     }
 }

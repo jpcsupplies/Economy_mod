@@ -1,5 +1,6 @@
 ﻿namespace Economy.scripts.Messages
 {
+    using EconStructures;
     using ProtoBuf;
     using Sandbox.ModAPI;
 
@@ -12,28 +13,45 @@
         public bool NewCommunicationVersion;
 
         [ProtoMember(3)]
-        public string TradeNetworkName;
+        public ClientConfig ClientConfig;
 
-        public static void SendMessage(ulong steamdId, bool oldCommunicationVersion, bool newCommunicationVersion, string tradeNetworkName)
+        public static void SendMessage(ulong steamdId, bool oldCommunicationVersion, bool newCommunicationVersion, ClientConfig clientConfig)
         {
             ConnectionHelper.SendMessageToPlayer(steamdId, new MessageConnectionResponse
             {
                 OldCommunicationVersion = oldCommunicationVersion,
                 NewCommunicationVersion = newCommunicationVersion,
-                TradeNetworkName = tradeNetworkName
+                ClientConfig = clientConfig
             });
         }
 
         public override void ProcessClient()
         {
+            EconomyScript.Instance.ClientLogger.WriteInfo("Processing MessageConnectionResponse");
+
             // stop further requests
             if (EconomyScript.Instance.DelayedConnectionRequestTimer != null)
             {
                 EconomyScript.Instance.DelayedConnectionRequestTimer.Stop();
                 EconomyScript.Instance.DelayedConnectionRequestTimer.Close();
             }
+
+            if (ClientConfig == null)
+            {
+                if (MyAPIGateway.Session.Player.IsAdmin())
+                {
+                    MyAPIGateway.Utilities.ShowMissionScreen("Economy", "Warning", " ", "The version of Economy running on your Server is out of date.\r\nPlease update and restart your server.");
+                    MyAPIGateway.Utilities.ShowNotification("Warning: The version of Economy running on your Server is out of date.", 5000, Sandbox.Common.MyFontEnum.Blue);
+                }
+                return;
+            }
+
+            EconomyScript.Instance.ClientConfig = ClientConfig;
+
+            EconomyScript.Instance.ClientLogger.WriteInfo("ClientConfig received: Opened {0}  Balance: {1}", ClientConfig.OpenedDate, ClientConfig.BankBalance);
+
             #region Initialise trade network hud
-            MyAPIGateway.Utilities.GetObjectiveLine().Title = TradeNetworkName;
+            MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyScript.Instance.ClientConfig.TradeNetworkName;
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Type /bal to connect to network");
             // if we wanted a 2nd mission add it like this MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission");
@@ -41,7 +59,7 @@
 
 
             MyAPIGateway.Utilities.ShowMessage("Economy", "Network Connected!");
-            MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Trade Network!", TradeNetworkName);
+            MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Trade Network!", EconomyScript.Instance.ClientConfig.TradeNetworkName);
             MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/ehelp' for more informations about available commands");
 
             // if we need to switch to next mission use this MyAPIGateway.Utilities.GetObjectiveLine().AdvanceObjective();
