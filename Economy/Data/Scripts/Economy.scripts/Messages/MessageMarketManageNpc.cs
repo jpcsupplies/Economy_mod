@@ -49,6 +49,11 @@
             ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = MarketManage.Rename, OldMarketName = oldMarketName, MarketName = newMarketName });
         }
 
+        public static void SendMoveMessage(string marketName, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = MarketManage.Move, MarketName = marketName, X = x, Y = y, Z = z, Size = size, Shape = shape });
+        }
+
         public static void SendListMessage()
         {
             ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = MarketManage.List });
@@ -132,7 +137,11 @@
                             str.AppendFormat("Market: {0}\r\n", market.DisplayName);
                             str.AppendFormat("{0}", market.MarketZoneType);
                             if (market.MarketZoneType == MarketZoneType.FixedSphere && market.MarketZoneSphere.HasValue)
-                                str.AppendFormat("  Position={0:N} | {1:N} | {2:N} Radius={3:N}m\r\n\r\n", market.MarketZoneSphere.Value.Center.X, market.MarketZoneSphere.Value.Center.Y, market.MarketZoneSphere.Value.Center.Z, market.MarketZoneSphere.Value.Radius);
+                                str.AppendFormat("  Center Position=X:{0:N} | Y:{1:N} | Z:{2:N} Radius={3:N}m\r\n\r\n", market.MarketZoneSphere.Value.Center.X, market.MarketZoneSphere.Value.Center.Y, market.MarketZoneSphere.Value.Center.Z, market.MarketZoneSphere.Value.Radius);
+                            else if (market.MarketZoneType == MarketZoneType.FixedBox && market.MarketZoneBox.HasValue)
+                                str.AppendFormat("  Center Position=X:{0:N} | Y:{1:N} | Z:{2:N} Size={3:N}m\r\n\r\n", market.MarketZoneBox.Value.Center.X, market.MarketZoneBox.Value.Center.Y, market.MarketZoneBox.Value.Center.Z, market.MarketZoneBox.Value.Size.X);
+                            else
+                                str.AppendLine("\r\n");
                         }
 
                         MessageClientDialogMessage.SendMessage(SenderSteamId, "NPC Market List", " ", str.ToString());
@@ -183,7 +192,31 @@
                     break;
 
                 case MarketManage.Move:
-                    // TODO:
+                    {
+                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase));
+                        if (market == null)
+                        {
+                            var markets = EconomyScript.Instance.Data.Markets.Where(m => m.DisplayName.IndexOf(MarketName, StringComparison.InvariantCultureIgnoreCase) >= 0).ToArray();
+                            if (markets.Length == 0)
+                            {
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "NPC MOVE", "The specified market name could not be found.");
+                                return;
+                            }
+                            if (markets.Length > 1)
+                            {
+                                var str = new StringBuilder();
+                                str.Append("The specified market name could not be found.\r\n    Which did you mean?\r\n");
+                                foreach (var m in markets)
+                                    str.AppendLine(m.DisplayName);
+                                MessageClientDialogMessage.SendMessage(SenderSteamId, "NPC MOVE", " ", str.ToString());
+                                return;
+                            }
+                            market = markets[0];
+                        }
+
+                        EconDataManager.SetMarketShape(market, X, Y, Z, Size, Shape);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "NPC MOVE", "The market '{0}' has been moved and resized.", market.DisplayName);
+                    }
                     break;
             }
         }

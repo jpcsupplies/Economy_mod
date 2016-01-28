@@ -78,6 +78,12 @@ namespace Economy.scripts
         /// </summary>
         const string NpcRenamePattern = @"(?<command>/npczone)\s+((ren)|(rename)|(name))\s+(?:(?:""(?<nameold>[^""]|.*?)"")|(?<nameold>.*))\s+(?:(?:""(?<namenew>[^""]|.*?)"")|(?<namenew>.*))";
 
+        /// <summary>
+        /// pattern defines how to move/resize/reshape an existing NPC Market.
+        /// /npczone move|resize|reshape "{name}" or {name} {x} {y} {z} {size} {shape}
+        /// </summary>
+        const string NpcMovePattern = @"(?<command>/npczone)\s+((move)|(resize)|(reshape))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<X>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Y>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Z>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Size>(\d+(\.\d*)?))\s+(?<shape>(round)|(circle)|(sphere)|(spherical)|(box)|(cube)|(cubic))";
+
         #endregion
 
         #region fields
@@ -970,6 +976,36 @@ namespace Economy.scripts
                     return true;
                 }
 
+                match = Regex.Match(messageText, NpcMovePattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    string marketName = match.Groups["name"].Value;
+                    decimal x = Convert.ToDecimal(match.Groups["X"].Value, CultureInfo.InvariantCulture);
+                    decimal y = Convert.ToDecimal(match.Groups["Y"].Value, CultureInfo.InvariantCulture);
+                    decimal z = Convert.ToDecimal(match.Groups["Z"].Value, CultureInfo.InvariantCulture);
+                    decimal size = Convert.ToDecimal(match.Groups["Size"].Value, CultureInfo.InvariantCulture);
+                    string shapeName = match.Groups["shape"].Value;
+
+                    MarketZoneType shape = MarketZoneType.FixedSphere;
+                    switch (shapeName)
+                    {
+                        case "sphere":
+                        case "spherical":
+                        case "round":
+                        case "circle":
+                            shape = MarketZoneType.FixedSphere;
+                            break;
+                        case "box":
+                        case "cube":
+                        case "cubic":
+                            shape = MarketZoneType.FixedBox;
+                            break;
+                    }
+
+                    MessageMarketManageNpc.SendMoveMessage(marketName, x, y, z, size, shape);
+                    return true;
+                }
+
                 if (split.Length > 1 && split[1].Equals("list", StringComparison.InvariantCultureIgnoreCase))
                 {
                     MessageMarketManageNpc.SendListMessage();
@@ -1156,7 +1192,8 @@ namespace Economy.scripts
                                 "/npczone add [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]  -  Add a new NPC market zone\r\n" +
                                 " shape can be sphere or box. Eg /npczone add GunShop 1000 2000 4000 200 box\r\n" +
                                 " /npczone delete [zone name]  - removes the named zone eg. /npczone delete freds\r\n" +
-                                " /npczone rename oldname newname  -  change the ID name of the trade zone\r\n";
+                                " /npczone rename oldname newname  -  change the ID name of the trade zone\r\n" +
+                                " /npczone move [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]  -  move/resize the name trade zone\r\n";
                             if (MyAPIGateway.Session.Player.IsAdmin())
                             {   //but only if you are admin!
                                 MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /npczone (add)/list/([remove])/[rename oldname newname] ([zone]) (x y z size shape)");

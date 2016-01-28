@@ -883,24 +883,13 @@
         {
             EconomyScript.Instance.ServerLogger.WriteInfo("Creating Npc Market.");
 
-
             var market = new MarketStruct
             {
                 MarketId = EconomyConsts.NpcMerchantId,
                 DisplayName = marketName,
                 MarketItems = new List<MarketItemStruct>(),
-                MarketZoneType = shape
             };
-            switch (shape)
-            {
-                case MarketZoneType.FixedSphere:
-                    market.MarketZoneSphere = new BoundingSphereD(new Vector3D((double)x, (double)y, (double)z), (double)size);
-                    break;
-                case MarketZoneType.FixedBox:
-                    var sz = (double)(size / 2);
-                    market.MarketZoneBox = new BoundingBoxD(new Vector3D((double)x - sz, (double)y - sz, (double)z - sz), new Vector3D((double)x + sz, (double)y + sz, (double)z + sz));
-                    break;
-            }
+            SetMarketShape(market, x, y, z, size, shape);
 
             EconomyScript.Instance.Data.Markets.Add(market);
 
@@ -919,6 +908,21 @@
                     if (!defaultItem.IsBlacklisted)
                         item.IsBlacklisted = false;
                 }
+            }
+        }
+
+        public static void SetMarketShape(MarketStruct market, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)
+        {
+            market.MarketZoneType = shape;
+            switch (shape)
+            {
+                case MarketZoneType.FixedSphere:
+                    market.MarketZoneSphere = new BoundingSphereD(new Vector3D((double) x, (double) y, (double) z), (double) size);
+                    break;
+                case MarketZoneType.FixedBox:
+                    var sz = (double)(size / 2);
+                    market.MarketZoneBox = new BoundingBoxD(new Vector3D((double) x - sz, (double) y - sz, (double) z - sz), new Vector3D((double) x + sz, (double) y + sz, (double) z + sz));
+                    break;
             }
         }
 
