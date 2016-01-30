@@ -332,7 +332,7 @@ namespace Economy.scripts
                 MyAPIGateway.Utilities.ShowMessage("Error", "An exception has been logged in the file: {0}", ClientLogger.LogFileName);
             }
 
-        #region hud
+        #region hud display
             // Update hud
             if (!hud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
         }
@@ -363,13 +363,20 @@ namespace Economy.scripts
             /* account.BankBalance.ToString("0.######"); */
 
             //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
-            string readout = " | " + ClientConfig.BankBalance + " " + ClientConfig.CurrencyName + " | Contracts: 0 | Cargo ? of ? | Employment: " + faction;
-            MyAPIGateway.Utilities.GetObjectiveLine().Title = ClientConfig.TradeNetworkName + readout;
+            //todo: need to add some clientconfig.globals somewhere for the if checks below
+            string readout = ClientConfig.TradeNetworkName + " Network: ";
+            if (true) readout += ClientConfig.BankBalance + " " + ClientConfig.CurrencyName;
+            if (false) readout += " | Trade region: Unknown";
+            if (false) readout += " | Location: X: 0 Y: 0 Z: 0";
+            if (false) readout += " | Contracts: 0";
+            if (false) readout += " | Cargo ? of ?";
+            if (true) readout += " | Agency: " + faction;
+            MyAPIGateway.Utilities.GetObjectiveLine().Title = readout;
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;  //using title not mission text now
             return true;  //probably need a catch of some sort for a return false, but anything going wrong here is probably part of another issue.
             //and I am only using a bool to be lazy.  This should probably be HudManager.cs to make it public level
         }
-        #endregion hud
+        #endregion hud display
 
         private static void HandleMessage(byte[] message)
         {
@@ -808,6 +815,23 @@ namespace Economy.scripts
                 return true;
             }
             #endregion seen
+
+            #region hud
+            //command to allow players to customise their hud? 
+            //all it does is show or hide, todo:   need option to show or hide individual elements see region "hud display" 
+            //eg cargo, faction, trade zone, contract/mission/subsidy count, balance?
+            if (split[0].Equals("/hud", StringComparison.InvariantCultureIgnoreCase))
+            {
+
+                if (split.Length == 2)
+                {
+                    if (split[1].Equals("off", StringComparison.InvariantCultureIgnoreCase)) MyAPIGateway.Utilities.GetObjectiveLine().Hide();
+                    if (split[1].Equals("on", StringComparison.InvariantCultureIgnoreCase)) MyAPIGateway.Utilities.GetObjectiveLine().Show();
+                } else { MyAPIGateway.Utilities.ShowMessage("HUD", "/hud on | off  turns on or off the trade network hud"); }
+                return true;
+            }
+            
+            #endregion hud
 
             #region bal
             // bal command
