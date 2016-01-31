@@ -12,6 +12,7 @@
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Ingame;
     using Sandbox.ModAPI.Interfaces;
+    using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ObjectBuilders;
     using VRageMath;
 
@@ -58,6 +59,7 @@
             bool showComponent = false;
             bool showAmmo = false;
             bool showTools = false;
+            bool showGasses = false;
             bool showStock = false;
             bool showPrices = true;
             bool showTest1 = false;
@@ -74,22 +76,24 @@
                 {
                     if (str.Equals("test1", StringComparison.InvariantCultureIgnoreCase))
                         showTest1 = true;
-                    if (str.Equals("test2", StringComparison.InvariantCultureIgnoreCase))
+                    else if (str.Equals("test2", StringComparison.InvariantCultureIgnoreCase))
                         showTest2 = true;
-                    if (str.Equals("ore", StringComparison.InvariantCultureIgnoreCase))
+                    else if (str.StartsWith("ore", StringComparison.InvariantCultureIgnoreCase))
                         showOre = true;
-                    if (str.Equals("ingot", StringComparison.InvariantCultureIgnoreCase))
+                    else if (str.StartsWith("ingot", StringComparison.InvariantCultureIgnoreCase))
                         showIngot = true;
-                    if (str.Equals("component", StringComparison.InvariantCultureIgnoreCase))
+                    else if (str.StartsWith("component", StringComparison.InvariantCultureIgnoreCase))
                         showComponent = true;
-                    if (str.Equals("ammo", StringComparison.InvariantCultureIgnoreCase))
+                    else if (str.StartsWith("ammo", StringComparison.InvariantCultureIgnoreCase))
                         showAmmo = true;
-                    if (str.Equals("tools", StringComparison.InvariantCultureIgnoreCase))
+                    else if (str.StartsWith("tool", StringComparison.InvariantCultureIgnoreCase))
                         showTools = true;
+                    else if (str.StartsWith("gas", StringComparison.InvariantCultureIgnoreCase))
+                        showGasses = true;
                 }
             }
 
-            bool showHelp = !showAll && !showOre && !showIngot && !showComponent && !showAmmo && !showTools;
+            bool showHelp = !showAll && !showOre && !showIngot && !showComponent && !showAmmo && !showTools && !showGasses;
 
             var writer = TextPanelWriter.Create(textPanel);
 
@@ -184,14 +188,13 @@
                             (showIngot && content is MyObjectBuilder_Ingot) ||
                             (showComponent && content is MyObjectBuilder_Component) ||
                             (showAmmo && content is MyObjectBuilder_AmmoMagazine) ||
-                            (showTools && content is MyObjectBuilder_PhysicalGunObject) ||
-                            (showTools && content is MyObjectBuilder_GasContainerObject))  // Type check here allows mods that inherit from the same type to also appear in the lists.
+                            (showTools && content is MyObjectBuilder_PhysicalGunObject) || // guns, welders, hand drills, grinders.
+                            (showTools && content is MyObjectBuilder_GasContainerObject) || // aka gas bottle.
+                            (showGasses && content is MyObjectBuilder_GasProperties))  // Type check here allows mods that inherit from the same type to also appear in the lists.
                         {
-                            MyPhysicalItemDefinition definition = null;
-                            if (MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition))
-                            {
+                            MyDefinitionBase definition;
+                            if (MyDefinitionManager.Static.TryGetDefinition(id, out definition))
                                 list.Add(marketItem, definition == null ? marketItem.TypeId + "/" + marketItem.SubtypeName : definition.GetDisplayName());
-                            }
                         }
                     }
                 }

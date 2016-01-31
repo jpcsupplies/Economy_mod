@@ -23,9 +23,8 @@
             }
 
             EconomyScript.Instance.ClientConfig.BankBalance = BankBalance;
-
+            EconomyScript.Instance.UpdateHud();
             // TODO: we may invoke additional things here after the Client has updated their balance.
-            // Like, updating the Hud if it was properly encapsulated.
         }
 
         public override void ProcessServer()

@@ -139,12 +139,12 @@ namespace Economy.scripts
 
         public static string GetDisplayName(this MyObjectBuilder_Base objectBuilder)
         {
-            return MyDefinitionManager.Static.GetPhysicalItemDefinition(objectBuilder).GetDisplayName();
+            return MyDefinitionManager.Static.GetDefinition(objectBuilder.GetId()).GetDisplayName();
         }
 
         public static string GetDisplayName(this MyDefinitionBase definition)
         {
-            return definition.DisplayNameEnum.HasValue ? MyTexts.GetString(definition.DisplayNameEnum.Value) : definition.DisplayNameString;
+            return definition.DisplayNameEnum.HasValue ? MyTexts.GetString(definition.DisplayNameEnum.Value) : (string.IsNullOrEmpty(definition.DisplayNameString) ? definition.Id.SubtypeName : definition.DisplayNameString);
         }
 
         public static SerializableVector3 ToSerializableVector3(this Vector3D v)
@@ -183,6 +183,11 @@ namespace Economy.scripts
             }
 
             return definition;
+        }
+
+        public static List<MyGasProperties> GetGasDefinitions(this MyDefinitionManager definitionManager)
+        {
+            return definitionManager.GetAllDefinitions().Where(e => e.Id.TypeId == typeof(VRage.Game.ObjectBuilders.Definitions.MyObjectBuilder_GasProperties)).Cast<MyGasProperties>().ToList();
         }
 
         public static IMyInventory GetPlayerInventory(this IMyPlayer player)

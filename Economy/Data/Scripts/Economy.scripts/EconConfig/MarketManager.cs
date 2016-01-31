@@ -37,10 +37,24 @@
                 }
             }
 
-            // TODO: get Gas Property Items.  MyObjectBuilder_GasProperties
-            //var gasItems = MyDefinitionManager.Static.GetGas???;
+            // get Gas Property Items.  MyObjectBuilder_GasProperties
+            var gasItems = MyDefinitionManager.Static.GetGasDefinitions();
 
+            foreach (var item in gasItems)
+            {
+                if (item.Public)
+                {
+                    // TypeId and SubtypeName are both Case sensitive. Do not Ignore case.
+                    if (!marketItems.Any(e => e.TypeId.Equals(item.Id.TypeId.ToString()) && e.SubtypeName.Equals(item.Id.SubtypeName)))
+                    {
+                        // Need to add new items as Blacklisted.
+                        marketItems.Add(new MarketItemStruct { TypeId = item.Id.TypeId.ToString(), SubtypeName = item.Id.SubtypeName, BuyPrice = 1, SellPrice = 1, IsBlacklisted = true });
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding new item: {0} {1}.", item.Id.TypeId.ToString(), item.Id.SubtypeName);
+                    }
+                }
+            }
 
+            // TODO: make sure buy and sell work with correct value of Gas.
             // Bottles...
             // MyDefinitionId = MyOxygenContainerDefinition.StoredGasId;
             // maxVolume = MyOxygenContainerDefinition.Capacity;

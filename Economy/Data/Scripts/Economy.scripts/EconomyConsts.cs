@@ -17,7 +17,7 @@
         /// communications classes. A Player will connect to the server, and will automatically download version 2.
         /// We would now have a Client running newer communication classes trying to talk to the Server with older classes.
         /// </remarks>
-        public const int ModCommunicationVersion = 20160127; // This will be based on the date of update.
+        public const int ModCommunicationVersion = 20160131; // This will be based on the date of update.
 
 
         //milestone level A=Alpha B=Beta, dev = development test version or Milestone eg 1.0A Milestone, 1.1A Dev etc
@@ -27,7 +27,7 @@
         public const string CurrencyName = "Credits";
 
         //Name our Trading Network
-        public const string TradeNetworkName = "Blue Mining Inc";
+        public const string TradeNetworkName = "Blue Mining Inc Trade Network";
 
         /// <summary>
         /// The is the Id which this mod registers iteself for sending and receiving messages through SE. 

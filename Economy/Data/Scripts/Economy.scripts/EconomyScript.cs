@@ -334,10 +334,10 @@ namespace Economy.scripts
 
         #region hud display
             // Update hud
-            if (!hud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
+            if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
         }
 
-        private bool hud()
+        public bool UpdateHud()
         {
             // client config has not been received from server yet.
             if (ClientConfig == null)
@@ -546,7 +546,7 @@ namespace Economy.scripts
                     }
 
                     MyObjectBuilder_Base content;
-                    Dictionary<string, MyPhysicalItemDefinition> options;
+                    Dictionary<string, MyDefinitionBase> options;
                     // Search for the item and find one match only, either by exact name or partial name.
                     if (!Support.FindPhysicalParts(itemName, out content, out options))
                     {
@@ -616,8 +616,8 @@ namespace Economy.scripts
                             amount = 0;
 
                     //ok what item are we setting?
-                    MyObjectBuilder_Base content = null;
-                    Dictionary<string, MyPhysicalItemDefinition> options;
+                    MyObjectBuilder_Base content;
+                    Dictionary<string, MyDefinitionBase> options;
                     // Search for the item and find one match only, either by exact name or partial name.
                     if (!Support.FindPhysicalParts(itemName, out content, out options))
                     {
@@ -714,8 +714,8 @@ namespace Economy.scripts
                         sellToMerchant = false;
                     }
 
-                    MyObjectBuilder_Base content = null;
-                    Dictionary<string, MyPhysicalItemDefinition> options;
+                    MyObjectBuilder_Base content;
+                    Dictionary<string, MyDefinitionBase> options;
                     // Search for the item and find one match only, either by exact name or partial name.
                     if (!Support.FindPhysicalParts(itemName, out content, out options))
                     {
@@ -860,7 +860,7 @@ namespace Economy.scripts
                     var itemName = match.Groups["Key"].Value;
                     var strAmount = match.Groups["Value"].Value;
                     MyObjectBuilder_Base content;
-                    Dictionary<string, MyPhysicalItemDefinition> options;
+                    Dictionary<string, MyDefinitionBase> options;
 
                     // Search for the item and find one match only, either by exact name or partial name.
                     if (!Support.FindPhysicalParts(itemName, out content, out options))
@@ -911,6 +911,7 @@ namespace Economy.scripts
                 bool showComponent = false;
                 bool showAmmo = false;
                 bool showTools = false;
+                bool showGasses = false;
 
                 foreach (var str in split)
                 {
@@ -924,8 +925,10 @@ namespace Economy.scripts
                         showAmmo = true;
                     if (str.StartsWith("tool", StringComparison.InvariantCultureIgnoreCase))
                         showTools = true;
+                    if (str.StartsWith("gas", StringComparison.InvariantCultureIgnoreCase))
+                        showGasses = true;
                 }
-                MessageMarketPriceList.SendMessage(showOre, showIngot, showComponent, showAmmo, showTools);
+                MessageMarketPriceList.SendMessage(showOre, showIngot, showComponent, showAmmo, showTools, showGasses);
                 return true;
             }
 

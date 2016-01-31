@@ -11,6 +11,7 @@
     using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
+    using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
 
@@ -32,9 +33,12 @@
         [ProtoMember(5)]
         public bool ShowTools;
 
-        public static void SendMessage(bool showOre, bool showIngot, bool showComponent, bool showAmmo, bool showTools)
+        [ProtoMember(6)]
+        public bool ShowGasses;
+
+        public static void SendMessage(bool showOre, bool showIngot, bool showComponent, bool showAmmo, bool showTools, bool showGasses)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketPriceList { ShowAmmo = showAmmo, ShowComponent = showComponent, ShowIngot = showIngot, ShowOre = showOre, ShowTools = showTools });
+            ConnectionHelper.SendMessageToServer(new MessageMarketPriceList { ShowAmmo = showAmmo, ShowComponent = showComponent, ShowIngot = showIngot, ShowOre = showOre, ShowTools = showTools, ShowGasses = showGasses});
         }
 
         public override void ProcessClient()
@@ -81,7 +85,7 @@
 
                 try
                 {
-                    bool showAll = !ShowOre && !ShowIngot && !ShowComponent && !ShowAmmo && !ShowTools;
+                    bool showAll = !ShowOre && !ShowIngot && !ShowComponent && !ShowAmmo && !ShowTools && !ShowGasses;
 
                     var orderedList = new Dictionary<MarketItemStruct, string>();
                     foreach (var marketItem in market.MarketItems)
@@ -102,8 +106,10 @@
                                 (ShowIngot && content is MyObjectBuilder_Ingot) ||
                                 (ShowComponent && content is MyObjectBuilder_Component) ||
                                 (ShowAmmo && content is MyObjectBuilder_AmmoMagazine) ||
-                                (ShowTools && content is MyObjectBuilder_PhysicalGunObject) ||
-                                (ShowTools && content is MyObjectBuilder_GasContainerObject)) // Type check here allows mods that inherit from the same type to also appear in the lists.
+                                (ShowTools && content is MyObjectBuilder_PhysicalGunObject) || // guns, welders, hand drills, grinders.
+                                (ShowTools && content is MyObjectBuilder_GasContainerObject) || // aka gas bottle.
+                                (ShowGasses && content is MyObjectBuilder_GasProperties))
+                                // Type check here allows mods that inherit from the same type to also appear in the lists.
                             {
                                 var definition = MyDefinitionManager.Static.GetDefinition(marketItem.TypeId, marketItem.SubtypeName);
                                 var name = definition == null ? marketItem.SubtypeName : definition.GetDisplayName();

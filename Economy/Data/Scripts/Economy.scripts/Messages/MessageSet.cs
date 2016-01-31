@@ -114,12 +114,12 @@
 
             // TODO: do we check range to market?
 
-            MyPhysicalItemDefinition definition = null;
+            MyDefinitionBase definition = null;
             MyObjectBuilderType result;
             if (MyObjectBuilderType.TryParse(ItemTypeId, out result))
             {
                 var id = new MyDefinitionId(result, ItemSubTypeName);
-                MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
+                MyDefinitionManager.Static.TryGetDefinition(id, out definition);
             }
 
             if (definition == null)

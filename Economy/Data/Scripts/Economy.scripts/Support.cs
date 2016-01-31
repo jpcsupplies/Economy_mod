@@ -16,10 +16,10 @@
     {
         #region fields
 
-        private static MyPhysicalItemDefinition[] _physicalItems;
-        private static Dictionary<string, MyPhysicalItemDefinition> _physicalItemNames;
-        private static Dictionary<string, MyPhysicalItemDefinition> _oreList;
-        private static Dictionary<string, MyPhysicalItemDefinition> _ingotList;
+        private static List<MyDefinitionBase> _physicalItems;
+        private static Dictionary<string, MyDefinitionBase> _physicalItemNames;
+        private static Dictionary<string, MyDefinitionBase> _oreList;
+        private static Dictionary<string, MyDefinitionBase> _ingotList;
         private static Dictionary<MyDefinitionId, MyObjectBuilder_Base> _producedTypeList;
         private static bool _hasBuiltComponentList;
 
@@ -36,9 +36,9 @@
 
             EconomyScript.Instance.ClientLogger.WriteInfo("BuildComponentLists");
 
-            var physicalItems = MyDefinitionManager.Static.GetPhysicalItemDefinitions();
+            MyDefinitionBase[] physicalItems = MyDefinitionManager.Static.GetAllDefinitions().Where(d => d is MyPhysicalItemDefinition || d is MyGasProperties).ToArray();
             _producedTypeList = new Dictionary<MyDefinitionId, MyObjectBuilder_Base>();
-            _physicalItems = physicalItems.Where(item => item.Public).ToArray();  // Limit to public items.  This will remove the CubePlacer. :)
+            _physicalItems = physicalItems.Where(item => item.Public).ToList();  // Limit to public items.  This will remove the CubePlacer. :)
 
             // TODO: This list is generated ONCE, and not generated again during the session, so if an Item has its Blacklist state changed mid-game, it may show up or not show up.
             // Cannot call MarketManager here, because it is only accessible to the server, not Client.
@@ -46,7 +46,7 @@
             //_physicalItems = _physicalItems.Where(e => !MarketManager.IsItemBlacklistedOnServer(e.Id.TypeId.ToString(), e.Id.SubtypeName)).ToArray();
 
             // Make sure all Public Physical item names are unique, so they can be properly searched for.
-            _physicalItemNames = new Dictionary<string, MyPhysicalItemDefinition>();
+            _physicalItemNames = new Dictionary<string, MyDefinitionBase>();
             foreach (var item in _physicalItems)
             {
                 var baseName = item.GetDisplayName();
@@ -77,7 +77,7 @@
         /// <param name="options">Returns a list of potential matches if there was more than one of the same or partial name.</param>
         /// <returns>Returns true if a single exact match was found.</returns>
 
-        public static bool FindPhysicalParts(string itemName, out MyObjectBuilder_Base objectBuilder, out Dictionary<string, MyPhysicalItemDefinition> options)
+        public static bool FindPhysicalParts(string itemName, out MyObjectBuilder_Base objectBuilder, out Dictionary<string, MyDefinitionBase> options)
         {
             BuildComponentLists();
             itemName = itemName.Trim();
@@ -92,7 +92,7 @@
                 if (exactMatchOres.Count == 1)
                 {
                     objectBuilder = new MyObjectBuilder_Ore() { SubtypeName = exactMatchOres.First().Value.Id.SubtypeName };
-                    options = new Dictionary<string, MyPhysicalItemDefinition>();
+                    options = new Dictionary<string, MyDefinitionBase>();
                     return true;
                 }
                 if (exactMatchOres.Count > 1)
@@ -106,7 +106,7 @@
                 if (partialMatchOres.Count == 1)
                 {
                     objectBuilder = new MyObjectBuilder_Ore() { SubtypeName = partialMatchOres.First().Value.Id.SubtypeName };
-                    options = new Dictionary<string, MyPhysicalItemDefinition>();
+                    options = new Dictionary<string, MyDefinitionBase>();
                     return true;
                 }
                 if (partialMatchOres.Count > 1)
@@ -117,7 +117,7 @@
                 }
 
                 objectBuilder = null;
-                options = new Dictionary<string, MyPhysicalItemDefinition>();
+                options = new Dictionary<string, MyDefinitionBase>();
                 return false;
             }
 
@@ -130,7 +130,7 @@
                 if (exactMatchIngots.Count == 1)
                 {
                     objectBuilder = new MyObjectBuilder_Ingot() { SubtypeName = exactMatchIngots.First().Value.Id.SubtypeName };
-                    options = new Dictionary<string, MyPhysicalItemDefinition>();
+                    options = new Dictionary<string, MyDefinitionBase>();
                     return true;
                 }
                 if (exactMatchIngots.Count > 1)
@@ -144,7 +144,7 @@
                 if (partialMatchIngots.Count == 1)
                 {
                     objectBuilder = new MyObjectBuilder_Ingot() { SubtypeName = partialMatchIngots.First().Value.Id.SubtypeName };
-                    options = new Dictionary<string, MyPhysicalItemDefinition>();
+                    options = new Dictionary<string, MyDefinitionBase>();
                     return true;
                 }
                 if (partialMatchIngots.Count > 1)
@@ -155,7 +155,7 @@
                 }
 
                 objectBuilder = null;
-                options = new Dictionary<string, MyPhysicalItemDefinition>();
+                options = new Dictionary<string, MyDefinitionBase>();
                 return false;
             }
 
@@ -192,13 +192,13 @@
                 if (res.Value != null)
                 {
                     objectBuilder = MyObjectBuilderSerializer.CreateNewObject(res.Value.Id.TypeId, res.Value.Id.SubtypeName);
-                    options = new Dictionary<string, MyPhysicalItemDefinition>();
+                    options = new Dictionary<string, MyDefinitionBase>();
                     return true;
                 }
             }
 
             objectBuilder = null;
-            options = new Dictionary<string, MyPhysicalItemDefinition>();
+            options = new Dictionary<string, MyDefinitionBase>();
             return false;
         }
 
