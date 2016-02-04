@@ -365,7 +365,7 @@ namespace Economy.scripts
             //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
             //todo: need to add some clientconfig.globals somewhere for the if checks below
             string readout = ClientConfig.TradeNetworkName + " Network: ";
-            if (true) readout += ClientConfig.BankBalance + " " + ClientConfig.CurrencyName;
+            if (true) readout += string.Format("{0:#,##0.0000} {1}", ClientConfig.BankBalance, ClientConfig.CurrencyName);
             if (false) readout += " | Trade region: Unknown";
             if (false) readout += " | Location: X: 0 Y: 0 Z: 0";
             if (false) readout += " | Contracts: 0";
