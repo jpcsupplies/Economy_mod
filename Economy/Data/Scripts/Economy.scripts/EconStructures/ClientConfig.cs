@@ -32,5 +32,21 @@
         public DateTime OpenedDate;
 
         #endregion
+
+        #region hudconfig
+        //Hud configuration - needs to be set by client values here are placeholders for testing.
+        //If these are being pulled from a client file this will probably cause problems
+        //probably should be saved client side
+        //probably should get defaults from Economyconsts
+        public bool ShowBalance=true;
+        public bool ShowRegion=false;
+        public bool ShowXYZ=false;
+        public bool ShowContractCount=false;
+        public bool ShowCargoSpace=false;
+        public bool ShowFaction=true;
+        public bool ShowHud=true; // if this is false also dont check xyz, cargo and region in updates
+
+
+        #endregion hudconfig
     }
 }

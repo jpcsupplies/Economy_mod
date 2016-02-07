@@ -342,39 +342,46 @@ namespace Economy.scripts
             // client config has not been received from server yet.
             if (ClientConfig == null)
                 return true;
-
-            //(hud does work single player  wierd errors DS)
-            //Hud, displays users balance, trade network name, and optionally faction and free storage space (% or unit?) in cargo and/or inventory
-            //may also eventually be used to display info about completed objectives in missions/jobs/bounties/employment etc
-            //needs to call this at init (working), and at each call to message handling(working), and on recieving any notification of payment(cant access until public level).
-            //since other balance altering scenarios such as selling stock requires a command or prompt by player calling this
-            //at message handler should update in those scenarios automatically. That should avoid need for a timing loop and have no obvious sim impact
-
-
-            string faction = "Free agent";
-            IMyFaction plFaction;
-            //IMyPlayer Me = MyAPIGateway.Session.Player; why waste the bytes
-            plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.PlayerID);
-            if (plFaction != null)
+            
+            if (ClientConfig.ShowHud)
             {
-                faction = plFaction.Name;  //should this show tag or full name? depends on screen size i suppose
+                //(hud does work single player  wierd errors DS)
+                //Hud, displays users balance, trade network name, and optionally faction and free storage space (% or unit?) in cargo and/or inventory
+                //may also eventually be used to display info about completed objectives in missions/jobs/bounties/employment etc
+                //needs to call this at init (working), and at each call to message handling(working), and on recieving any notification of payment(cant access until public level).
+                //since other balance altering scenarios such as selling stock requires a command or prompt by player calling this
+                //at message handler should update in those scenarios automatically. That should avoid need for a timing loop and have no obvious sim impact
+
+
+
+
+                /* account.BankBalance.ToString("0.######"); */
+
+                //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
+                //todo: need to add some clientconfig.globals somewhere for the if checks below
+                string readout = ClientConfig.TradeNetworkName + " Network: ";
+                if (ClientConfig.ShowBalance) readout += string.Format("{0:#,##0.0000} {1}", ClientConfig.BankBalance, ClientConfig.CurrencyName);
+                if (ClientConfig.ShowRegion) readout += " | Trade region: Unknown";
+                if (ClientConfig.ShowXYZ) readout += " | Location: X: 0 Y: 0 Z: 0";
+                if (ClientConfig.ShowContractCount) readout += " | Contracts: 0";
+                if (ClientConfig.ShowCargoSpace) readout += " | Cargo ? of ?";
+                if (ClientConfig.ShowFaction)
+                {
+                    string faction = "Free agent";
+                    IMyFaction plFaction;
+                    //IMyPlayer Me = MyAPIGateway.Session.Player; why waste the bytes
+                    plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.PlayerID);
+                    if (plFaction != null)
+                    {
+                        faction = plFaction.Name;  //should this show tag or full name? depends on screen size i suppose
+                    }
+                    readout += " | Agency: " + faction;
+                }
+                MyAPIGateway.Utilities.GetObjectiveLine().Title = readout; 
             }
-
-            /* account.BankBalance.ToString("0.######"); */
-
-            //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
-            //todo: need to add some clientconfig.globals somewhere for the if checks below
-            string readout = ClientConfig.TradeNetworkName + " Network: ";
-            if (true) readout += string.Format("{0:#,##0.0000} {1}", ClientConfig.BankBalance, ClientConfig.CurrencyName);
-            if (false) readout += " | Trade region: Unknown";
-            if (false) readout += " | Location: X: 0 Y: 0 Z: 0";
-            if (false) readout += " | Contracts: 0";
-            if (false) readout += " | Cargo ? of ?";
-            if (true) readout += " | Agency: " + faction;
-            MyAPIGateway.Utilities.GetObjectiveLine().Title = readout;
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;  //using title not mission text now
             return true;  //probably need a catch of some sort for a return false, but anything going wrong here is probably part of another issue.
-            //and I am only using a bool to be lazy.  This should probably be HudManager.cs to make it public level
+            //and I am only using a bool to be lazy.  This should probably be HudManager.cs to make it public level 
         }
         #endregion hud display
 
@@ -822,12 +829,30 @@ namespace Economy.scripts
             //eg cargo, faction, trade zone, contract/mission/subsidy count, balance?
             if (split[0].Equals("/hud", StringComparison.InvariantCultureIgnoreCase))
             {
-
+                if (split.Length==1 || split.Length>=4 || (split.Length==2 && split[1].Equals("help", StringComparison.InvariantCultureIgnoreCase)) )  
+                { 
+                    MyAPIGateway.Utilities.ShowMessage("HUD", "Controls various aspects of hud display. See '/ehelp hud' for more details."); 
+                }
                 if (split.Length == 2)
                 {
-                    if (split[1].Equals("off", StringComparison.InvariantCultureIgnoreCase)) MyAPIGateway.Utilities.GetObjectiveLine().Hide();
-                    if (split[1].Equals("on", StringComparison.InvariantCultureIgnoreCase)) MyAPIGateway.Utilities.GetObjectiveLine().Show();
-                } else { MyAPIGateway.Utilities.ShowMessage("HUD", "/hud on | off  turns on or off the trade network hud"); }
+                    if (split[1].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowHud = false; MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
+                    if (split[1].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowHud = true; MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
+                } 
+                if (split.Length == 3) 
+                {
+                    if (split[1].Equals("balance", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowBalance = true; }
+                    if (split[1].Equals("balance", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowBalance = false; }
+                    if (split[1].Equals("region", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowRegion = true; }
+                    if (split[1].Equals("region", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowRegion = false; }
+                    if (split[1].Equals("GPS", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowXYZ = true; }
+                    if (split[1].Equals("GPS", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowXYZ = false; }
+                    if (split[1].Equals("contracts", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowContractCount = true; }
+                    if (split[1].Equals("contracts", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowContractCount = false; }
+                    if (split[1].Equals("cargo", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowCargoSpace = true; }
+                    if (split[1].Equals("cargo", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowCargoSpace = false; }
+                    if (split[1].Equals("agency", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowFaction = true; }
+                    if (split[1].Equals("agency", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowFaction = false; }
+                }
                 return true;
             }
             
@@ -1202,6 +1227,19 @@ namespace Economy.scripts
                                 "/sell acccept|deny (accepts or rejects a sell offer made to you)\r\n";
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /sell 20 Ice [optional price] [optional player]");
                             MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "sell command", helpreply, null, "Close");
+                            return true;
+                        case "hud":
+                            helpreply = "Turns on or off various HUD readouts\r\n" +
+                                " Eg /hud agency on  or /hud off\r\n" +
+                                " /hud on|off (Turn entire hud on or off)\r\n" +
+                                " /hud balance on|off (Bank balance display on or off)\r\n" +
+                                " /hud region on|off (Name of current trader region on or off\r\n" +
+                                " /hud GPS on|off (Show Galactic Positioning System XYZ coords\r\n" +
+                                " /hud contracts on|off (Number of active jobs/subsidies)\r\n"+
+                                " /hud cargo on|off (Display available cargo space for trading)\r\n"+
+                                " /hud agency on|off (Display your current agency/faction)\r\n";
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/hud #|balance|region|GPS|contracts|cargo|agency  #on/off");
+                            MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "hud command", helpreply, null, "Groovy");
                             return true;
                         case "value":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/value X Y - Looks up item [X] of optional quantity [Y] and reports the buy and sell value.");

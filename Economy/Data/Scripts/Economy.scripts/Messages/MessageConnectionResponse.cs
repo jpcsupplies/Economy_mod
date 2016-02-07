@@ -56,6 +56,7 @@
             EconomyScript.Instance.ClientLogger.WriteInfo("ClientConfig received: Opened {0}  Balance: {1}", ClientConfig.OpenedDate, ClientConfig.BankBalance);
 
             #region Initialise trade network hud
+            
             MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyScript.Instance.ClientConfig.TradeNetworkName;
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Type /bal to connect to network");
@@ -75,7 +76,7 @@
             // increment decrement not sure how MyAPIGateway.Utilities.GetObjectiveLine().Visible;
             // probably easier to clear() then repopulate, i cant see how to decriment properly 
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.add|remove etc
-            MyAPIGateway.Utilities.GetObjectiveLine().Show();
+            if (ClientConfig.ShowHud) { MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
             #endregion Initialise trade network hud
 
             if (OldCommunicationVersion)
