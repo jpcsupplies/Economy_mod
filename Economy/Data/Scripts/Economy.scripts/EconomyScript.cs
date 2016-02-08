@@ -1218,6 +1218,21 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/buy W X Y Z - Purchases a quantity [W] of item [X] [at price Y] [from player Z]");
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /buy 20 Ice ");
                             return true;
+                        case "lcd":
+                            helpreply = "Controls various LCD Information Feeds\r\n" +
+                                "Prerequisites: An LCD. \r\n" +
+                                "Firstly name the LCD you want to use [Economy]\r\n" +
+                                "Edit the public title and insert one or more of the following keywords -\r\n" +
+                                "component  (displays all component buy/sell prices)\r\n" +
+                                "ore        (displays all ore buy/sell prices)\r\n" +
+                                "ingot      (displays all ingot buy/sell prices)\r\n" +
+                                "Tools      (displays all tool buy/sell prices)\r\n" +
+                                "ammo       (displays all ammunition buy/sell prices)\r\n" +
+                                "gas etc may also be supported in future\r\n" +
+                                "stock      (shows amount of stock on hand of above)\r\n";
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "keywords component, ore, ingot, tools, ammo, stock");
+                            MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "LCD Usage", helpreply, null, "Cool");
+                            return true;
                         case "sell":
                             helpreply = "/sell W X Y Z \r\n Sells quantity [W] of item [X] [at price Y] [to player Z]\r\n" +
                                 " Eg sell to another player /sell 1 rifle 10 Bob\r\n" +
