@@ -246,8 +246,8 @@
                     accountToBuy.Date = DateTime.Now;
                     MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0} {3}", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
 
-                    MessageUpdateClient.SendMessage(accountToSell);
-                    MessageUpdateClient.SendMessage(accountToBuy);
+                    MessageUpdateClient.SendAccountMessage(accountToSell);
+                    MessageUpdateClient.SendAccountMessage(accountToBuy);
 
                     if (remainingToCollect > 0)
                     {

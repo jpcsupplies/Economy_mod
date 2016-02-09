@@ -7,11 +7,30 @@
     public class MessageUpdateClient : MessageBase
     {
         [ProtoMember(1)]
+        public ClientUpdateAction ClientUpdateAction;
+
+        [ProtoMember(2)]
         public decimal BankBalance;
 
-        public static void SendMessage(BankAccountStruct account)
+        [ProtoMember(3)]
+        public string CurrencyName;
+
+        [ProtoMember(4)]
+        public string TradeNetworkName;
+
+        public static void SendAccountMessage(BankAccountStruct account)
         {
-            ConnectionHelper.SendMessageToPlayer(account.SteamId, new MessageUpdateClient { BankBalance = account.BankBalance });
+            ConnectionHelper.SendMessageToPlayer(account.SteamId, new MessageUpdateClient { ClientUpdateAction = ClientUpdateAction.Account, BankBalance = account.BankBalance });
+        }
+
+        public static void SendCurrencyName(ulong steamdid, string currencyName)
+        {
+            ConnectionHelper.SendMessageToPlayer(steamdid, new MessageUpdateClient { ClientUpdateAction = ClientUpdateAction.CurrencyName, CurrencyName = currencyName });
+        }
+
+        public static void SendTradeNetworkName(ulong steamdid, string tradeNetworkName)
+        {
+            ConnectionHelper.SendMessageToPlayer(steamdid, new MessageUpdateClient { ClientUpdateAction = ClientUpdateAction.TradeNetworkName, TradeNetworkName = tradeNetworkName });
         }
 
         public override void ProcessClient()
@@ -22,7 +41,21 @@
                 return;
             }
 
-            EconomyScript.Instance.ClientConfig.BankBalance = BankBalance;
+            switch (ClientUpdateAction)
+            {
+                case ClientUpdateAction.Account:
+                    EconomyScript.Instance.ClientConfig.BankBalance = BankBalance;
+                    break;
+
+                case ClientUpdateAction.CurrencyName:
+                    EconomyScript.Instance.ClientConfig.CurrencyName = CurrencyName;
+                    break;
+
+                case ClientUpdateAction.TradeNetworkName:
+                    EconomyScript.Instance.ClientConfig.TradeNetworkName = TradeNetworkName;
+                    break;
+            }
+
             EconomyScript.Instance.UpdateHud();
             // TODO: we may invoke additional things here after the Client has updated their balance.
         }

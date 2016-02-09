@@ -314,8 +314,8 @@
                                 accountToSell.Date = DateTime.Now;
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} {3} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
 
-                                MessageUpdateClient.SendMessage(accountToBuy);
-                                MessageUpdateClient.SendMessage(accountToSell);
+                                MessageUpdateClient.SendAccountMessage(accountToBuy);
+                                MessageUpdateClient.SendAccountMessage(accountToSell);
                             }
                             else
                             {
@@ -431,8 +431,8 @@
                         accountToSell.BankBalance += transactionAmount;
                         accountToSell.Date = DateTime.Now;
 
-                        MessageUpdateClient.SendMessage(accountToBuy);
-                        MessageUpdateClient.SendMessage(accountToSell);
+                        MessageUpdateClient.SendAccountMessage(accountToBuy);
+                        MessageUpdateClient.SendAccountMessage(accountToSell);
 
                         order.TradeState = TradeState.SellAccepted;
 

@@ -22,6 +22,7 @@
     [XmlInclude(typeof(MessageSell))]
     [XmlInclude(typeof(MessageBuy))]
     [XmlInclude(typeof(MessageSet))]
+    [XmlInclude(typeof(MessageConfig))]
     [XmlInclude(typeof(MessageWorth))]
     [ProtoContract]
     public abstract class MessageBase

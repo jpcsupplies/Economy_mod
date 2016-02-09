@@ -22,12 +22,15 @@
             NpcMerchantName = EconomyConsts.NpcMerchantName;
             DefaultTradeRange = EconomyConsts.DefaultTradeRange;
             Language = (int)VRage.MyLanguagesEnum.English;
+            EnableLcds = true;
+            //EnableNpcTradezones = true;
+            //EnablePlayerTradezones = true;
         }
 
         #region properties
 
         /// <summary>
-        /// Name our money.
+        /// Name our money.  This is NOT the symbol (ie., $).
         /// </summary>
         public string CurrencyName;
 
@@ -72,6 +75,14 @@
         /// Typically retrieved via: MyAPIGateway.Session.Config.Language
         /// </summary>
         public int Language;
+
+        public bool EnableLcds;
+
+        // TODO: https://github.com/jpcsupplies/Economy_mod/issues/88
+        //public bool EnableNpcTradezones;  // split buy and sell?
+        //public bool EnablePlayerTradezones;  // split buy and sell?
+        //public bool EnablePlayerPayments;
+        //public bool EnablePlayerTrades;
 
         #endregion
 

@@ -45,7 +45,7 @@
                 }
 
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BALANCE",
-                    "Your bank balance is " + account.BankBalance.ToString("0.######"));
+                    "Your bank balance is {0:#,##0.######} {1}", account.BankBalance, EconomyScript.Instance.ServerConfig.CurrencyName);
             }
             else // if username is supplied, we want to know someone elses balance.
             {

@@ -72,8 +72,8 @@
                 account.BankBalance += TransactionAmount;
                 account.Date = DateTime.Now;
 
-                MessageUpdateClient.SendMessage(accountToSpend);
-                MessageUpdateClient.SendMessage(account);
+                MessageUpdateClient.SendAccountMessage(accountToSpend);
+                MessageUpdateClient.SendAccountMessage(account);
 
                 // if this works this is a very sexy way to work with our file
                 // testing: it does indeed work, if i was a teenager id probably need to change my underwear at this point

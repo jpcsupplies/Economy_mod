@@ -84,6 +84,11 @@ namespace Economy.scripts
         /// </summary>
         const string NpcMovePattern = @"(?<command>/npczone)\s+((move)|(resize)|(reshape))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<X>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Y>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Z>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Size>(\d+(\.\d*)?))\s+(?<shape>(round)|(circle)|(sphere)|(spherical)|(box)|(cube)|(cubic))";
 
+        /// <summary>
+        /// pattern defines econfig commands.
+        /// </summary>
+        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(LimitedRange)|(TradeTimeout)|(StartingBalance)|(CurrencyName)|(LimitedSupply)|(EnableLcds)))(?:\s+(?<value>.+))?)?";
+
         #endregion
 
         #region fields
@@ -359,7 +364,7 @@ namespace Economy.scripts
 
                 //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
                 //todo: need to add some clientconfig.globals somewhere for the if checks below
-                string readout = ClientConfig.TradeNetworkName + " Network: ";
+                string readout = ClientConfig.TradeNetworkName + ": ";
                 if (ClientConfig.ShowBalance) readout += string.Format("{0:#,##0.0000} {1}", ClientConfig.BankBalance, ClientConfig.CurrencyName);
                 if (ClientConfig.ShowRegion) readout += " | Trade region: Unknown";
                 if (ClientConfig.ShowXYZ) readout += " | Location: X: 0 Y: 0 Z: 0";
@@ -583,13 +588,28 @@ namespace Economy.scripts
             }
             #endregion buy
 
-            #region eoptions
+            #region econfig
+
+            match = Regex.Match(messageText, EconfigPattern, RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                MessageConfig.SendMessage(match.Groups["config"].Value, match.Groups["value"].Value);
+                return true;
+            }
 
             //Todo https://github.com/jpcsupplies/Economy_mod/issues/88
             // Set options like limited or unlimited stock, range checks size (or on or off), currency name
             // and trading on or off.   Or any other options an admin should be able to set in game.
 
-            #endregion eoptions
+            // /econfig - Display current settings.
+            // /econfig language 4 - change language to 4.
+            // /econfig language en - change language to 0 (after some detection).
+            // /econfig TradeNetworkName Federated Terran Empire - change the TradeNetworkName
+            // /econfig LimitedRange off - change LimitedRange off.
+            // /econfig TradeTimeout 00:00:01 - change TradeTimeout to 1 second.
+            // /econfig DefaultStartingBalance 5000 - change DefaultStartingBalance to 5000.
+
+            #endregion econfig
 
             #region set
             //Item managment -
@@ -1309,9 +1329,13 @@ namespace Economy.scripts
         /// <summary>
         /// Sets the CultureInfo to use when formatting numbers and dates on the server, and the text resources when fetching names of game objects to display or send back to players.
         /// </summary>
-        private void SetLanguage()
+        internal void SetLanguage()
         {
             MyTexts.LanguageDescription language = MyTexts.Languages.ContainsKey(ServerConfig.Language) ? MyTexts.Languages[ServerConfig.Language] : MyTexts.Languages[0];
+
+            // Make sure it's up-to-date with correct value.
+            ServerConfig.Language = (int)language.Id;
+
             ServerCulture = CultureInfo.GetCultureInfo(language.FullCultureName);
 
             // Load resources for that language.

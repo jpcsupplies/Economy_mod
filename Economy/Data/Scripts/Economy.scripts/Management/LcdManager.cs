@@ -13,6 +13,7 @@
     using Sandbox.ModAPI.Ingame;
     using Sandbox.ModAPI.Interfaces;
     using VRage.Game.ObjectBuilders.Definitions;
+    using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
 
@@ -20,6 +21,9 @@
     {
         public static void UpdateLcds()
         {
+            if (!EconomyScript.Instance.ServerConfig.EnableLcds)
+                return;
+
             var players = new List<IMyPlayer>();
             MyAPIGateway.Players.GetPlayers(players, p => p != null);
             var updatelist = new HashSet<IMyTextPanel>();
@@ -46,6 +50,31 @@
 
             foreach (var textPanel in updatelist)
                 ProcessLcdBlock(textPanel);
+        }
+
+        public static void BlankLcds()
+        {
+            var entities = new HashSet<IMyEntity>();
+            MyAPIGateway.Entities.GetEntities(entities, e => e is Sandbox.ModAPI.IMyCubeGrid);
+
+            foreach (var entity in entities)
+            {
+                var cubeGrid = (Sandbox.ModAPI.IMyCubeGrid) entity;
+                if (cubeGrid.Physics == null)
+                    continue;
+
+                var blocks = new List<Sandbox.ModAPI.IMySlimBlock>();
+                cubeGrid.GetBlocks(blocks, block => block != null && block.FatBlock != null &&
+                    block.FatBlock.BlockDefinition.TypeId == typeof (MyObjectBuilder_TextPanel) &&
+                    EconomyConsts.LCDTags.Any(tag => ((Sandbox.ModAPI.IMyTerminalBlock) block.FatBlock).CustomName.IndexOf(tag, StringComparison.InvariantCultureIgnoreCase) >= 0));
+
+                foreach (var block in blocks)
+                {
+                    var writer = TextPanelWriter.Create((IMyTextPanel)block.FatBlock);
+                    writer.AddPublicLine("Economy LCD is disabled");
+                    writer.UpdatePublic();
+                }
+            }
         }
 
         private static void ProcessLcdBlock(IMyTextPanel textPanel)
