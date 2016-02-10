@@ -1,6 +1,6 @@
 PhoenixX's Economy mod 
-(aka "Frontier Economy" on steam)
 ======================
+(aka "Frontier Economy" on steam)
 A Steam Workshop script mod for Space Engineeers.
 ----------------------
 This mod is an attempt to add an economic system to Space Engineers.
