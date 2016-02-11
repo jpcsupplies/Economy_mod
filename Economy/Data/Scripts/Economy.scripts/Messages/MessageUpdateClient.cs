@@ -13,14 +13,17 @@
         public decimal BankBalance;
 
         [ProtoMember(3)]
+        public int MissionId;
+
+        [ProtoMember(8)]
         public string CurrencyName;
 
-        [ProtoMember(4)]
+        [ProtoMember(9)]
         public string TradeNetworkName;
 
         public static void SendAccountMessage(BankAccountStruct account)
         {
-            ConnectionHelper.SendMessageToPlayer(account.SteamId, new MessageUpdateClient { ClientUpdateAction = ClientUpdateAction.Account, BankBalance = account.BankBalance });
+            ConnectionHelper.SendMessageToPlayer(account.SteamId, new MessageUpdateClient { ClientUpdateAction = ClientUpdateAction.Account, BankBalance = account.BankBalance, MissionId = account.MissionId });
         }
 
         public static void SendCurrencyName(ulong steamdid, string currencyName)
@@ -45,6 +48,7 @@
             {
                 case ClientUpdateAction.Account:
                     EconomyScript.Instance.ClientConfig.BankBalance = BankBalance;
+                    EconomyScript.Instance.ClientConfig.MissionId = MissionId;
                     break;
 
                 case ClientUpdateAction.CurrencyName:

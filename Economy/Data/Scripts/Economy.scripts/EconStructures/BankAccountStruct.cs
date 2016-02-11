@@ -8,8 +8,14 @@
     {
         public ulong SteamId { get; set; }
 
+        /// <summary>
+        /// The player's current bank balance.
+        /// </summary>
         public decimal BankBalance { get; set; }
 
+        /// <summary>
+        /// The player's current name in game, or the last recorded name.
+        /// </summary>
         public string NickName { get; set; }
 
         /// <summary>
@@ -28,5 +34,11 @@
         /// Typically retrieved via: MyAPIGateway.Session.Config.Language
         /// </summary>
         public int Language { get; set; }  
+
+        /// <summary>
+        /// Identifier which indicates the current mission the player is on.
+        /// 0 will represent no current mission.
+        /// </summary>
+        public int MissionId { get; set; }
     }
 }

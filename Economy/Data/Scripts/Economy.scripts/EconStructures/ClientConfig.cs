@@ -31,6 +31,12 @@
         /// </summary>
         public DateTime OpenedDate;
 
+        /// <summary>
+        /// Identifier which indicates the current mission the player is on.
+        /// 0 will represent no current mission.
+        /// </summary>
+        public int MissionId { get; set; }
+
         #endregion
 
         #region hudconfig
