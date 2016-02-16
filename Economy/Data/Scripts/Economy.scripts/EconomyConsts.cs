@@ -92,7 +92,7 @@
         /// <summary>
         /// The default age to allow accounts to be before expiry.
         /// </summary>
-        public readonly static TimeSpan AccountExpiry = new TimeSpan(30, 0, 0, 0);
+        public readonly static TimeSpan AccountExpiry = new TimeSpan(60, 0, 0, 0);
 
         /// <summary>
         /// The tags that are checked in Text Panels to determine if they are to be used by the Economy Mod.
