@@ -2,7 +2,9 @@
 {
     using EconStructures;
     using ProtoBuf;
+    using Sandbox.Common;
     using Sandbox.ModAPI;
+    using VRage.Game;
 
     public class MessageConnectionResponse : MessageBase
     {
@@ -41,12 +43,12 @@
                 if (MyAPIGateway.Session.Player.IsAdmin())
                 {
                     MyAPIGateway.Utilities.ShowMissionScreen("Economy", "Warning", " ", "The version of Economy running on your Server is out of date.\r\nPlease update and restart your server.");
-                    MyAPIGateway.Utilities.ShowNotification("Warning: The version of Economy running on your Server is out of date.", 5000, Sandbox.Common.MyFontEnum.Blue);
+                    MyAPIGateway.Utilities.ShowNotification("Warning: The version of Economy running on your Server is out of date.", 5000, MyFontEnum.Blue);
                 }
                 else
                 {
                     MyAPIGateway.Utilities.ShowMissionScreen("Economy", "Warning", " ", "The Economy mod is currently unavailable as it is out of date.\r\nPlease contact your server Administrator.");
-                    MyAPIGateway.Utilities.ShowNotification("Warning: The Economy mod is currently unavailable as it is out of date.", 5000, Sandbox.Common.MyFontEnum.Blue);
+                    MyAPIGateway.Utilities.ShowNotification("Warning: The Economy mod is currently unavailable as it is out of date.", 5000, MyFontEnum.Blue);
                 }
                 return;
             }
@@ -84,13 +86,13 @@
                 if (MyAPIGateway.Session.Player.IsAdmin())
                 {
                     MyAPIGateway.Utilities.ShowMissionScreen("Economy", "Warning", " ", "The version of Economy running on your Server is out of date.\r\nPlease update and restart your server.");
-                    MyAPIGateway.Utilities.ShowNotification("Warning: The version of Economy running on your Server is out of date.", 5000, Sandbox.Common.MyFontEnum.Blue);
+                    MyAPIGateway.Utilities.ShowNotification("Warning: The version of Economy running on your Server is out of date.", 5000, MyFontEnum.Blue);
                     // TODO: display OldCommunicationVersion.
                 }
                 else
                 {
                     MyAPIGateway.Utilities.ShowMissionScreen("Economy", "Warning", " ", "The Economy mod is currently unavailable as it is out of date.\r\nPlease contact your server Administrator.");
-                    MyAPIGateway.Utilities.ShowNotification("Warning: The Economy mod is currently unavailable as it is out of date.", 5000, Sandbox.Common.MyFontEnum.Blue);
+                    MyAPIGateway.Utilities.ShowNotification("Warning: The Economy mod is currently unavailable as it is out of date.", 5000, MyFontEnum.Blue);
                     // TODO: display OldCommunicationVersion.
                 }
             }

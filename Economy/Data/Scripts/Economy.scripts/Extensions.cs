@@ -8,6 +8,7 @@ namespace Economy.scripts
     using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
     using VRage;
+    using VRage.Game;
     using VRage.Game.Entity;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
@@ -190,7 +191,7 @@ namespace Economy.scripts
             return definitionManager.GetAllDefinitions().Where(e => e.Id.TypeId == typeof(VRage.Game.ObjectBuilders.Definitions.MyObjectBuilder_GasProperties)).Cast<MyGasProperties>().ToList();
         }
 
-        public static IMyInventory GetPlayerInventory(this IMyPlayer player)
+        public static Sandbox.ModAPI.IMyInventory GetPlayerInventory(this IMyPlayer player)
         {
             var character = player.GetCharacter();
             if (character == null)
@@ -198,7 +199,7 @@ namespace Economy.scripts
             return character.GetPlayerInventory();
         }
 
-        public static IMyInventory GetPlayerInventory(this IMyCharacter character)
+        public static Sandbox.ModAPI.IMyInventory GetPlayerInventory(this IMyCharacter character)
         {
             if (character == null)
                 return null;

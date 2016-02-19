@@ -28,6 +28,7 @@ namespace Economy.scripts
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Interfaces;
     using VRage;
+    using VRage.Game;
     using VRage.Game.Components;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;

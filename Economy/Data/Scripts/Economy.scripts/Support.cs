@@ -8,6 +8,7 @@
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using VRage;
+    using VRage.Game;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
@@ -251,7 +252,7 @@
 
         #region Inventory
 
-        public static bool InventoryAdd(IMyInventory inventory, MyFixedPoint amount, MyDefinitionId definitionId)
+        public static bool InventoryAdd(Sandbox.ModAPI.IMyInventory inventory, MyFixedPoint amount, MyDefinitionId definitionId)
         {
             var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
 

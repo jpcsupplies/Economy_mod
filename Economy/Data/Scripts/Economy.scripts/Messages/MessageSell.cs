@@ -13,6 +13,7 @@
     using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
     using VRage;
+    using VRage.Game;
     using VRage.Game.Entity;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
@@ -682,7 +683,7 @@
                 accountToSell.NickName, order.Quantity, definition.GetDisplayName(), transactionAmount, EconomyScript.Instance.ServerConfig.CurrencyName);
         }
 
-        private void RemoveInventory(IMyInventory playerInventory, List<MyEntity> cargoBlocks, MyFixedPoint amount, MyDefinitionId definitionId)
+        private void RemoveInventory(Sandbox.ModAPI.IMyInventory playerInventory, List<MyEntity> cargoBlocks, MyFixedPoint amount, MyDefinitionId definitionId)
         {
             var available = playerInventory.GetItemAmount(definitionId);
             if (amount <= available)
