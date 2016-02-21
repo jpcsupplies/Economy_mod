@@ -358,9 +358,18 @@ namespace Economy.scripts
                 //since other balance altering scenarios such as selling stock requires a command or prompt by player calling this
                 //at message handler should update in those scenarios automatically. That should avoid need for a timing loop and have no obvious sim impact
 
-
-
-
+                /* We need a routine populating a field similar the the below regularly, which pushes
+                 * updates to the x y z location readout if it is enabled - have not yet figured out
+                 * how to pull x y z out last attempt was totally broken code.
+                 * this will also be critical for checking against mission conditions
+                 * once missions are functional, that require a user travelling to a location
+                 * var position = ((IMyEntity)character).WorldMatrix.Translation;
+                
+                 * something like this can be used to populate the trade region part of the hud as well
+                 * where we find ourself in a trade region
+                 * it could probably hang off the timer code that updates lcds
+                 var markets = MarketManager.FindMarketsFromLocation(position);
+                 */
                 /* account.BankBalance.ToString("0.######"); */
 
                 //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
