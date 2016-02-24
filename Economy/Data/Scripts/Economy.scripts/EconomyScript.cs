@@ -393,7 +393,7 @@ namespace Economy.scripts
                     switch (ClientConfig.MissionId)
                     {
                         case 1:
-                            ClientConfig.LazyMissionText = "Type /bal to connect to network";
+                            ClientConfig.LazyMissionText = "Mine / Sell some ore";
                             //MissionPayment = 0;
                             //missionGPS = (x,y,z)
                             //create a client gps (caption, missionGPS);
@@ -401,19 +401,23 @@ namespace Economy.scripts
                             //we need to remove it once we get there
                             break;
                         case 2:
-                            ClientConfig.LazyMissionText = "Join a Faction";
+                            ClientConfig.LazyMissionText = "Buy something";
                             //MissionPayment = 100;
                             break;
                         case 3:
-                            ClientConfig.LazyMissionText = "This would be mission 3 text";
+                            ClientConfig.LazyMissionText = "Pay a player";
                             //MissionPayment = 600;
                             break;
                         case 4:
-                            ClientConfig.LazyMissionText = "This would be mission 4 text";
+                            ClientConfig.LazyMissionText = "Check what a ship/station is worth";
                             //MissionPayment = 1000;
                             break;
                         case 5:
-                            ClientConfig.LazyMissionText = "This would be mission 5 text";
+                            ClientConfig.LazyMissionText = "Build / Weld Something";
+                            //MissionPayment = 10000;
+                            break;
+                        case 6:
+                            ClientConfig.LazyMissionText = "Join a Faction";
                             //MissionPayment = 10000;
                             break;
                         default:
