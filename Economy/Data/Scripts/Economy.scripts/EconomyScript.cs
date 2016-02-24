@@ -351,7 +351,6 @@ namespace Economy.scripts
             
             if (ClientConfig.ShowHud)
             {
-                //(hud does work single player  wierd errors DS)
                 //Hud, displays users balance, trade network name, and optionally faction and free storage space (% or unit?) in cargo and/or inventory
                 //may also eventually be used to display info about completed objectives in missions/jobs/bounties/employment etc
                 //needs to call this at init (working), and at each call to message handling(working), and on recieving any notification of payment(cant access until public level).
@@ -373,7 +372,6 @@ namespace Economy.scripts
                 /* account.BankBalance.ToString("0.######"); */
 
                 //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
-                //todo: need to add some clientconfig.globals somewhere for the if checks below
                 string readout = ClientConfig.TradeNetworkName + ": ";
                 if (ClientConfig.ShowBalance) readout += string.Format("{0:#,##0.0000} {1}", ClientConfig.BankBalance, ClientConfig.CurrencyName);
                 if (ClientConfig.ShowRegion) readout += " | Trade region: Unknown";

@@ -42,7 +42,6 @@
     public class MessageMission : MessageBase
     {
         [ProtoMember(1)]
-        //public string UserName;
         public long MissionID;
 
         public static void SendMessage(long missionID)
@@ -52,20 +51,37 @@
 
         public override void ProcessClient()
         {
-            // never processed on client
+
+            // never processed on client (can this be used to update client hud? lets try)
+            if (MissionID == -1)
+            {               
+                MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
+                MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Type /bal to connect to network CC");
+                // if we wanted a 2nd mission add it like this MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission");
+                //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(ClientConfig.LazyMissionText);
+            }
         }
 
         public override void ProcessServer()
         {
- 
+            //this is meant to be used to pull open the missions.xml file server side, and return
+            //appropriate data.  At the moment its just hardcoded test data
+            //we could also just make a local copy client side as part of client connect
+            //and remove the need for this server code entirely - which would make my life easier!
+            //and probably improve server sim speed marginally!
+
 
             EconomyScript.Instance.ServerLogger.WriteVerbose("Mission Text request '{0}' from '{1}'", MissionID, SenderSteamId);
             string reply;
+            //vector3d MissionGPS;
+            //string GPSCaption;
+            //myobjectID MissionRewardItem;
+            //decimal MissionPayment=0;
 
             if (MissionID <= 0) //did we get a mission id?  
             {
                 // nope its 0 probably should show the generic survive mission
-                //return "Mission: Survive | Deadline: Unlimited";
+                reply= "Mission: Survive | Deadline: Unlimited";
             }
             else // ok seems to be a valid integer over 0
             {
@@ -77,6 +93,41 @@
                 // case 2
                 //  return "mission 2 text"
                 //etc
+                //this really should be missions pulled from a missions.xml
+                //instead of being hardcoded.. although we could create a few generic missions
+                switch (MissionID)
+                {
+                    case 1:
+                        reply = "Type /bal to connect to network";
+                        //MissionPayment = 0;
+                        //missionGPS = (x,y,z)
+                        //create a client gps (caption, missionGPS);
+                        //write this gps to some sort of list so we know 
+                        //we need to remove it once we get there
+                        break;
+                    case 2:
+                        reply = "Join a Faction";
+                        //MissionPayment = 100;
+                        break;
+                    case 3:
+                        reply = "This would be mission 3 text";
+                        //MissionPayment = 600;
+                        break;
+                    case 4:
+                        reply = "This would be mission 4 text";
+                        //MissionPayment = 1000;
+                        break;
+                    case 5:
+                        reply = "This would be mission 5 text";
+                        //MissionPayment = 10000;
+                        break;
+                    default:
+                        reply = "This would be an invalid or unknown mission id";
+                        break;
+                }
+                // do stuff - write reply to mission hud mission text etc
+                MessageClientTextMessage.SendMessage(SenderSteamId, "text", reply);
+                
 
             }
         }

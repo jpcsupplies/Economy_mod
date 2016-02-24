@@ -14,7 +14,15 @@
 
         public override void ProcessClient()
         {
-            MyAPIGateway.Utilities.ShowMessage(Prefix, Content);
+            if (Prefix == "mission")
+            {
+                MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
+                MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("we got this from process client");
+            }
+            else
+            {
+                MyAPIGateway.Utilities.ShowMessage(Prefix, Content);
+            }
         }
 
         public override void ProcessServer()
@@ -29,8 +37,15 @@
                 message = content;
             else
                 message = string.Format(content, args);
-
-            ConnectionHelper.SendMessageToPlayer(steamId, new MessageClientTextMessage { Prefix = prefix, Content = message });
+            if (prefix == "mission")
+            {
+                MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
+                MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("we got this from send message");
+            }
+            else
+            {
+                ConnectionHelper.SendMessageToPlayer(steamId, new MessageClientTextMessage { Prefix = prefix, Content = message });
+            }
         }
     }
 }
