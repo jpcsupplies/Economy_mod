@@ -11,7 +11,8 @@
 
     //This is a placeholder for generic mission texts.
     //Adapted off the bank balance script
-    //assorted tests show this is code broken
+    //assorted tests show this is code broken - as nothing happens when i call this :(
+    //have moved all useful code to updatehud bool for now
 
     
     //Although we could pre-populate the objectives[] array with all possible mission texts
@@ -61,13 +62,9 @@
         {
 
             // never processed on client (can this be used to update client hud? lets try)
-            if (MissionID == -1)
-            {               
-                MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
-                MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Type /bal to connect to network CC");
-                // if we wanted a 2nd mission add it like this MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission");
-                //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(ClientConfig.LazyMissionText);
-            }
+            //appears to never run
+
+            MessageClientTextMessage.SendMessage(SenderSteamId, "mission", (MissionID + "client side"));
         }
 
         public override void ProcessServer()
@@ -78,66 +75,14 @@
             //and remove the need for this server code entirely - which would make my life easier!
             //and probably improve server sim speed marginally!
 
+            //also appears never to run?
 
             //EconomyScript.Instance.ServerLogger.WriteVerbose("Mission Text request '{0}' from '{1}'", MissionID, SenderSteamId);
-            string reply;
-            //vector3d MissionGPS;
-            //string GPSCaption;
-            //myobjectID MissionRewardItem;
-            //decimal MissionPayment=0;
 
-            if (MissionID <= 0) //did we get a mission id?  
-            {
-                // nope its 0 probably should show the generic survive mission
-                reply= "zz Mission: Survive | Deadline: Unlimited";
-            }
-            else // ok seems to be a valid integer over 0
-            {
-                //var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
-                //if (player != null && player.IsAdmin()) // hold on there, are we an admin first?
-                //select case missionID
-                // case 1
-                //  return "mission 1 text"
-                // case 2
-                //  return "mission 2 text"
-                //etc
-                //this really should be missions pulled from a missions.xml
-                //instead of being hardcoded.. although we could create a few generic missions
-                switch (MissionID)
-                {
-                    case 1:
-                        reply = "Type /bal to connect to network";
-                        //MissionPayment = 0;
-                        //missionGPS = (x,y,z)
-                        //create a client gps (caption, missionGPS);
-                        //write this gps to some sort of list so we know 
-                        //we need to remove it once we get there
-                        break;
-                    case 2:
-                        reply = "Join a Faction";
-                        //MissionPayment = 100;
-                        break;
-                    case 3:
-                        reply = "This would be mission 3 text";
-                        //MissionPayment = 600;
-                        break;
-                    case 4:
-                        reply = "This would be mission 4 text";
-                        //MissionPayment = 1000;
-                        break;
-                    case 5:
-                        reply = "This would be mission 5 text";
-                        //MissionPayment = 10000;
-                        break;
-                    default:
-                        reply = "This would be an invalid or unknown mission id";
-                        break;
-                }
-                // do stuff - write reply to mission hud mission text etc debug
-                MessageClientTextMessage.SendMessage(SenderSteamId, "mission", reply);
+            MessageClientTextMessage.SendMessage(SenderSteamId, "mission", (MissionID + "server side"));
                 
 
-            }
+            
         }
 
     }

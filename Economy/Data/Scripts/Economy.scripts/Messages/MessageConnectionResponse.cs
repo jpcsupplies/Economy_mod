@@ -64,7 +64,7 @@
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Type /bal to connect to network");
             // if we wanted a 2nd mission add it like this MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission");
-            MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(ClientConfig.LazyMissionText); //testing if my global is available
+            //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(ClientConfig.LazyMissionText); //testing if my global is available
 
 
             MyAPIGateway.Utilities.ShowMessage("Economy", "Network Connected!");

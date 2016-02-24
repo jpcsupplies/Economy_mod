@@ -14,8 +14,8 @@
 
         public override void ProcessClient()
         {
-
-                MyAPIGateway.Utilities.ShowMessage(Prefix, ("c"+Content));
+            //
+                MyAPIGateway.Utilities.ShowMessage(Prefix, Content);
            
         }
 
@@ -32,7 +32,7 @@
             else
                 message = string.Format(content, args);
 
-                ConnectionHelper.SendMessageToPlayer(steamId, new MessageClientTextMessage { Prefix = prefix, Content = ("a"+message) });
+                ConnectionHelper.SendMessageToPlayer(steamId, new MessageClientTextMessage { Prefix = prefix, Content = message});
             
         }
     }
