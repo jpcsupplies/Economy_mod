@@ -14,7 +14,9 @@
 
         public override void ProcessClient()
         {
-            MyAPIGateway.Utilities.ShowMessage(Prefix, Content);
+            //
+                MyAPIGateway.Utilities.ShowMessage(Prefix, Content);
+           
         }
 
         public override void ProcessServer()
@@ -30,7 +32,8 @@
             else
                 message = string.Format(content, args);
 
-            ConnectionHelper.SendMessageToPlayer(steamId, new MessageClientTextMessage { Prefix = prefix, Content = message });
+                ConnectionHelper.SendMessageToPlayer(steamId, new MessageClientTextMessage { Prefix = prefix, Content = message});
+            
         }
     }
 }

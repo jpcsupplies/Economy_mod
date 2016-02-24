@@ -351,7 +351,6 @@ namespace Economy.scripts
             
             if (ClientConfig.ShowHud)
             {
-                //(hud does work single player  wierd errors DS)
                 //Hud, displays users balance, trade network name, and optionally faction and free storage space (% or unit?) in cargo and/or inventory
                 //may also eventually be used to display info about completed objectives in missions/jobs/bounties/employment etc
                 //needs to call this at init (working), and at each call to message handling(working), and on recieving any notification of payment(cant access until public level).
@@ -373,7 +372,6 @@ namespace Economy.scripts
                 /* account.BankBalance.ToString("0.######"); */
 
                 //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
-                //todo: need to add some clientconfig.globals somewhere for the if checks below
                 string readout = ClientConfig.TradeNetworkName + ": ";
                 if (ClientConfig.ShowBalance) readout += string.Format("{0:#,##0.0000} {1}", ClientConfig.BankBalance, ClientConfig.CurrencyName);
                 if (ClientConfig.ShowRegion) readout += " | Trade region: Unknown";
@@ -391,10 +389,51 @@ namespace Economy.scripts
                         faction = plFaction.Name;  //should this show tag or full name? depends on screen size i suppose
                     }
                     readout += " | Agency: " + faction;
+                    
+                    switch (ClientConfig.MissionId)
+                    {
+                        case 1:
+                            ClientConfig.LazyMissionText = "Mine / Sell some ore";
+                            //MissionPayment = 0;
+                            //missionGPS = (x,y,z)
+                            //create a client gps (caption, missionGPS);
+                            //write this gps to some sort of list so we know 
+                            //we need to remove it once we get there
+                            break;
+                        case 2:
+                            ClientConfig.LazyMissionText = "Buy something";
+                            //MissionPayment = 100;
+                            break;
+                        case 3:
+                            ClientConfig.LazyMissionText = "Pay a player";
+                            //MissionPayment = 600;
+                            break;
+                        case 4:
+                            ClientConfig.LazyMissionText = "Check what a ship/station is worth";
+                            //MissionPayment = 1000;
+                            break;
+                        case 5:
+                            ClientConfig.LazyMissionText = "Build / Weld Something";
+                            //MissionPayment = 10000;
+                            break;
+                        case 6:
+                            ClientConfig.LazyMissionText = "Join a Faction";
+                            //MissionPayment = 10000;
+                            break;
+                        default:
+                            ClientConfig.LazyMissionText = ClientConfig.MissionId + " Mission: Survive | Deadline: Unlimited";
+                                //"This would be an invalid or unknown mission id";
+                            break;
+                    }
+                    //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
+                    MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = ClientConfig.LazyMissionText;
+                    //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(reply);
                 }
                 MyAPIGateway.Utilities.GetObjectiveLine().Title = readout; 
             }
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;  //using title not mission text now
+
+
             return true;  //probably need a catch of some sort for a return false, but anything going wrong here is probably part of another issue.
             //and I am only using a bool to be lazy.  This should probably be HudManager.cs to make it public level 
         }
@@ -508,6 +547,10 @@ namespace Economy.scripts
             // nothing useful was entered.
             if (split.Length == 0)
                 return false;
+
+            if (split[0].Equals("/debug", StringComparison.InvariantCultureIgnoreCase))
+            { ClientConfig.MissionId++;  return true; }
+
 
             #region pay
             // pay command
@@ -892,8 +935,8 @@ namespace Economy.scripts
             // bal command
             if (split[0].Equals("/bal", StringComparison.InvariantCultureIgnoreCase))
             {
-                //a little on connect mission ;) should make it pay 5 credits or something just to be more missionlike.
-                if (MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network") MyAPIGateway.Utilities.GetObjectiveLine().AdvanceObjective();
+                //pull current mission text
+                if (MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network") if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); };
                 match = Regex.Match(messageText, BalPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                     MessageBankBalance.SendMessage(match.Groups["user"].Value);

@@ -58,12 +58,13 @@
             EconomyScript.Instance.ClientLogger.WriteInfo("ClientConfig received: Opened {0}  Balance: {1}", ClientConfig.OpenedDate, ClientConfig.BankBalance);
 
             #region Initialise trade network hud
-            
+
+
             MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyScript.Instance.ClientConfig.TradeNetworkName;
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Type /bal to connect to network");
             // if we wanted a 2nd mission add it like this MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission");
-            MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission: Survive | Deadline: Unlimited");
+            //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(ClientConfig.LazyMissionText); //testing if my global is available
 
 
             MyAPIGateway.Utilities.ShowMessage("Economy", "Network Connected!");
@@ -79,6 +80,7 @@
             // probably easier to clear() then repopulate, i cant see how to decriment properly 
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.add|remove etc
             if (ClientConfig.ShowHud) { MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
+
             #endregion Initialise trade network hud
 
             if (OldCommunicationVersion)
