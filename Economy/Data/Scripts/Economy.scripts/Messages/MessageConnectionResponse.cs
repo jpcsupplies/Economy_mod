@@ -61,9 +61,8 @@
 
 
             MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyScript.Instance.ClientConfig.TradeNetworkName;
-            MessageMission.SendMessage(-1); //testing if message mission is working
-            //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
-            //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Type /bal to connect to network");
+            MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
+            MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Type /bal to connect to network");
             // if we wanted a 2nd mission add it like this MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission");
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(ClientConfig.LazyMissionText); //testing if my global is available
 

@@ -51,7 +51,7 @@
         public bool ShowCargoSpace=false;
         public bool ShowFaction=true;
         public bool ShowHud=true; // if this is false also dont check xyz, cargo and region in updates
-        public string LazyMissionText = "Mission: Survive | Deadline: Unlimited";
+        public string LazyMissionText = "Mission: Survive | Deadline: Unlimited L";
 
         #endregion hudconfig
     }

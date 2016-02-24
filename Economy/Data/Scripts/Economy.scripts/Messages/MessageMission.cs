@@ -11,9 +11,8 @@
 
     //This is a placeholder for generic mission texts.
     //Adapted off the bank balance script
-    //non functional and should be returning a string to the hud not display a message on screen
-    //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;
-    //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission: Survive | Deadline: Unlimited");
+    //assorted tests show this is code broken
+
     
     //Although we could pre-populate the objectives[] array with all possible mission texts
     //there seems to be some issues going forward or backward to specific mission ids
@@ -22,6 +21,8 @@
     //this also means the mission system can still work if objectives hud ever gets blocked
     // or we need to use mission boxes instead due to a hud conflict
 
+    //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;
+    //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission: Survive | Deadline: Unlimited");
     //although the mission system mainly runs client side and 
     //proto contracts are somewhat out of my depth here..  ive kept them as in theory mission texts
     //and the players current mission ID field will be likely stored server side for persistence
@@ -30,7 +31,14 @@
 
     /*
      * Basic summary of logic to go here -
-     * 1: look up mission text from server misson file - including any immediate chains
+     * Testing: return text based on mission id
+     * 
+     * Further testing: update mission hud
+     * 
+     * Final testing: make it pull mission from mission file not a switch
+     * 
+     * If all good then:     * 
+     * 1: look up mission text from server misson file - including any immediate chains?
        2: return this text to client side for storage in the objectives[] array
      * 3: roll / update the mission display to the appropriate position based on players mission ID 
      * 4: sundry logic in regard to win conditions ie isplayer position within 100 metres of objective gps
@@ -71,7 +79,7 @@
             //and probably improve server sim speed marginally!
 
 
-            EconomyScript.Instance.ServerLogger.WriteVerbose("Mission Text request '{0}' from '{1}'", MissionID, SenderSteamId);
+            //EconomyScript.Instance.ServerLogger.WriteVerbose("Mission Text request '{0}' from '{1}'", MissionID, SenderSteamId);
             string reply;
             //vector3d MissionGPS;
             //string GPSCaption;
@@ -81,7 +89,7 @@
             if (MissionID <= 0) //did we get a mission id?  
             {
                 // nope its 0 probably should show the generic survive mission
-                reply= "Mission: Survive | Deadline: Unlimited";
+                reply= "zz Mission: Survive | Deadline: Unlimited";
             }
             else // ok seems to be a valid integer over 0
             {
@@ -125,8 +133,8 @@
                         reply = "This would be an invalid or unknown mission id";
                         break;
                 }
-                // do stuff - write reply to mission hud mission text etc
-                MessageClientTextMessage.SendMessage(SenderSteamId, "text", reply);
+                // do stuff - write reply to mission hud mission text etc debug
+                MessageClientTextMessage.SendMessage(SenderSteamId, "mission", reply);
                 
 
             }

@@ -393,6 +393,7 @@ namespace Economy.scripts
                 MyAPIGateway.Utilities.GetObjectiveLine().Title = readout; 
             }
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;  //using title not mission text now
+            if (ClientConfig.MissionId >= 0) { } 
             return true;  //probably need a catch of some sort for a return false, but anything going wrong here is probably part of another issue.
             //and I am only using a bool to be lazy.  This should probably be HudManager.cs to make it public level 
         }
@@ -890,6 +891,7 @@ namespace Economy.scripts
             // bal command
             if (split[0].Equals("/bal", StringComparison.InvariantCultureIgnoreCase))
             {
+                MessageMission.SendMessage( -1);
                 //a little on connect mission ;) should make it pay 5 credits or something just to be more missionlike.
                 if (MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network") MyAPIGateway.Utilities.GetObjectiveLine().AdvanceObjective();
                 match = Regex.Match(messageText, BalPattern, RegexOptions.IgnoreCase);
