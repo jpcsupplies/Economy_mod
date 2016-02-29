@@ -560,18 +560,18 @@ namespace Economy.scripts
             // may also be necessary to allow them to specify a market name if mobile
             // markets are implemented
             /*Summary of suggested commands:
-             * /tz register "name" range (create a market must target station block or ship block - charges a fee, prompts to confirm before billing)
-             * /tz unregister "name" (deletes a market, moves all remaining stock to cargo space if it fits)
-             * /tz move "name"  (moves market to currently targeted block, charges a fee - say $1000 or per metre
-             * /tz close "name" (makes the market closed for business but doesnt delete it or stock)
-             * /tz open "name" (makes the market available for trading again)
-             * /tz factionmode on|off|coop (faction mode "on" all leaders of players faction can also control market, "off" only player can control their market, "coop"  treats factions as a coop or company with all members treated like employees (ie buy/sell @ cost)
-             * /tz buy "item" price [optional buying qty limit] [optional trade restriction flag]
-             * /tz sell "item" price [optional selling qty limit] [optional trade restriction flag]
-             * /tz load|unload qty "item" player (restricted to faction or coop zones - unload  specified item qty into market - dont get paid, message faction owners, load - allows a shop owner to transfer stock to specified player at no cost. will integrate with mission system later
-             * /tz restrict buy|sell "item" flag  (sets a restriction flag on buys or sells of this item)
-             * /tz limit buy|sell "item" amount {sets a limit on the number of a given item to purchase or sell before halting trade in it}
-             * /tz blacklist item (same as restrict in effect)
+             * 4/tz register "name" range (create a market must target station block or ship block - charges a fee, prompts to confirm before billing)
+             * 3/tz unregister "name" (deletes a market, moves all remaining stock to cargo space if it fits)
+             * 3/tz move "name"  (moves market to currently targeted block, charges a fee - say $1000 or per metre
+             * 3/tz close "name" (makes the market closed for business but doesnt delete it or stock)
+             * 3/tz open "name" (makes the market available for trading again)
+             * 3/tz factionmode on|off|coop (faction mode "on" all leaders of players faction can also control market, "off" only player can control their market, "coop"  treats factions as a coop or company with all members treated like employees (ie buy/sell @ cost)
+             * 4-6/tz buyprice "item" price [optional buying qty limit] [optional trade restriction flag]
+             * 4-6/tz sellprice "item" price [optional selling qty limit] [optional trade restriction flag]
+             * 4-5/tz load|unload qty "item" player (restricted to faction or coop zones - unload  specified item qty into market from you or your ship - dont get paid, message faction owners about delivery, load - allows a shop owner to transfer stock to specified player at no cost. will integrate with mission system later
+             * 5/tz restrict buy|sell "item" flag  (sets a restriction flag on buys or sells of this item)
+             * 5/tz limit buy|sell "item" amount {sets a limit on the number of a given item to purchase or sell before halting trade in it}
+             * 3/tz blacklist item (same as restrict in effect)
              * 
              *Restriction flags:
              * U= unrestricted trade with all)
@@ -592,6 +592,35 @@ namespace Economy.scripts
             if (split[0].Equals("/tz", StringComparison.InvariantCultureIgnoreCase) || split[0].Equals("/tradezone", StringComparison.InvariantCultureIgnoreCase) || split[0].Equals("/shop", StringComparison.InvariantCultureIgnoreCase)) 
             {
                 if (split.Length <= 1) { MyAPIGateway.Utilities.ShowMessage("TradeZone", "Nothing to do? Valid Options register, unregister, move, factionmode, buy/sell|blacklist/restrict/limit,"); }
+                else
+                { //everything else goes here - note this doesnt allow for spaces in names
+                    //ill probably have to either get a regex from midspace or split by "" to extract names
+                    if (split.Length == 3)
+                    {
+                        if (split[1].Equals("unregister", StringComparison.InvariantCultureIgnoreCase)) { }
+                        if (split[1].Equals("move", StringComparison.InvariantCultureIgnoreCase)) { }
+                        if (split[1].Equals("close", StringComparison.InvariantCultureIgnoreCase)) { }
+                        if (split[1].Equals("open", StringComparison.InvariantCultureIgnoreCase)) { }
+                        if (split[1].Equals("factionmode", StringComparison.InvariantCultureIgnoreCase)) { }
+                        if (split[1].Equals("blacklist", StringComparison.InvariantCultureIgnoreCase)) { }
+                    }
+                    if (split.Length == 5) 
+                    { 
+                        if (split[1].Equals("restrict", StringComparison.InvariantCultureIgnoreCase)) {}
+                        if (split[1].Equals("limit", StringComparison.InvariantCultureIgnoreCase)) { }
+                         
+                    }
+                    if (split.Length >= 4 && split.Length <=5) 
+                    { 
+                        if (split[1].Equals("load", StringComparison.InvariantCultureIgnoreCase)) {}
+                        if (split[1].Equals("unload", StringComparison.InvariantCultureIgnoreCase)) { }
+                    }
+                    if (split.Length >= 4 && split.Length <= 6)
+                    {
+                        if (split[1].Equals("buyprice", StringComparison.InvariantCultureIgnoreCase)) { }
+                        if (split[1].Equals("sellprice", StringComparison.InvariantCultureIgnoreCase)) { }
+                    }
+                }
             }
             #endregion tradezone
 
