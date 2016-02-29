@@ -1010,9 +1010,25 @@ namespace Economy.scripts
                 bool showAmmo = false;
                 bool showTools = false;
                 bool showGasses = false;
+                string findme = "";  
+                
+                
 
                 foreach (var str in split)
-                {
+                {   //if the first parameter starts with $ assume we want pricelist for that market name
+                    //remove the $ and pass the string as a marketname search
+                    //ideally this should accept quotes for spaced names not use $, and be case insensitive
+                    //it could also just search on any string in first paramater for market
+                    //but if a market is named ore or ingot etc this may cause problems
+                    //but that will require regex..  mainly trying to get logic working at this stage
+                    if (str.StartsWith("$", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        if (split.Length >= 2)
+                        {
+                            string[] temp = split[1].Split(new Char[] { '$' });
+                            findme = temp[1];
+                        }
+                    }
                     if (str.StartsWith("ore", StringComparison.InvariantCultureIgnoreCase))
                         showOre = true;
                     if (str.StartsWith("ingot", StringComparison.InvariantCultureIgnoreCase))
@@ -1026,7 +1042,7 @@ namespace Economy.scripts
                     if (str.StartsWith("gas", StringComparison.InvariantCultureIgnoreCase))
                         showGasses = true;
                 }
-                MessageMarketPriceList.SendMessage(showOre, showIngot, showComponent, showAmmo, showTools, showGasses);
+                MessageMarketPriceList.SendMessage(showOre, showIngot, showComponent, showAmmo, showTools, showGasses, findme);
                 return true;
             }
 

@@ -37,9 +37,13 @@
         [ProtoMember(6)]
         public bool ShowGasses;
 
-        public static void SendMessage(bool showOre, bool showIngot, bool showComponent, bool showAmmo, bool showTools, bool showGasses)
+        [ProtoMember(7)]
+        public string FindMarket;
+
+
+        public static void SendMessage(bool showOre, bool showIngot, bool showComponent, bool showAmmo, bool showTools, bool showGasses, string findMarket)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketPriceList { ShowAmmo = showAmmo, ShowComponent = showComponent, ShowIngot = showIngot, ShowOre = showOre, ShowTools = showTools, ShowGasses = showGasses});
+            ConnectionHelper.SendMessageToServer(new MessageMarketPriceList { ShowAmmo = showAmmo, ShowComponent = showComponent, ShowIngot = showIngot, ShowOre = showOre, ShowTools = showTools, ShowGasses = showGasses, FindMarket=findMarket});
         }
 
         public override void ProcessClient()
@@ -60,22 +64,31 @@
                 MessageClientTextMessage.SendMessage(SenderSteamId, "PRICELIST", "You are dead. You get market items values while dead.");
                 return;
             }
-            var position = ((IMyEntity)character).WorldMatrix.Translation;
 
-            var markets = MarketManager.FindMarketsFromLocation(position);
-            if (markets.Count == 0)
+            var markets = new List<MarketStruct>();
+            if (FindMarket == "")
             {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "PRICELIST", "Sorry, your are not in range of any markets!");
-                return;
-            }
+                var position = ((IMyEntity)character).WorldMatrix.Translation;
+                markets = MarketManager.FindMarketsFromLocation(position);
+            } else markets = MarketManager.FindMarketsFromName(FindMarket);
+            if (markets.Count == 0)
+                {
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "PRICELIST", "Sorry, your are not in range of any markets!");
+                    return;
+                }
 
-            // TODO: combine multiple markets to list best Buy and Sell prices that isn't blacklisted.
+                // TODO: combine multiple markets to list best Buy and Sell prices that isn't blacklisted.
 
+            
             var market = markets.FirstOrDefault();
-            if (market == null)
+             
+            if (market == null ) //hmmm looks like market name parameter checking was started but never done
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "PRICELIST", "That market does not exist.");
-                return;
+                return;  //as I understand it this would only trigger if no markets are defined? 
+                //in which case should it read no markets exist?  but in that case
+                // wont the count check above halt execution before this if statement???
+                // remove these comments once read :)
             }
 
             string reply = null;
