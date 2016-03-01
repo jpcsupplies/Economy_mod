@@ -620,8 +620,8 @@ namespace Economy.scripts
                         if (split[1].Equals("buyprice", StringComparison.InvariantCultureIgnoreCase)) { }
                         if (split[1].Equals("sellprice", StringComparison.InvariantCultureIgnoreCase)) { }
                     }
-                }
-            }
+                } return true;
+            } 
             #endregion tradezone
 
             #region pay
