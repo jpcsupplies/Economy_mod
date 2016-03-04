@@ -394,7 +394,6 @@
                             return;
                         }
                     }
-                    break;
 
                 case SellAction.Accept:
                     {
@@ -595,7 +594,6 @@
                         EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Cancel completed by Steam Id '{0}'.", SenderSteamId);
                         return;
                     }
-                    break;
 
                 case SellAction.Deny:
                     {
@@ -638,7 +636,6 @@
                         EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Deny completed by Steam Id '{0}'.", SenderSteamId);
                         return;
                     }
-                    break;
             }
 
             // this is a fall through from the above conditions not yet complete.

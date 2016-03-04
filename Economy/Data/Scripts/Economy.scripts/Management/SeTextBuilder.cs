@@ -48,11 +48,6 @@
             _string = new StringBuilder();
         }
 
-        ~SeTextBuilder()
-        {
-            //EconomyScript.Instance.ServerLogger.Write("Destroying TextPanelWriter");
-        }
-
         static SeTextBuilder()
         {
             LoadCharWidths();

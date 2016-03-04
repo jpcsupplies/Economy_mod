@@ -272,6 +272,7 @@ namespace Economy.scripts
                     ServerLogger.WriteStop("Stopping Event 1 timer.");
                     _timer1Events.Stop();
                     _timer1Events.Elapsed -= Timer1EventsOnElapsed;
+                    _timer1Events.Close();
                     _timer1Events = null;
                 }
 
@@ -280,6 +281,7 @@ namespace Economy.scripts
                     ServerLogger.WriteStop("Stopping Event 10 timer.");
                     _timer10Events.Stop();
                     _timer10Events.Elapsed -= Timer10EventsOnElapsed;
+                    _timer10Events.Close();
                     _timer10Events = null;
                 }
 
@@ -288,6 +290,7 @@ namespace Economy.scripts
                     ServerLogger.WriteStop("Stopping Event 3600 timer.");
                     _timer3600Events.Stop();
                     _timer3600Events.Elapsed -= Timer3600EventsOnElapsed;
+                    _timer3600Events.Close();
                     _timer3600Events = null;
                 }
 
