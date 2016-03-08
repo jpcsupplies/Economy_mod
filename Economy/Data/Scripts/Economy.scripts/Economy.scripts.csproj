@@ -69,6 +69,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
     <Compile Include="EconConfig\AccountManager.cs" />
     <Compile Include="EconStructures\ClientConfig.cs" />
     <Compile Include="EconStructures\EconConfigStruct.cs" />
