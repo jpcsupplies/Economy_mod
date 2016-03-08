@@ -378,7 +378,11 @@ namespace Economy.scripts
                 string readout = ClientConfig.TradeNetworkName + ": ";
                 if (ClientConfig.ShowBalance) readout += string.Format("{0:#,##0.0000} {1}", ClientConfig.BankBalance, ClientConfig.CurrencyName);
                 if (ClientConfig.ShowRegion) readout += " | Trade region: Unknown";
-                if (ClientConfig.ShowXYZ) readout += " | Location: X: 0 Y: 0 Z: 0";
+                if (ClientConfig.ShowXYZ) {
+                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                    double X = position.X; double Y = position.Y; double Z = position.Z;
+                    readout+= " | " + string.Format("X: {0:F0} Y: {1:F0} Z: {2:F0}", X, Y, Z);
+                }
                 if (ClientConfig.ShowContractCount) readout += " | Contracts: 0";
                 if (ClientConfig.ShowCargoSpace) readout += " | Cargo ? of ?";
                 if (ClientConfig.ShowFaction)
@@ -480,6 +484,8 @@ namespace Economy.scripts
                 {
                     // Any processing needs to occur in here, as it will be on the main thread, and hopefully thread safe.
                     LcdManager.UpdateLcds();
+                    //updates hud items that may change at times other than using chat commands
+                    if (ClientConfig.ShowXYZ || ClientConfig.ShowContractCount || ClientConfig.ShowCargoSpace || ClientConfig.ShowRegion || ClientConfig.ShowFaction) if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
                 }
                 finally
                 {
@@ -551,8 +557,30 @@ namespace Economy.scripts
             if (split.Length == 0)
                 return false;
 
+            #region debug
+            //used to test whatever crazy stuff im trying to work out
             if (split[0].Equals("/debug", StringComparison.InvariantCultureIgnoreCase))
-            { ClientConfig.MissionId++;  return true; }
+            { 
+                //advancing mission display test
+                //ClientConfig.MissionId++;  //yup that works nicely
+
+                //showing my x y z position test //yup that works too
+                //old way to test if on server or player dead (i think) probably doesnt work but will keep handy
+                //if(MyAPIGateway.Session.Player.Controller == null || MyAPIGateway.Session.Player.Controller.ControlledEntity == null || MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity == null)
+                //return true;
+
+                //var position = player.GetPosition(); // actually lets skip the middle man and grab the entire thing
+                //double, float position.X
+                /* 
+                Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                double X = position.X; double Y = position.Y; double Z = position.Z;
+                string whereami = string.Format("[ X: {0:F0} Y: {1:F0} Z: {2:F0} ]",X, Y, Z);
+                MyAPIGateway.Utilities.ShowMessage("debug", "You are here: {0}",whereami);
+                */
+                //ok over it
+                return true;
+            }
+            #endregion debug
 
 
             #region tradezone
