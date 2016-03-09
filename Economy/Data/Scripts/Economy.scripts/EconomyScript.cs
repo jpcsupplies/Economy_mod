@@ -484,7 +484,7 @@ namespace Economy.scripts
                     // Any processing needs to occur in here, as it will be on the main thread, and hopefully thread safe.
                     LcdManager.UpdateLcds();
                     //updates hud items that may change at times other than using chat commands
-                    if (ClientConfig.ShowXYZ || ClientConfig.ShowContractCount || ClientConfig.ShowCargoSpace || ClientConfig.ShowRegion || ClientConfig.ShowFaction) if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
+                    //if (ClientConfig.ShowXYZ || ClientConfig.ShowContractCount || ClientConfig.ShowCargoSpace || ClientConfig.ShowRegion || ClientConfig.ShowFaction) if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
                 }
                 finally
                 {
