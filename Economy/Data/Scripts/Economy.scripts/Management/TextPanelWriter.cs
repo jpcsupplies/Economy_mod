@@ -5,8 +5,8 @@
     using System.Collections.Generic;
     using System.Text;
     using Sandbox.ModAPI;
-    using Sandbox.ModAPI.Ingame;
     using Sandbox.ModAPI.Interfaces;
+    using IMyTextPanel = Sandbox.ModAPI.Ingame.IMyTextPanel;
 
     public class TextPanelWriter
     {
