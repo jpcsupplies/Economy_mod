@@ -198,6 +198,20 @@
             return list;
         }
 
+        public static List<MarketStruct> FindMarketsFromName(string marketname)
+        {
+            var list = new List<MarketStruct>();
+            if (marketname != "")
+            {
+                foreach (var market in EconomyScript.Instance.Data.Markets)
+                {
+                    if (market.DisplayName == marketname) { list.Add(market); break; }
+
+                }
+            }
+            return list;
+        }
+
         public static bool IsItemBlacklistedOnServer(string itemTypeId, string itemSubTypeName)
         {
             var marketItem = EconomyScript.Instance.ServerConfig.DefaultPrices.FirstOrDefault(e => e.TypeId == itemTypeId && e.SubtypeName == itemSubTypeName);

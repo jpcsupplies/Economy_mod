@@ -378,7 +378,10 @@ namespace Economy.scripts
                 string readout = ClientConfig.TradeNetworkName + ": ";
                 if (ClientConfig.ShowBalance) readout += string.Format("{0:#,##0.0000} {1}", ClientConfig.BankBalance, ClientConfig.CurrencyName);
                 if (ClientConfig.ShowRegion) readout += " | Trade region: Unknown";
-                if (ClientConfig.ShowXYZ) readout += " | Location: X: 0 Y: 0 Z: 0";
+                if (ClientConfig.ShowXYZ) {
+                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                    readout+= " | " + string.Format("X: {0:F0} Y: {1:F0} Z: {2:F0}", position.X, position.Y, position.Z);
+                }
                 if (ClientConfig.ShowContractCount) readout += " | Contracts: 0";
                 if (ClientConfig.ShowCargoSpace) readout += " | Cargo ? of ?";
                 if (ClientConfig.ShowFaction)
@@ -480,6 +483,8 @@ namespace Economy.scripts
                 {
                     // Any processing needs to occur in here, as it will be on the main thread, and hopefully thread safe.
                     LcdManager.UpdateLcds();
+                    //updates hud items that may change at times other than using chat commands
+                    //if (ClientConfig.ShowXYZ || ClientConfig.ShowContractCount || ClientConfig.ShowCargoSpace || ClientConfig.ShowRegion || ClientConfig.ShowFaction) if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
                 }
                 finally
                 {
@@ -551,9 +556,103 @@ namespace Economy.scripts
             if (split.Length == 0)
                 return false;
 
+            #region debug
+            //used to test whatever crazy stuff im trying to work out
             if (split[0].Equals("/debug", StringComparison.InvariantCultureIgnoreCase))
-            { ClientConfig.MissionId++;  return true; }
+            { 
+                //advancing mission display test
+                //ClientConfig.MissionId++;  //yup that works nicely
 
+                //showing my x y z position test //yup that works too
+                //old way to test if on server or player dead (i think) probably doesnt work but will keep handy
+                //if(MyAPIGateway.Session.Player.Controller == null || MyAPIGateway.Session.Player.Controller.ControlledEntity == null || MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity == null)
+                //return true;
+
+                //var position = player.GetPosition(); // actually lets skip the middle man and grab the entire thing
+                //double, float position.X
+                /* 
+                Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                double X = position.X; double Y = position.Y; double Z = position.Z;
+                string whereami = string.Format("[ X: {0:F0} Y: {1:F0} Z: {2:F0} ]",X, Y, Z);
+                MyAPIGateway.Utilities.ShowMessage("debug", "You are here: {0}",whereami);
+                */
+                //ok over it
+                return true;
+            }
+            #endregion debug
+
+
+            #region tradezone
+            // tradezone command
+            // https://github.com/jpcsupplies/Economy_mod/issues/44
+            // used to manage a players own trade regions
+            // player must be within trade region to use these commands.
+            // may also be necessary to allow them to specify a market name if mobile
+            // markets are implemented
+            /*Summary of suggested commands:
+             * 4/tz register "name" range (create a market must target station block or ship block - charges a fee, prompts to confirm before billing)
+             * 3/tz unregister "name" (deletes a market, moves all remaining stock to cargo space if it fits)
+             * 3/tz move "name"  (moves market to currently targeted block, charges a fee - say $1000 or per metre
+             * 3/tz close "name" (makes the market closed for business but doesnt delete it or stock)
+             * 3/tz open "name" (makes the market available for trading again)
+             * 3/tz factionmode on|off|coop (faction mode "on" all leaders of players faction can also control market, "off" only player can control their market, "coop"  treats factions as a coop or company with all members treated like employees (ie buy/sell @ cost)
+             * 4-6/tz buyprice "item" price [optional buying qty limit] [optional trade restriction flag]
+             * 4-6/tz sellprice "item" price [optional selling qty limit] [optional trade restriction flag]
+             * 4-5/tz load|unload qty "item" player (restricted to faction or coop zones - unload  specified item qty into market from you or your ship - dont get paid, message faction owners about delivery, load - allows a shop owner to transfer stock to specified player at no cost. will integrate with mission system later
+             * 5/tz restrict buy|sell "item" flag  (sets a restriction flag on buys or sells of this item)
+             * 5/tz limit buy|sell "item" amount {sets a limit on the number of a given item to purchase or sell before halting trade in it}
+             * 3/tz blacklist item (same as restrict in effect)
+             * 
+             *Restriction flags:
+             * U= unrestricted trade with all)
+             * s=trade with self only, same as Y blacklisted)
+             * f=trade with own faction only)
+             * A=trade with faction and allies only)
+             * n= trade with neutral, allied or faction only)
+             * 
+             *Admin only commands
+             *Suggested registration costs  (configurable by admin):
+             *per metre radius registration fee 10 credits
+             *sales tax rate 0.001% per metre radius (paid to npc pool)
+             * /tz fee price
+             * /tz tax percentage
+             * /tz max maximum_radius_allowed_to_register
+             */
+
+            if (split[0].Equals("/tz", StringComparison.InvariantCultureIgnoreCase) || split[0].Equals("/tradezone", StringComparison.InvariantCultureIgnoreCase) || split[0].Equals("/shop", StringComparison.InvariantCultureIgnoreCase)) 
+            {
+                if (split.Length <= 1) { MyAPIGateway.Utilities.ShowMessage("TradeZone", "Nothing to do? Valid Options register, unregister, move, factionmode, buy/sell|blacklist/restrict/limit,"); }
+                else
+                { //everything else goes here - note this doesnt allow for spaces in names
+                    //ill probably have to either get a regex from midspace or split by "" to extract names
+                    if (split.Length == 3)
+                    {
+                        if (split[1].Equals("unregister", StringComparison.InvariantCultureIgnoreCase)) { }
+                        if (split[1].Equals("move", StringComparison.InvariantCultureIgnoreCase)) { }
+                        if (split[1].Equals("close", StringComparison.InvariantCultureIgnoreCase)) { }
+                        if (split[1].Equals("open", StringComparison.InvariantCultureIgnoreCase)) { }
+                        if (split[1].Equals("factionmode", StringComparison.InvariantCultureIgnoreCase)) { }
+                        if (split[1].Equals("blacklist", StringComparison.InvariantCultureIgnoreCase)) { }
+                    }
+                    if (split.Length == 5) 
+                    { 
+                        if (split[1].Equals("restrict", StringComparison.InvariantCultureIgnoreCase)) {}
+                        if (split[1].Equals("limit", StringComparison.InvariantCultureIgnoreCase)) { }
+                         
+                    }
+                    if (split.Length >= 4 && split.Length <=5) 
+                    { 
+                        if (split[1].Equals("load", StringComparison.InvariantCultureIgnoreCase)) {}
+                        if (split[1].Equals("unload", StringComparison.InvariantCultureIgnoreCase)) { }
+                    }
+                    if (split.Length >= 4 && split.Length <= 6)
+                    {
+                        if (split[1].Equals("buyprice", StringComparison.InvariantCultureIgnoreCase)) { }
+                        if (split[1].Equals("sellprice", StringComparison.InvariantCultureIgnoreCase)) { }
+                    }
+                } return true;
+            } 
+            #endregion tradezone
 
             #region pay
             // pay command
@@ -1013,9 +1112,25 @@ namespace Economy.scripts
                 bool showAmmo = false;
                 bool showTools = false;
                 bool showGasses = false;
+                string findme = "";  
+                
+                
 
                 foreach (var str in split)
-                {
+                {   //if the first parameter starts with $ assume we want pricelist for that market name
+                    //remove the $ and pass the string as a marketname search
+                    //ideally this should accept quotes for spaced names not use $, and be case insensitive
+                    //it could also just search on any string in first paramater for market
+                    //but if a market is named ore or ingot etc this may cause problems
+                    //but that will require regex..  mainly trying to get logic working at this stage
+                    if (str.StartsWith("$", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        if (split.Length >= 2)
+                        {
+                            string[] temp = split[1].Split(new Char[] { '$' });
+                            findme = temp[1];
+                        }
+                    }
                     if (str.StartsWith("ore", StringComparison.InvariantCultureIgnoreCase))
                         showOre = true;
                     if (str.StartsWith("ingot", StringComparison.InvariantCultureIgnoreCase))
@@ -1029,7 +1144,7 @@ namespace Economy.scripts
                     if (str.StartsWith("gas", StringComparison.InvariantCultureIgnoreCase))
                         showGasses = true;
                 }
-                MessageMarketPriceList.SendMessage(showOre, showIngot, showComponent, showAmmo, showTools, showGasses);
+                MessageMarketPriceList.SendMessage(showOre, showIngot, showComponent, showAmmo, showTools, showGasses, findme);
                 return true;
             }
 
