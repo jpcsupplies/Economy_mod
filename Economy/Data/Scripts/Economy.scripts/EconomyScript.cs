@@ -380,8 +380,7 @@ namespace Economy.scripts
                 if (ClientConfig.ShowRegion) readout += " | Trade region: Unknown";
                 if (ClientConfig.ShowXYZ) {
                     Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-                    double X = position.X; double Y = position.Y; double Z = position.Z;
-                    readout+= " | " + string.Format("X: {0:F0} Y: {1:F0} Z: {2:F0}", X, Y, Z);
+                    readout+= " | " + string.Format("X: {0:F0} Y: {1:F0} Z: {2:F0}", position.X, position.Y, position.Z);
                 }
                 if (ClientConfig.ShowContractCount) readout += " | Contracts: 0";
                 if (ClientConfig.ShowCargoSpace) readout += " | Cargo ? of ?";
