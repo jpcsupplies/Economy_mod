@@ -10,13 +10,13 @@
     using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
-    using Sandbox.ModAPI.Ingame;
     using Sandbox.ModAPI.Interfaces;
     using VRage.Game;
     using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
+    using IMyTextPanel = Sandbox.ModAPI.Ingame.IMyTextPanel;
 
     public class LcdManager
     {
