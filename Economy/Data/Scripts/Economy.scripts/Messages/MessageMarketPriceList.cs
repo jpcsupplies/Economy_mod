@@ -7,7 +7,6 @@
     using Economy.scripts.EconStructures;
     using Management;
     using ProtoBuf;
-    using Sandbox.Common.ObjectBuilders;
     using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
@@ -43,7 +42,7 @@
 
         public static void SendMessage(bool showOre, bool showIngot, bool showComponent, bool showAmmo, bool showTools, bool showGasses, string findMarket)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketPriceList { ShowAmmo = showAmmo, ShowComponent = showComponent, ShowIngot = showIngot, ShowOre = showOre, ShowTools = showTools, ShowGasses = showGasses, FindMarket=findMarket});
+            ConnectionHelper.SendMessageToServer(new MessageMarketPriceList { ShowAmmo = showAmmo, ShowComponent = showComponent, ShowIngot = showIngot, ShowOre = showOre, ShowTools = showTools, ShowGasses = showGasses, FindMarket = findMarket });
         }
 
         public override void ProcessClient()
@@ -65,24 +64,29 @@
                 return;
             }
 
-            var markets = new List<MarketStruct>();
-            if (FindMarket == "")
+            List<MarketStruct> markets;
+            if (string.IsNullOrEmpty(FindMarket))
             {
                 var position = ((IMyEntity)character).WorldMatrix.Translation;
                 markets = MarketManager.FindMarketsFromLocation(position);
-            } else markets = MarketManager.FindMarketsFromName(FindMarket);
+            }
+            else
+            {
+                markets = MarketManager.FindMarketsFromName(FindMarket);
+            }
+
             if (markets.Count == 0)
-                {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "PRICELIST", "Sorry, your are not in range of any markets!");
-                    return;
-                }
+            {
+                MessageClientTextMessage.SendMessage(SenderSteamId, "PRICELIST", "Sorry, your are not in range of any markets!");
+                return;
+            }
 
-                // TODO: combine multiple markets to list best Buy and Sell prices that isn't blacklisted.
+            // TODO: combine multiple markets to list best Buy and Sell prices that isn't blacklisted.
 
-            
+
             var market = markets.FirstOrDefault();
-             
-            if (market == null ) //hmmm looks like market name parameter checking was started but never done
+
+            if (market == null) //hmmm looks like market name parameter checking was started but never done
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "PRICELIST", "That market does not exist.");
                 return;  //as I understand it this would only trigger if no markets are defined? 
@@ -123,7 +127,7 @@
                                 (ShowTools && content is MyObjectBuilder_PhysicalGunObject) || // guns, welders, hand drills, grinders.
                                 (ShowTools && content is MyObjectBuilder_GasContainerObject) || // aka gas bottle.
                                 (ShowGasses && content is MyObjectBuilder_GasProperties))
-                                // Type check here allows mods that inherit from the same type to also appear in the lists.
+                            // Type check here allows mods that inherit from the same type to also appear in the lists.
                             {
                                 var definition = MyDefinitionManager.Static.GetDefinition(marketItem.TypeId, marketItem.SubtypeName);
                                 var name = definition == null ? marketItem.SubtypeName : definition.GetDisplayName();

@@ -323,6 +323,8 @@
         // Derived from VRageRender.MyFont.MeasureString
         public static int MeasureString(string str)
         {
+            if (str == null)
+                str = string.Empty;
             int sum = 0;
             for (int i = 0; i < str.Length; i++)
                 sum += MeasureChar(str[i]);

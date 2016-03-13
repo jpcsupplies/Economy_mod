@@ -7,6 +7,7 @@
     using Messages;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
+    using Sandbox.ModAPI.Ingame;
     using VRage.ModAPI;
     using VRageMath;
 
@@ -166,21 +167,29 @@
                 switch (market.MarketZoneType)
                 {
                     case MarketZoneType.EntitySphere:
-                        if (market.EntityId == 0 || !MyAPIGateway.Entities.EntityExists(market.EntityId))
+                        if (!EconomyScript.Instance.ServerConfig.EnablePlayerTradezones)
                             continue;
-                        if (!market.MarketZoneSphere.HasValue)
+                        if (market.EntityId == 0 || !MyAPIGateway.Entities.EntityExists(market.EntityId))
                             continue;
                         IMyEntity entity;
                         if (!MyAPIGateway.Entities.TryGetEntityById(market.EntityId, out entity))
                             continue;
                         if (entity.Closed || entity.MarkedForClose)
                             continue;
-                        var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, market.MarketZoneSphere.Value.Radius);
+                        IMyBeacon beacon = entity as IMyBeacon;
+                        if (beacon == null)
+                            continue;
+                        if (!beacon.IsWorking)
+                            continue;
+                        var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, beacon.Radius);
+                        market.DisplayName = beacon.CustomName;
                         if (sphere.Contains(position) == ContainmentType.Contains)
                             list.Add(market);
                         break;
 
                     case MarketZoneType.FixedSphere:
+                        if (!EconomyScript.Instance.ServerConfig.EnableNpcTradezones)
+                            continue;
                         if (!market.MarketZoneSphere.HasValue)
                             continue;
                         if (market.MarketZoneSphere.Value.Contains(position) == ContainmentType.Contains)
@@ -188,6 +197,8 @@
                         break;
 
                     case MarketZoneType.FixedBox:
+                        if (!EconomyScript.Instance.ServerConfig.EnableNpcTradezones)
+                            continue;
                         if (!market.MarketZoneBox.HasValue)
                             continue;
                         if (market.MarketZoneBox.Value.Contains(position) == ContainmentType.Contains)
@@ -198,17 +209,42 @@
             return list;
         }
 
+        /// <summary>
+        /// Find a market of the specified name, trying exact match first, then case insensative, then partial string.
+        /// </summary>
+        /// <param name="marketname"></param>
+        /// <returns></returns>
         public static List<MarketStruct> FindMarketsFromName(string marketname)
         {
             var list = new List<MarketStruct>();
-            if (marketname != "")
+
+            if (string.IsNullOrEmpty(marketname))
+                return list;
+
+            foreach (var market in EconomyScript.Instance.Data.Markets)
+            {
+                if (market.DisplayName == marketname)
+                    list.Add(market);
+            }
+
+            if (list.Count == 0)
             {
                 foreach (var market in EconomyScript.Instance.Data.Markets)
                 {
-                    if (market.DisplayName == marketname) { list.Add(market); break; }
-
+                    if (market.DisplayName.Equals(marketname, StringComparison.InvariantCultureIgnoreCase))
+                        list.Add(market);
                 }
             }
+
+            if (list.Count == 0)
+            {
+                foreach (var market in EconomyScript.Instance.Data.Markets)
+                {
+                    if (market.DisplayName.IndexOf(marketname, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                        list.Add(market);
+                }
+            }
+
             return list;
         }
 

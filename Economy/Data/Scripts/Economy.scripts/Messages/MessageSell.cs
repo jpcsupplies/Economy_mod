@@ -112,6 +112,12 @@
 
         public override void ProcessServer()
         {
+            if (!EconomyScript.Instance.ServerConfig.EnableNpcTradezones && !EconomyScript.Instance.ServerConfig.EnablePlayerTradezones)
+            {
+                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "All Trade zones are disabled.");
+                return;
+            }
+
             switch (SellAction)
             {
                 case SellAction.Create:
@@ -266,6 +272,8 @@
                                 EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- no market found.", SenderSteamId);
                                 return;
                             }
+
+                            accountToBuy = AccountManager.FindAccount(market.MarketId);
 
                             marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
                             if (marketItem == null)
