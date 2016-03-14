@@ -80,6 +80,12 @@
         {
             EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy started by Steam Id '{0}'.", SenderSteamId);
 
+            if (!EconomyScript.Instance.ServerConfig.EnableNpcTradezones && !EconomyScript.Instance.ServerConfig.EnablePlayerTradezones)
+            {
+                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "All Trade zones are disabled.");
+                return;
+            }
+
             // Get player steam ID
             var buyingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
 
@@ -187,6 +193,8 @@
                     EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- no market found.", SenderSteamId);
                     return;
                 }
+
+                accountToSell = AccountManager.FindAccount(market.MarketId);
 
                 marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
                 if (marketItem == null)

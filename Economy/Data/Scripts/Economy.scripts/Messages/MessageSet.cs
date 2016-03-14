@@ -8,7 +8,6 @@
     using Economy.scripts;
     using EconStructures;
     using ProtoBuf;
-    using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using VRage.Game;
@@ -178,7 +177,6 @@
             }
 
             var msg = new StringBuilder();
-
             msg.AppendFormat("Applying changes to : '{0}' {1}/{2}\r\n\r\n", definition.GetDisplayName(), ItemTypeId, ItemSubTypeName);
 
             foreach (var market in markets)
@@ -193,10 +191,6 @@
                     continue;
                 }
 
-                MarketItemStruct configItem = null;
-                if (player.IsAdmin() && MarketId == EconomyConsts.NpcMerchantId)
-                    configItem = EconomyScript.Instance.ServerConfig.DefaultPrices.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
-
                 if (SetType.HasFlag(SetMarketItemType.Quantity))
                 {
                     marketItem.Quantity = ItemQuantity;
@@ -210,12 +204,6 @@
                     {
                         marketItem.BuyPrice = ItemBuyPrice;
                         msg.AppendFormat("Buy price to {0}", ItemBuyPrice);
-
-                        if (configItem != null)
-                        {
-                            configItem.BuyPrice = ItemBuyPrice;
-                            msg.AppendFormat("; config updated.");
-                        }
                     }
                     else
                         msg.AppendFormat("Could not set buy price to less than 0.");
@@ -228,12 +216,6 @@
                     {
                         marketItem.SellPrice = ItemSellPrice;
                         msg.AppendFormat("Sell price to {0}", ItemSellPrice);
-
-                        if (configItem != null)
-                        {
-                            configItem.SellPrice = ItemSellPrice;
-                            msg.AppendFormat("; config updated.");
-                        }
                     }
                     else
                         msg.AppendFormat("Could not set sell price to less than 0.");
@@ -243,16 +225,63 @@
                 {
                     marketItem.IsBlacklisted = !marketItem.IsBlacklisted;
                     msg.AppendFormat("Blacklist to {0}", marketItem.IsBlacklisted ? "On" : "Off");
-
-                    if (configItem != null)
-                    {
-                        configItem.IsBlacklisted = marketItem.IsBlacklisted;
-                        msg.AppendFormat("; config updated.");
-                    }
                 }
                 msg.AppendLine();
                 msg.AppendLine();
             }
+
+            #region update config for the item
+
+            MarketItemStruct configItem = null;
+            if (player.IsAdmin() && MarketId == EconomyConsts.NpcMerchantId)
+                configItem = EconomyScript.Instance.ServerConfig.DefaultPrices.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
+
+            if (configItem != null)
+            {
+                if (SetType.HasFlag(SetMarketItemType.BuyPrice))
+                {
+                    if (ItemBuyPrice >= 0)
+                    {
+                        configItem.BuyPrice = ItemBuyPrice;
+                        msg.AppendFormat("Config updated Buy price to {0}", ItemBuyPrice);
+                    }
+                }
+
+                // Validation to prevent admins setting prices too low for items.
+                if (SetType.HasFlag(SetMarketItemType.SellPrice))
+                {
+                    if (ItemSellPrice >= 0)
+                    {
+                        configItem.SellPrice = ItemSellPrice;
+                        msg.AppendFormat("Config updated Sell price to {0}", ItemSellPrice);
+                    }
+                }
+
+                if (SetType.HasFlag(SetMarketItemType.Blacklisted))
+                {
+                    configItem.IsBlacklisted = !configItem.IsBlacklisted;
+                    msg.AppendFormat("Config updated Blacklist to {0}", configItem.IsBlacklisted ? "On" : "Off");
+
+                    // If config blacklisted, then all markets should be updated.
+                    if (configItem.IsBlacklisted)
+                    {
+                        int counter = 0;
+                        foreach (var market in EconomyScript.Instance.Data.Markets)
+                        {
+                            var marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
+                            if (marketItem != null && !marketItem.IsBlacklisted)
+                            {
+                                counter++;
+                                marketItem.IsBlacklisted = true;
+                            }
+                        }
+
+                        msg.AppendFormat("Config updated {0} Markets to also Blacklist to {1}.", counter, configItem.IsBlacklisted ? "On" : "Off");
+                    }
+                }
+            }
+
+            #endregion
 
             MessageClientDialogMessage.SendMessage(SenderSteamId, "SET", " ", msg.ToString());
         }

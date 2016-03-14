@@ -25,6 +25,12 @@
 
         public override void ProcessServer()
         {
+            if (!EconomyScript.Instance.ServerConfig.EnablePlayerPayments)
+            {
+                MessageClientTextMessage.SendMessage(SenderSteamId, "PAY", "Player payments is disabled.");
+                return;
+            }
+
             // did we at least type /pay someone something . . .
             //* Logic:                     
             //* Get player steam ID

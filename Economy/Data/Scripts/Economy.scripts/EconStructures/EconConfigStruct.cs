@@ -23,8 +23,11 @@
             DefaultTradeRange = EconomyConsts.DefaultTradeRange;
             Language = (int)VRage.MyLanguagesEnum.English;
             EnableLcds = true;
-            //EnableNpcTradezones = true;
-            //EnablePlayerTradezones = true;
+            EnablePlayerPayments = true;
+            EnableNpcTradezones = true;
+            EnablePlayerTradezones = false; // TODO: default it off until it is working.
+            TradeZoneLicenceCost = 20000;
+            MaximumPlayerTradeZones = 1;
         }
 
         #region properties
@@ -43,6 +46,16 @@
         /// The starting balance for all new players.
         /// </summary>
         public decimal DefaultStartingBalance;
+
+        /// <summary>
+        /// The cost to create a Player trade zone.
+        /// </summary>
+        public decimal TradeZoneLicenceCost;
+
+        /// <summary>
+        /// The maximum number of trade zones a player an create.
+        /// </summary>
+        public int MaximumPlayerTradeZones;
 
         /// <summary>
         /// Should players be near each other to trade or should it be unlimited distance.
@@ -71,17 +84,35 @@
 
         /// <summary>
         /// Indicates what language the Servre uses for text in game.
-        /// Mapped agsint: VRage.MyLanguagesEnum
+        /// Mapped aginst: VRage.MyLanguagesEnum
         /// Typically retrieved via: MyAPIGateway.Session.Config.Language
         /// </summary>
         public int Language;
 
+        /// <summary>
+        /// Indicates the LCD panels can be used to display Trade zone information.
+        /// </summary>
         public bool EnableLcds;
 
-        // TODO: https://github.com/jpcsupplies/Economy_mod/issues/88
-        //public bool EnableNpcTradezones;  // split buy and sell?
-        //public bool EnablePlayerTradezones;  // split buy and sell?
-        //public bool EnablePlayerPayments;
+        /// <summary>
+        /// Indicates that Npc Tradezones can be used.
+        /// They can still be created and managed by the Admin, allowing an admin to take the tradezones offline temporarily to fix any issue.
+        /// </summary>
+        public bool EnableNpcTradezones;  // TODO: split buy and sell?  https://github.com/jpcsupplies/Economy_mod/issues/88
+
+        /// <summary>
+        /// Indicates the Player Tradezone can be created and used.
+        /// </summary>
+        public bool EnablePlayerTradezones;  // TODO: split buy and sell?  https://github.com/jpcsupplies/Economy_mod/issues/88
+
+        /// <summary>
+        /// Indicates that Players can send payments to one another.
+        /// </summary>
+        public bool EnablePlayerPayments;
+
+        /// <summary>
+        /// Indicates that Players can Trade with on another.
+        /// </summary>
         //public bool EnablePlayerTrades;
 
         #endregion

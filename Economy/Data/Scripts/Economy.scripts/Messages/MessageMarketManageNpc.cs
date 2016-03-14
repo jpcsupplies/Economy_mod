@@ -11,7 +11,7 @@
     public class MessageMarketManageNpc : MessageBase
     {
         [ProtoMember(1)]
-        public MarketManage CommandType;
+        public NpcMarketManage CommandType;
 
         [ProtoMember(2)]
         public string MarketName;
@@ -36,27 +36,27 @@
 
         public static void SendAddMessage(string marketName, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = MarketManage.Add, MarketName = marketName, X = x, Y = y, Z = z, Size = size, Shape = shape });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = NpcMarketManage.Add, MarketName = marketName, X = x, Y = y, Z = z, Size = size, Shape = shape });
         }
 
         public static void SendDeleteMessage(string marketName)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = MarketManage.Delete, MarketName = marketName });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = NpcMarketManage.Delete, MarketName = marketName });
         }
 
         public static void SendRenameMessage(string oldMarketName, string newMarketName)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = MarketManage.Rename, OldMarketName = oldMarketName, MarketName = newMarketName });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = NpcMarketManage.Rename, OldMarketName = oldMarketName, MarketName = newMarketName });
         }
 
         public static void SendMoveMessage(string marketName, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = MarketManage.Move, MarketName = marketName, X = x, Y = y, Z = z, Size = size, Shape = shape });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = NpcMarketManage.Move, MarketName = marketName, X = x, Y = y, Z = z, Size = size, Shape = shape });
         }
 
         public static void SendListMessage()
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = MarketManage.List });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = NpcMarketManage.List });
         }
 
         public override void ProcessClient()
@@ -68,7 +68,7 @@
         {
             // update our own timestamp here
             AccountManager.UpdateLastSeen(SenderSteamId, SenderLanguage);
-            EconomyScript.Instance.ServerLogger.WriteVerbose("Price List Request for from '{0}'", SenderSteamId);
+            EconomyScript.Instance.ServerLogger.WriteVerbose("Manage Npc Market Request for from '{0}'", SenderSteamId);
 
             var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
             if (player == null || !player.IsAdmin()) // hold on there, are we an admin first?
@@ -76,7 +76,7 @@
 
             switch (CommandType)
             {
-                case MarketManage.Add:
+                case NpcMarketManage.Add:
                     {
                         if (string.IsNullOrWhiteSpace(MarketName) || MarketName == "*")
                         {
@@ -98,7 +98,7 @@
                     }
                     break;
 
-                case MarketManage.Delete:
+                case NpcMarketManage.Delete:
                     {
                         var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase));
                         if (market == null)
@@ -126,7 +126,7 @@
                     }
                     break;
 
-                case MarketManage.List:
+                case NpcMarketManage.List:
                     {
                         var str = new StringBuilder();
                         foreach (var market in EconomyScript.Instance.Data.Markets)
@@ -148,7 +148,7 @@
                     }
                     break;
 
-                case MarketManage.Rename:
+                case NpcMarketManage.Rename:
                     {
                         var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(OldMarketName, StringComparison.InvariantCultureIgnoreCase));
                         if (market == null)
@@ -191,7 +191,7 @@
                     }
                     break;
 
-                case MarketManage.Move:
+                case NpcMarketManage.Move:
                     {
                         var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase));
                         if (market == null)

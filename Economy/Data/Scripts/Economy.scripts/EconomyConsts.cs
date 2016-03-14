@@ -17,7 +17,7 @@
         /// communications classes. A Player will connect to the server, and will automatically download version 2.
         /// We would now have a Client running newer communication classes trying to talk to the Server with older classes.
         /// </remarks>
-        public const int ModCommunicationVersion = 20160211; // This will be based on the date of update.
+        public const int ModCommunicationVersion = 20160313; // This will be based on the date of update.
 
 
         //milestone level A=Alpha B=Beta, dev = development test version or Milestone eg 1.0A Milestone, 1.1A Dev etc
@@ -187,13 +187,32 @@
     /// <summary>
     /// Commands to be used when managing Npc Market zones.
     /// </summary>
-    public enum MarketManage : byte
+    public enum NpcMarketManage : byte
     {
         Add,
         Delete,
         List,
         Rename,
         Move
+    }
+
+    /// <summary>
+    /// Commands to be used when managing Player Market zones.
+    /// </summary>
+    public enum PlayerMarketManage : byte
+    {
+        Register,
+        Unregister,
+        Open,
+        Close,
+        FactionMode,
+        BuyPrice,
+        SellPrice,
+        Load,
+        Unload,
+        Restrict,
+        Limit,
+        Blacklist,
     }
 
     /// <summary>

@@ -7,7 +7,9 @@
     using Messages;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
+    using Sandbox.ModAPI.Ingame;
     using VRage.ModAPI;
+    using VRage.Utils;
     using VRageMath;
 
     public static class MarketManager
@@ -158,29 +160,46 @@
             }
         }
 
+        /// <summary>
+        /// Finds all available markets that are within range that can be traded with.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <returns></returns>
         public static List<MarketStruct> FindMarketsFromLocation(Vector3D position)
         {
             var list = new List<MarketStruct>();
             foreach (var market in EconomyScript.Instance.Data.Markets)
             {
+                if (!market.Open)
+                    continue;
+
                 switch (market.MarketZoneType)
                 {
                     case MarketZoneType.EntitySphere:
-                        if (market.EntityId == 0 || !MyAPIGateway.Entities.EntityExists(market.EntityId))
+                        if (!EconomyScript.Instance.ServerConfig.EnablePlayerTradezones)
                             continue;
-                        if (!market.MarketZoneSphere.HasValue)
+                        if (market.EntityId == 0 || !MyAPIGateway.Entities.EntityExists(market.EntityId))
                             continue;
                         IMyEntity entity;
                         if (!MyAPIGateway.Entities.TryGetEntityById(market.EntityId, out entity))
                             continue;
                         if (entity.Closed || entity.MarkedForClose)
                             continue;
-                        var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, market.MarketZoneSphere.Value.Radius);
+                        IMyBeacon beacon = entity as IMyBeacon;
+                        if (beacon == null)
+                            continue;
+                        if (market.DisplayName != beacon.CustomName)
+                            market.DisplayName = beacon.CustomName; // update the market name if it's out of date.
+                        if (!beacon.IsWorking)
+                            continue;
+                        var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, beacon.Radius);
                         if (sphere.Contains(position) == ContainmentType.Contains)
                             list.Add(market);
                         break;
 
                     case MarketZoneType.FixedSphere:
+                        if (!EconomyScript.Instance.ServerConfig.EnableNpcTradezones)
+                            continue;
                         if (!market.MarketZoneSphere.HasValue)
                             continue;
                         if (market.MarketZoneSphere.Value.Contains(position) == ContainmentType.Contains)
@@ -188,6 +207,8 @@
                         break;
 
                     case MarketZoneType.FixedBox:
+                        if (!EconomyScript.Instance.ServerConfig.EnableNpcTradezones)
+                            continue;
                         if (!market.MarketZoneBox.HasValue)
                             continue;
                         if (market.MarketZoneBox.Value.Contains(position) == ContainmentType.Contains)
@@ -198,18 +219,90 @@
             return list;
         }
 
+        /// <summary>
+        /// Find a market of the specified name, trying exact match first, then case insensative, then partial string.
+        /// </summary>
+        /// <param name="marketname"></param>
+        /// <returns></returns>
         public static List<MarketStruct> FindMarketsFromName(string marketname)
         {
             var list = new List<MarketStruct>();
-            if (marketname != "")
+
+            if (string.IsNullOrEmpty(marketname))
+                return list;
+
+            foreach (var market in EconomyScript.Instance.Data.Markets)
+            {
+                if (market.DisplayName == marketname)
+                    list.Add(market);
+            }
+
+            if (list.Count == 0)
             {
                 foreach (var market in EconomyScript.Instance.Data.Markets)
                 {
-                    if (market.DisplayName == marketname) { list.Add(market); break; }
-
+                    if (market.DisplayName.Equals(marketname, StringComparison.InvariantCultureIgnoreCase))
+                        list.Add(market);
                 }
             }
+
+            if (list.Count == 0)
+            {
+                foreach (var market in EconomyScript.Instance.Data.Markets)
+                {
+                    if (market.DisplayName.IndexOf(marketname, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                        list.Add(market);
+                }
+            }
+
             return list;
+        }
+
+        /// <summary>
+        /// Finds the closest player owned market of the specified open state.
+        /// </summary>
+        /// <returns></returns>
+        public static MarketStruct FindClosestPlayerMarket(IMyPlayer player, bool? isOpen = null)
+        {
+            var character = player.GetCharacter();
+            if (character == null)
+            {
+                // Cannot determine the player's location.
+                return null;
+            }
+
+            var position = ((IMyEntity)character).GetPosition();
+            var markets = EconomyScript.Instance.Data.Markets.Where(m => m.MarketId == player.SteamUserId && (!isOpen.HasValue || m.Open == isOpen.Value)).ToArray();
+
+            if (markets.Length == 0)
+            {
+                // no open markets found for the player;
+                return null;
+            }
+
+            var list = new Dictionary<Sandbox.ModAPI.Ingame.IMyTerminalBlock, double>();
+
+            foreach (var market in markets)
+            {
+                IMyEntity entity;
+                if (!MyAPIGateway.Entities.TryGetEntityById(market.EntityId, out entity))
+                    continue;
+                if (entity.Closed || entity.MarkedForClose)
+                    continue;
+                IMyBeacon beacon = entity as IMyBeacon;
+                if (beacon == null)
+                    continue;
+
+                if (market.DisplayName != beacon.CustomName)
+                    market.DisplayName = beacon.CustomName; // update the market name if it's out of date.
+
+                var distance = (position - beacon.WorldMatrix.Translation).Length();
+                list.Add(beacon, distance);
+            }
+
+            var closetEntity = list.OrderBy(f => f.Value).First().Key;
+            var closetMarket = EconomyScript.Instance.Data.Markets.First(m => m.MarketId == player.SteamUserId && (!isOpen.HasValue || m.Open == isOpen.Value) && m.EntityId == closetEntity.EntityId);
+            return closetMarket;
         }
 
         public static bool IsItemBlacklistedOnServer(string itemTypeId, string itemSubTypeName)

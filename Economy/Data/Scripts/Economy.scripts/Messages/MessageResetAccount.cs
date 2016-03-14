@@ -8,6 +8,11 @@
     [ProtoContract]
     public class MessageResetAccount : MessageBase
     {
+        public static void SendMessage()
+        {
+            ConnectionHelper.SendMessageToServer(new MessageResetAccount());
+        }
+
         public override void ProcessClient()
         {
             // never processed on client
@@ -25,6 +30,7 @@
                 if (myaccount != null)
                 {
                     AccountManager.ResetAccount(myaccount);
+                    MessageUpdateClient.SendAccountMessage(myaccount);
                 }
                 else
                 {
@@ -37,11 +43,6 @@
 
                 MessageClientTextMessage.SendMessage(SenderSteamId, "RESET", "Done");
             }
-        }
-
-        public static void SendMessage()
-        {
-            ConnectionHelper.SendMessageToServer(new MessageResetAccount());
         }
     }
 }

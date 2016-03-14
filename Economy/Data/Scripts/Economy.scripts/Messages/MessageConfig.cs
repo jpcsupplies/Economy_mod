@@ -57,6 +57,8 @@
             // These will match with names defined in the RegEx patterm <EconomyScript.EconfigPattern>
             switch (ConfigName)
             {
+                #region language
+
                 case "language":
                     if (string.IsNullOrEmpty(Value))
                     {
@@ -96,6 +98,10 @@
                     }
                     break;
 
+                #endregion
+
+                #region tradenetworkname
+
                 case "tradenetworkname":
                     if (string.IsNullOrEmpty(Value))
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradenetworkName: {0}", EconomyScript.Instance.ServerConfig.TradeNetworkName);
@@ -113,6 +119,9 @@
                     }
                     break;
 
+                #endregion
+
+                #region currencyname
 
                 case "currencyname":
                     if (string.IsNullOrEmpty(Value))
@@ -131,6 +140,10 @@
                     }
                     break;
 
+                #endregion
+
+                #region limitedrange
+
                 case "limitedrange":
                     if (string.IsNullOrEmpty(Value))
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LimitedRange: {0}", EconomyScript.Instance.ServerConfig.LimitedRange ? "On" : "Off");
@@ -148,6 +161,10 @@
                     }
                     break;
 
+                #endregion
+
+                #region limitedsupply
+
                 case "limitedsupply":
                     if (string.IsNullOrEmpty(Value))
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LimitedSupply: {0}", EconomyScript.Instance.ServerConfig.LimitedSupply ? "On" : "Off");
@@ -164,6 +181,11 @@
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LimitedSupply: {0}", EconomyScript.Instance.ServerConfig.LimitedSupply ? "On" : "Off");
                     }
                     break;
+
+
+                #endregion
+
+                #region enablelcds
 
                 case "enablelcds":
                     if (string.IsNullOrEmpty(Value))
@@ -186,6 +208,85 @@
                     }
                     break;
 
+                #endregion
+
+                #region EnableNpcTradezones
+
+                case "enablenpctradezones":
+                    if (string.IsNullOrEmpty(Value))
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnableNpcTradezones: {0}", EconomyScript.Instance.ServerConfig.EnableNpcTradezones ? "On" : "Off");
+                    else
+                    {
+                        bool? boolTest = GetBool(Value);
+                        if (boolTest.HasValue)
+                        {
+                            var clearRefresh = EconomyScript.Instance.ServerConfig.EnableNpcTradezones && !boolTest.Value;
+                            EconomyScript.Instance.ServerConfig.EnableNpcTradezones = boolTest.Value;
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnableNpcTradezones updated to: {0}", EconomyScript.Instance.ServerConfig.EnableNpcTradezones ? "On" : "Off");
+
+                            if (clearRefresh)
+                                LcdManager.BlankLcds();
+                            return;
+                        }
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnableNpcTradezones: {0}", EconomyScript.Instance.ServerConfig.EnableNpcTradezones ? "On" : "Off");
+                    }
+                    break;
+
+                #endregion
+
+                #region EnablePlayerTradezones
+
+                case "enableplayertradezones":
+                    if (string.IsNullOrEmpty(Value))
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnablePlayerTradezones: {0}", EconomyScript.Instance.ServerConfig.EnablePlayerTradezones ? "On" : "Off");
+                    else
+                    {
+                        bool? boolTest = GetBool(Value);
+                        if (boolTest.HasValue)
+                        {
+                            var clearRefresh = EconomyScript.Instance.ServerConfig.EnablePlayerTradezones && !boolTest.Value;
+                            EconomyScript.Instance.ServerConfig.EnablePlayerTradezones = boolTest.Value;
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnablePlayerTradezones updated to: {0}", EconomyScript.Instance.ServerConfig.EnablePlayerTradezones ? "On" : "Off");
+
+                            if (clearRefresh)
+                                LcdManager.BlankLcds();
+                            return;
+                        }
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnablePlayerTradezones: {0}", EconomyScript.Instance.ServerConfig.EnablePlayerTradezones ? "On" : "Off");
+                    }
+                    break;
+
+                #endregion
+
+                #region EnablePlayerPayments
+
+                case "enableplayerpayments":
+                    if (string.IsNullOrEmpty(Value))
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnablePlayerPayments: {0}", EconomyScript.Instance.ServerConfig.EnablePlayerPayments ? "On" : "Off");
+                    else
+                    {
+                        bool? boolTest = GetBool(Value);
+                        if (boolTest.HasValue)
+                        {
+                            var clearRefresh = EconomyScript.Instance.ServerConfig.EnablePlayerPayments && !boolTest.Value;
+                            EconomyScript.Instance.ServerConfig.EnablePlayerPayments = boolTest.Value;
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnablePlayerPayments updated to: {0}", EconomyScript.Instance.ServerConfig.EnablePlayerPayments ? "On" : "Off");
+
+                            if (clearRefresh)
+                                LcdManager.BlankLcds();
+                            return;
+                        }
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnablePlayerPayments: {0}", EconomyScript.Instance.ServerConfig.EnablePlayerPayments ? "On" : "Off");
+                    }
+                    break;
+
+                #endregion
+
+                #region tradetimeout
+
                 case "tradetimeout":
                     if (string.IsNullOrEmpty(Value))
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeTimeout: {0}", EconomyScript.Instance.ServerConfig.TradeTimeout);
@@ -202,6 +303,10 @@
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeTimeout: {0}", EconomyScript.Instance.ServerConfig.TradeTimeout);
                     }
                     break;
+
+                #endregion
+
+                #region accountexpiry
 
                 case "accountexpiry":
                     if (string.IsNullOrEmpty(Value))
@@ -220,6 +325,10 @@
                     }
                     break;
 
+                #endregion
+
+                #region startingbalance
+
                 case "startingbalance":
                     if (string.IsNullOrEmpty(Value))
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "StartingBalance: {0}", EconomyScript.Instance.ServerConfig.DefaultStartingBalance);
@@ -228,6 +337,8 @@
                         decimal decimalTest;
                         if (decimal.TryParse(Value, out decimalTest))
                         {
+                            // TODO: perhaps we should truncate the value.
+
                             if (decimalTest >= 0)
                             {
                                 EconomyScript.Instance.ServerConfig.DefaultStartingBalance = decimalTest;
@@ -240,6 +351,62 @@
                     }
                     break;
 
+                #endregion
+
+                #region TradeZoneLicence
+
+                case "tradezonelicence":
+                    if (string.IsNullOrEmpty(Value))
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneLicence: {0}", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost);
+                    else
+                    {
+                        decimal decimalTest;
+                        if (decimal.TryParse(Value, out decimalTest))
+                        {
+                            // TODO: perhaps we should truncate the value.
+
+                            if (decimalTest >= 0)
+                            {
+                                EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost = decimalTest;
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneLicence updated to: {0} ", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost);
+                                return;
+                            }
+                        }
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneLicence: {0}", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost);
+                    }
+                    break;
+
+                #endregion
+
+
+                #region MaximumPlayerZones
+
+                case "maximumplayerzones":
+                    if (string.IsNullOrEmpty(Value))
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "MaximumPlayerZones: {0}", EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
+                    else
+                    {
+                        int intTest;
+                        if (int.TryParse(Value, out intTest))
+                        {
+                            if (intTest >= 0)
+                            {
+                                EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones = intTest;
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "MaximumPlayerZones updated to: {0} ", EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
+                                return;
+                            }
+                        }
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneLicence: {0}", EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
+                    }
+                    break;
+
+                #endregion
+
+
+                #region default
+
                 default:
                     var msg = new StringBuilder();
 
@@ -249,12 +416,20 @@
                     msg.AppendFormat("LimitedRange: {0}\r\n", EconomyScript.Instance.ServerConfig.LimitedRange ? "On" : "Off");
                     msg.AppendFormat("LimitedSupply: {0}\r\n", EconomyScript.Instance.ServerConfig.LimitedSupply ? "On" : "Off");
                     msg.AppendFormat("TradeTimeout: {0}  (days.hours:mins:secs)\r\n", EconomyScript.Instance.ServerConfig.TradeTimeout);
-                    msg.AppendFormat("StartingBalance: {0}\r\n", EconomyScript.Instance.ServerConfig.DefaultStartingBalance);
+                    msg.AppendFormat("StartingBalance: {0:#,#.######}\r\n", EconomyScript.Instance.ServerConfig.DefaultStartingBalance);
                     msg.AppendFormat("CurrencyName: \"{0}\"\r\n", EconomyScript.Instance.ServerConfig.CurrencyName);
                     msg.AppendFormat("AccountExpiry: {0}  (days.hours:mins:secs)\r\n", EconomyScript.Instance.ServerConfig.AccountExpiry);
                     msg.AppendFormat("EnableLcds: {0}\r\n", EconomyScript.Instance.ServerConfig.EnableLcds ? "On" : "Off");
+                    msg.AppendFormat("EnableNpcTradezones: {0}\r\n", EconomyScript.Instance.ServerConfig.EnableNpcTradezones ? "On" : "Off");
+                    msg.AppendFormat("EnablePlayerTradezones: {0}\r\n", EconomyScript.Instance.ServerConfig.EnablePlayerTradezones ? "On" : "Off");
+                    msg.AppendFormat("EnablePlayerPayments: {0}\r\n", EconomyScript.Instance.ServerConfig.EnablePlayerPayments ? "On" : "Off");
+                    msg.AppendFormat("TradeZoneLicence: {0:#,#.######}\r\n", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost);
+                    msg.AppendFormat("MaximumPlayerZones: {0}\r\n", EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
+
                     MessageClientDialogMessage.SendMessage(SenderSteamId, "ECONFIG", " ", msg.ToString());
                     break;
+
+                    #endregion
             }
         }
 

@@ -886,12 +886,11 @@
             var market = new MarketStruct
             {
                 MarketId = EconomyConsts.NpcMerchantId,
+                Open = true,
                 DisplayName = marketName,
                 MarketItems = new List<MarketItemStruct>(),
             };
             SetMarketShape(market, x, y, z, size, shape);
-
-            EconomyScript.Instance.Data.Markets.Add(market);
 
             // Add missing items that are covered by Default items.
             foreach (var defaultItem in EconomyScript.Instance.ServerConfig.DefaultPrices)
@@ -909,6 +908,42 @@
                         item.IsBlacklisted = false;
                 }
             }
+
+            EconomyScript.Instance.Data.Markets.Add(market);
+        }
+
+        public static void CreatePlayerMarket(ulong accountId, long entityId, double size, string blockCustomName)
+        {
+            EconomyScript.Instance.ServerLogger.WriteInfo("Creating Player Market.");
+
+            var market = new MarketStruct
+            {
+                MarketId = accountId,
+                Open = false,
+                EntityId = entityId,
+                DisplayName = blockCustomName,
+                MarketItems = new List<MarketItemStruct>(),
+                MarketZoneType = MarketZoneType.EntitySphere
+            };
+
+            // Add missing items that are covered by Default items, with 0 quantity.
+            foreach (var defaultItem in EconomyScript.Instance.ServerConfig.DefaultPrices)
+            {
+                var item = market.MarketItems.FirstOrDefault(e => e.TypeId.Equals(defaultItem.TypeId) && e.SubtypeName.Equals(defaultItem.SubtypeName));
+                if (item == null)
+                {
+                    market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = 0 });
+                    EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
+                }
+                else
+                {
+                    // Disable any blackmarket items.
+                    if (!defaultItem.IsBlacklisted)
+                        item.IsBlacklisted = false;
+                }
+            }
+
+            EconomyScript.Instance.Data.Markets.Add(market);
         }
 
         public static void SetMarketShape(MarketStruct market, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)
@@ -936,9 +971,16 @@
                 foreach (var market in data.Markets)
                 {
                     var item = market.MarketItems.FirstOrDefault(e => e.TypeId.Equals(defaultItem.TypeId) && e.SubtypeName.Equals(defaultItem.SubtypeName));
+                    var isNpcMerchant = market.MarketId == EconomyConsts.NpcMerchantId; // make sure no stock is added to player markets.
+
+                    // TODO: remove this later. It's a temporary fix to setup the new Open property.
+                    // Added 01.125.
+                    if (isNpcMerchant)
+                        market.Open = true;
+
                     if (item == null)
                     {
-                        market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = defaultItem.Quantity });
+                        market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = isNpcMerchant ? defaultItem.Quantity : 0 });
                         EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
                     }
                     else

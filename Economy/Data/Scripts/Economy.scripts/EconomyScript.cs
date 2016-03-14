@@ -65,30 +65,45 @@ namespace Economy.scripts
         /// pattern defines how to create a new NPC Market.
         /// /npczone add|create {name} {x} {y} {z} {size} {shape}
         /// </summary>
-        const string NpcAddPattern = @"(?<command>/npczone)\s+((add)|(create))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<X>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Y>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Z>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Size>(\d+(\.\d*)?))\s+(?<shape>(round)|(circle)|(sphere)|(spherical)|(box)|(cube)|(cubic))";
+        const string NpcZoneAddPattern = @"(?<command>/npczone)\s+((add)|(create))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<X>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Y>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Z>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Size>(\d+(\.\d*)?))\s+(?<shape>(round)|(circle)|(sphere)|(spherical)|(box)|(cube)|(cubic))";
 
         /// <summary>
         /// pattern defines how to delete an existing NPC Market by name.
         /// /npczone del|delete|remove "{name}" or {name}
         /// </summary>
-        const string NpcDeletePattern = @"(?<command>/npczone)\s+((del)|(delete)|(remove))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>.*))";
+        const string NpcZoneDeletePattern = @"(?<command>/npczone)\s+((del)|(delete)|(remove))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>.*))";
 
         /// <summary>
         /// pattern defines how to rename an existing NPC Market name.
         /// /npczone ren|rename|name "{nameold}" or {nameold} "{namenew}" or {namenew}
         /// </summary>
-        const string NpcRenamePattern = @"(?<command>/npczone)\s+((ren)|(rename)|(name))\s+(?:(?:""(?<nameold>[^""]|.*?)"")|(?<nameold>.*))\s+(?:(?:""(?<namenew>[^""]|.*?)"")|(?<namenew>.*))";
+        const string NpcZoneRenamePattern = @"(?<command>/npczone)\s+((ren)|(rename)|(name))\s+(?:(?:""(?<nameold>[^""]|.*?)"")|(?<nameold>.*))\s+(?:(?:""(?<namenew>[^""]|.*?)"")|(?<namenew>.*))";
 
         /// <summary>
         /// pattern defines how to move/resize/reshape an existing NPC Market.
         /// /npczone move|resize|reshape "{name}" or {name} {x} {y} {z} {size} {shape}
         /// </summary>
-        const string NpcMovePattern = @"(?<command>/npczone)\s+((move)|(resize)|(reshape))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<X>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Y>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Z>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Size>(\d+(\.\d*)?))\s+(?<shape>(round)|(circle)|(sphere)|(spherical)|(box)|(cube)|(cubic))";
+        const string NpcZoneMovePattern = @"(?<command>/npczone)\s+((move)|(resize)|(reshape))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<X>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Y>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Z>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Size>(\d+(\.\d*)?))\s+(?<shape>(round)|(circle)|(sphere)|(spherical)|(box)|(cube)|(cubic))";
 
         /// <summary>
         /// pattern defines econfig commands.
         /// </summary>
-        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(LimitedRange)|(TradeTimeout)|(StartingBalance)|(CurrencyName)|(LimitedSupply)|(EnableLcds)))(?:\s+(?<value>.+))?)?";
+        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(LimitedRange)|(TradeTimeout)|(StartingBalance)|(CurrencyName)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeZoneLicence)))(?:\s+(?<value>.+))?)?";
+
+        /// <summary>
+        /// pattern defines how to register or unregister a player trade zone.
+        /// </summary>
+        const string PlayerZoneAddPattern = @"(?<command>/tz)\s+(?<key>(register)|(unregister)|(open)|(close))";
+
+        /// <summary>
+        /// pattern defines how to change an item in a player trade zone.
+        /// </summary>
+        const string PlayerZoneItemPattern = @"(?<command>/tz)\s+(?:(?<blacklist>blacklist)|(?<buy>buy)|(?<sell>sell))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+))))?";
+
+        /// <summary>
+        /// pattern defines how to retrieve a price list.
+        /// </summary>
+        const string PriceListPattern = @"(?<command>/pricelist)(?:(?:\s+""(?<zonename>[^""]|.*?)"")?)(?:\s+(?<key>[^\s]+)|\b)*";
 
         #endregion
 
@@ -341,7 +356,7 @@ namespace Economy.scripts
                 MyAPIGateway.Utilities.ShowMessage("Error", "An exception has been logged in the file: {0}", ClientLogger.LogFileName);
             }
 
-        #region hud display
+            #region hud display
             // Update hud
             if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
         }
@@ -351,7 +366,7 @@ namespace Economy.scripts
             // client config has not been received from server yet.
             if (ClientConfig == null)
                 return true;
-            
+
             if (ClientConfig.ShowHud)
             {
                 //Hud, displays users balance, trade network name, and optionally faction and free storage space (% or unit?) in cargo and/or inventory
@@ -378,9 +393,10 @@ namespace Economy.scripts
                 string readout = ClientConfig.TradeNetworkName + ": ";
                 if (ClientConfig.ShowBalance) readout += string.Format("{0:#,##0.0000} {1}", ClientConfig.BankBalance, ClientConfig.CurrencyName);
                 if (ClientConfig.ShowRegion) readout += " | Trade region: Unknown";
-                if (ClientConfig.ShowXYZ) {
+                if (ClientConfig.ShowXYZ)
+                {
                     Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-                    readout+= " | " + string.Format("X: {0:F0} Y: {1:F0} Z: {2:F0}", position.X, position.Y, position.Z);
+                    readout += " | " + string.Format("X: {0:F0} Y: {1:F0} Z: {2:F0}", position.X, position.Y, position.Z);
                 }
                 if (ClientConfig.ShowContractCount) readout += " | Contracts: 0";
                 if (ClientConfig.ShowCargoSpace) readout += " | Cargo ? of ?";
@@ -395,7 +411,7 @@ namespace Economy.scripts
                         faction = plFaction.Name;  //should this show tag or full name? depends on screen size i suppose
                     }
                     readout += " | Agency: " + faction;
-                    
+
                     switch (ClientConfig.MissionId)
                     {
                         case 1:
@@ -428,14 +444,14 @@ namespace Economy.scripts
                             break;
                         default:
                             ClientConfig.LazyMissionText = ClientConfig.MissionId + " Mission: Survive | Deadline: Unlimited";
-                                //"This would be an invalid or unknown mission id";
+                            //"This would be an invalid or unknown mission id";
                             break;
                     }
                     //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
                     MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = ClientConfig.LazyMissionText;
                     //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(reply);
                 }
-                MyAPIGateway.Utilities.GetObjectiveLine().Title = readout; 
+                MyAPIGateway.Utilities.GetObjectiveLine().Title = readout;
             }
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;  //using title not mission text now
 
@@ -559,7 +575,7 @@ namespace Economy.scripts
             #region debug
             //used to test whatever crazy stuff im trying to work out
             if (split[0].Equals("/debug", StringComparison.InvariantCultureIgnoreCase))
-            { 
+            {
                 //advancing mission display test
                 //ClientConfig.MissionId++;  //yup that works nicely
 
@@ -580,7 +596,6 @@ namespace Economy.scripts
                 return true;
             }
             #endregion debug
-
 
             #region tradezone
             // tradezone command
@@ -619,8 +634,116 @@ namespace Economy.scripts
              * /tz max maximum_radius_allowed_to_register
              */
 
-            if (split[0].Equals("/tz", StringComparison.InvariantCultureIgnoreCase) || split[0].Equals("/tradezone", StringComparison.InvariantCultureIgnoreCase) || split[0].Equals("/shop", StringComparison.InvariantCultureIgnoreCase)) 
+            if (split[0].Equals("/tz", StringComparison.InvariantCultureIgnoreCase) || split[0].Equals("/tradezone", StringComparison.InvariantCultureIgnoreCase) || split[0].Equals("/shop", StringComparison.InvariantCultureIgnoreCase))
             {
+                match = Regex.Match(messageText, PlayerZoneAddPattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    string keyName = match.Groups["key"].Value;
+
+                    if (keyName.Equals("register", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
+                        if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof(MyObjectBuilder_Beacon))
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You need to target a beacon to register a trade zone.");
+                            return true;
+                        }
+
+                        if (selectedBlock.GetPlayerRelationToOwner() != MyRelationsBetweenPlayerAndBlock.Owner)
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You must own the beacon to register it as trade zone.");
+                            return true;
+                        }
+
+                        MessageMarketManagePlayer.SendRegisterMessage(selectedBlock.EntityId);
+                        return true;
+                    }
+
+                    // going to make the player look at the cube that they need to unregister, in case they have more than 1 in the vicinity.
+                    if (keyName.Equals("unregister", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
+                        if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof(MyObjectBuilder_Beacon))
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You need to target a beacon to register a trade zone.");
+                            return true;
+                        }
+
+                        if (selectedBlock.GetPlayerRelationToOwner() != MyRelationsBetweenPlayerAndBlock.Owner)
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You must own the beacon to register it as trade zone.");
+                            return true;
+                        }
+
+                        MessageMarketManagePlayer.SendUnregisterMessage(selectedBlock.EntityId);
+                        return true;
+                    }
+
+                    // the player can open or close the closest currently closed market.
+                    if (keyName.Equals("open", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        MessageMarketManagePlayer.SendOpenMessage();
+                        return true;
+                    }
+
+                    // the player can open or close the closest currently open market.
+                    if (keyName.Equals("close", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        MessageMarketManagePlayer.SendCloseMessage();
+                        return true;
+                    }
+                }
+
+                match = Regex.Match(messageText, PlayerZoneItemPattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    // TODO: ###############################
+                    // This code copied from the /set pattern, and hasn't been tested yet.
+
+                    string itemName = match.Groups["item"].Value.Trim();
+                    bool setbuy = match.Groups["buy"].Value.Equals("buy", StringComparison.InvariantCultureIgnoreCase);
+                    bool setsell = match.Groups["sell"].Value.Equals("sell", StringComparison.InvariantCultureIgnoreCase);
+                    bool blacklist = match.Groups["blacklist"].Value.Equals("blacklist", StringComparison.InvariantCultureIgnoreCase);
+                    decimal amount = 0;
+                    if (setbuy || setsell) // must be setting a price
+                        if (!decimal.TryParse(match.Groups["price"].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
+                            amount = 0;
+
+                    // ok what item are we setting?
+                    MyObjectBuilder_Base content;
+                    Dictionary<string, MyDefinitionBase> options;
+                    // Search for the item and find one match only, either by exact name or partial name.
+                    if (!Support.FindPhysicalParts(itemName, out content, out options))
+                    {
+                        if (options.Count == 0)
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "Item name not found.");
+                        else if (options.Count > 10)
+                            MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options.Keys) + " ?", null, "OK");
+                        else
+                            MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options.Keys) + " ?");
+                        return true;
+                    }
+
+                    if (blacklist)
+                    {
+                        MessageMarketManagePlayer.SendBlacklistMessage(content.TypeId.ToString(), content.SubtypeName);
+                    }
+                    else if (setbuy)
+                    {
+                        MessageMarketManagePlayer.SendBuyPriceMessage(content.TypeId.ToString(), content.SubtypeName, amount);
+                    }
+                    else if (setsell)
+                    {
+                        MessageMarketManagePlayer.SendSellPriceMessage(content.TypeId.ToString(), content.SubtypeName, amount);
+                    }
+
+                    return true;
+
+
+                    // TODO: ###############################
+                }
+
                 if (split.Length <= 1) { MyAPIGateway.Utilities.ShowMessage("TradeZone", "Nothing to do? Valid Options register, unregister, move, factionmode, buy/sell|blacklist/restrict/limit,"); }
                 else
                 { //everything else goes here - note this doesnt allow for spaces in names
@@ -634,15 +757,15 @@ namespace Economy.scripts
                         if (split[1].Equals("factionmode", StringComparison.InvariantCultureIgnoreCase)) { }
                         if (split[1].Equals("blacklist", StringComparison.InvariantCultureIgnoreCase)) { }
                     }
-                    if (split.Length == 5) 
-                    { 
-                        if (split[1].Equals("restrict", StringComparison.InvariantCultureIgnoreCase)) {}
+                    if (split.Length == 5)
+                    {
+                        if (split[1].Equals("restrict", StringComparison.InvariantCultureIgnoreCase)) { }
                         if (split[1].Equals("limit", StringComparison.InvariantCultureIgnoreCase)) { }
-                         
+
                     }
-                    if (split.Length >= 4 && split.Length <=5) 
-                    { 
-                        if (split[1].Equals("load", StringComparison.InvariantCultureIgnoreCase)) {}
+                    if (split.Length >= 4 && split.Length <= 5)
+                    {
+                        if (split[1].Equals("load", StringComparison.InvariantCultureIgnoreCase)) { }
                         if (split[1].Equals("unload", StringComparison.InvariantCultureIgnoreCase)) { }
                     }
                     if (split.Length >= 4 && split.Length <= 6)
@@ -650,8 +773,9 @@ namespace Economy.scripts
                         if (split[1].Equals("buyprice", StringComparison.InvariantCultureIgnoreCase)) { }
                         if (split[1].Equals("sellprice", StringComparison.InvariantCultureIgnoreCase)) { }
                     }
-                } return true;
-            } 
+                }
+                return true;
+            }
             #endregion tradezone
 
             #region pay
@@ -763,6 +887,10 @@ namespace Economy.scripts
             // /econfig LimitedRange off - change LimitedRange off.
             // /econfig TradeTimeout 00:00:01 - change TradeTimeout to 1 second.
             // /econfig DefaultStartingBalance 5000 - change DefaultStartingBalance to 5000.
+            // /econfig TradeZoneLicence 20000 - change TradeZoneLicence cost to 20000.
+            // /econfig EnableNpcTradezones on - change Npc Trade zones on.
+            // /econfig EnablePlayerTradezones on - change Player created Trade zones on.
+            // /econfig EnablePlayerPayments on - change Player payments on.
 
             #endregion econfig
 
@@ -1004,16 +1132,16 @@ namespace Economy.scripts
             //eg cargo, faction, trade zone, contract/mission/subsidy count, balance?
             if (split[0].Equals("/hud", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (split.Length==1 || split.Length>=4 || (split.Length==2 && split[1].Equals("help", StringComparison.InvariantCultureIgnoreCase)) )  
-                { 
-                    MyAPIGateway.Utilities.ShowMessage("HUD", "Controls various aspects of hud display. See '/ehelp hud' for more details."); 
+                if (split.Length == 1 || split.Length >= 4 || (split.Length == 2 && split[1].Equals("help", StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    MyAPIGateway.Utilities.ShowMessage("HUD", "Controls various aspects of hud display. See '/ehelp hud' for more details.");
                 }
                 if (split.Length == 2)
                 {
                     if (split[1].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowHud = false; MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
                     if (split[1].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowHud = true; MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
-                } 
-                if (split.Length == 3) 
+                }
+                if (split.Length == 3)
                 {
                     if (split[1].Equals("balance", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowBalance = true; }
                     if (split[1].Equals("balance", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowBalance = false; }
@@ -1030,7 +1158,7 @@ namespace Economy.scripts
                 }
                 return true;
             }
-            
+
             #endregion hud
 
             #region bal
@@ -1106,46 +1234,41 @@ namespace Economy.scripts
 
             if (split[0].Equals("/pricelist", StringComparison.InvariantCultureIgnoreCase))
             {
-                bool showOre = false;
-                bool showIngot = false;
-                bool showComponent = false;
-                bool showAmmo = false;
-                bool showTools = false;
-                bool showGasses = false;
-                string findme = "";  
-                
-                
+                match = Regex.Match(messageText, PriceListPattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    // if the first parameter is surrounded by quotes, search for a market with that name.
+                    // it could also just search on any string in first paramater for market
+                    // but if a market is named ore or ingot etc this may cause problems
 
-                foreach (var str in split)
-                {   //if the first parameter starts with $ assume we want pricelist for that market name
-                    //remove the $ and pass the string as a marketname search
-                    //ideally this should accept quotes for spaced names not use $, and be case insensitive
-                    //it could also just search on any string in first paramater for market
-                    //but if a market is named ore or ingot etc this may cause problems
-                    //but that will require regex..  mainly trying to get logic working at this stage
-                    if (str.StartsWith("$", StringComparison.InvariantCultureIgnoreCase))
+                    bool showOre = false;
+                    bool showIngot = false;
+                    bool showComponent = false;
+                    bool showAmmo = false;
+                    bool showTools = false;
+                    bool showGasses = false;
+                    string findZoneName = match.Groups["zonename"].Value;
+
+                    for (var i = 0; i < match.Groups["key"].Captures.Count; i++)
                     {
-                        if (split.Length >= 2)
-                        {
-                            string[] temp = split[1].Split(new Char[] { '$' });
-                            findme = temp[1];
-                        }
+                        string str = match.Groups["key"].Captures[i].Value;
+                        if (str.StartsWith("ore", StringComparison.InvariantCultureIgnoreCase))
+                            showOre = true;
+                        if (str.StartsWith("ingot", StringComparison.InvariantCultureIgnoreCase))
+                            showIngot = true;
+                        if (str.StartsWith("component", StringComparison.InvariantCultureIgnoreCase))
+                            showComponent = true;
+                        if (str.StartsWith("ammo", StringComparison.InvariantCultureIgnoreCase))
+                            showAmmo = true;
+                        if (str.StartsWith("tool", StringComparison.InvariantCultureIgnoreCase))
+                            showTools = true;
+                        if (str.StartsWith("gas", StringComparison.InvariantCultureIgnoreCase))
+                            showGasses = true;
                     }
-                    if (str.StartsWith("ore", StringComparison.InvariantCultureIgnoreCase))
-                        showOre = true;
-                    if (str.StartsWith("ingot", StringComparison.InvariantCultureIgnoreCase))
-                        showIngot = true;
-                    if (str.StartsWith("component", StringComparison.InvariantCultureIgnoreCase))
-                        showComponent = true;
-                    if (str.StartsWith("ammo", StringComparison.InvariantCultureIgnoreCase))
-                        showAmmo = true;
-                    if (str.StartsWith("tool", StringComparison.InvariantCultureIgnoreCase))
-                        showTools = true;
-                    if (str.StartsWith("gas", StringComparison.InvariantCultureIgnoreCase))
-                        showGasses = true;
+
+                    MessageMarketPriceList.SendMessage(showOre, showIngot, showComponent, showAmmo, showTools, showGasses, findZoneName);
+                    return true;
                 }
-                MessageMarketPriceList.SendMessage(showOre, showIngot, showComponent, showAmmo, showTools, showGasses, findme);
-                return true;
             }
 
             #endregion
@@ -1174,7 +1297,7 @@ namespace Economy.scripts
                 //          /npczone add/create <name> <x> <y> <z> <size> <shape>
                 //          /npczone delete/remove <name>
 
-                match = Regex.Match(messageText, NpcAddPattern, RegexOptions.IgnoreCase);
+                match = Regex.Match(messageText, NpcZoneAddPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     string marketName = match.Groups["name"].Value;
@@ -1204,7 +1327,7 @@ namespace Economy.scripts
                     return true;
                 }
 
-                match = Regex.Match(messageText, NpcDeletePattern, RegexOptions.IgnoreCase);
+                match = Regex.Match(messageText, NpcZoneDeletePattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     string marketName = match.Groups["name"].Value;
@@ -1212,14 +1335,14 @@ namespace Economy.scripts
                     return true;
                 }
 
-                match = Regex.Match(messageText, NpcRenamePattern, RegexOptions.IgnoreCase);
+                match = Regex.Match(messageText, NpcZoneRenamePattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     MessageMarketManageNpc.SendRenameMessage(match.Groups["nameold"].Value, match.Groups["namenew"].Value);
                     return true;
                 }
 
-                match = Regex.Match(messageText, NpcMovePattern, RegexOptions.IgnoreCase);
+                match = Regex.Match(messageText, NpcZoneMovePattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     string marketName = match.Groups["name"].Value;
@@ -1441,8 +1564,8 @@ namespace Economy.scripts
                                 " /hud balance on|off (Bank balance display on or off)\r\n" +
                                 " /hud region on|off (Name of current trader region on or off\r\n" +
                                 " /hud GPS on|off (Show Galactic Positioning System XYZ coords\r\n" +
-                                " /hud contracts on|off (Number of active jobs/subsidies)\r\n"+
-                                " /hud cargo on|off (Display available cargo space for trading)\r\n"+
+                                " /hud contracts on|off (Number of active jobs/subsidies)\r\n" +
+                                " /hud cargo on|off (Display available cargo space for trading)\r\n" +
                                 " /hud agency on|off (Display your current agency/faction)\r\n";
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/hud #|balance|region|GPS|contracts|cargo|agency  #on/off");
                             MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "hud command", helpreply, null, "Groovy");
@@ -1458,7 +1581,7 @@ namespace Economy.scripts
                         case "ver":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/ver Displays the diagnostic version of running Economy script");
                             return true;
-                        case "npczone":  
+                        case "npczone":
                             helpreply = "/npczone list   -  Displays list of all defined NPC market portals\r\n" +
                                 "/npczone add [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]  -  Add a new NPC market zone\r\n" +
                                 " shape can be sphere or box. Eg /npczone add GunShop 1000 2000 4000 200 box\r\n" +
@@ -1470,8 +1593,9 @@ namespace Economy.scripts
                                 MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /npczone (add)/list/([remove])/[rename oldname newname] ([zone]) (x y z size shape)");
                                 MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "npczone command", helpreply, null, "Close");
                                 return true;
-                            } else return false; //i know that is mean...
-                            
+                            }
+                            else return false; //i know that is mean...
+
                         case "pricelist":
                             helpreply = "/pricelist X\r\n Displays current market zone prices of item type [X]\r\n" +
                                 "Eg X can be one or more of ore, ingot, component, ammo, tools\r\n" +
