@@ -27,6 +27,7 @@
             EnableNpcTradezones = true;
             EnablePlayerTradezones = false; // TODO: default it off until it is working.
             TradeZoneLicenceCost = 20000;
+            MaximumPlayerTradeZones = 1;
         }
 
         #region properties
@@ -50,6 +51,11 @@
         /// The cost to create a Player trade zone.
         /// </summary>
         public decimal TradeZoneLicenceCost;
+
+        /// <summary>
+        /// The maximum number of trade zones a player an create.
+        /// </summary>
+        public int MaximumPlayerTradeZones;
 
         /// <summary>
         /// Should players be near each other to trade or should it be unlimited distance.

@@ -379,6 +379,32 @@
 
                 #endregion
 
+
+                #region MaximumPlayerZones
+
+                case "maximumplayerzones":
+                    if (string.IsNullOrEmpty(Value))
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "MaximumPlayerZones: {0}", EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
+                    else
+                    {
+                        int intTest;
+                        if (int.TryParse(Value, out intTest))
+                        {
+                            if (intTest >= 0)
+                            {
+                                EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones = intTest;
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "MaximumPlayerZones updated to: {0} ", EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
+                                return;
+                            }
+                        }
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneLicence: {0}", EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
+                    }
+                    break;
+
+                #endregion
+
+
                 #region default
 
                 default:
@@ -398,6 +424,7 @@
                     msg.AppendFormat("EnablePlayerTradezones: {0}\r\n", EconomyScript.Instance.ServerConfig.EnablePlayerTradezones ? "On" : "Off");
                     msg.AppendFormat("EnablePlayerPayments: {0}\r\n", EconomyScript.Instance.ServerConfig.EnablePlayerPayments ? "On" : "Off");
                     msg.AppendFormat("TradeZoneLicence: {0:#,#.######}\r\n", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost);
+                    msg.AppendFormat("MaximumPlayerZones: {0}\r\n", EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
 
                     MessageClientDialogMessage.SendMessage(SenderSteamId, "ECONFIG", " ", msg.ToString());
                     break;
