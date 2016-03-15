@@ -93,7 +93,7 @@ namespace Economy.scripts
         /// <summary>
         /// pattern defines how to register or unregister a player trade zone.
         /// </summary>
-        const string PlayerZoneAddPattern = @"(?<command>/tz)\s+(?<key>(register)|(unregister)|(open)|(close))";
+        const string PlayerZoneAddPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(?<key>(list)|(register)|(unregister)|(open)|(close))";
 
         /// <summary>
         /// pattern defines how to change an item in a player trade zone.
@@ -640,6 +640,12 @@ namespace Economy.scripts
                 if (match.Success)
                 {
                     string keyName = match.Groups["key"].Value;
+
+                    if (keyName.Equals("list", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        MessageMarketManagePlayer.SendListMessage();
+                        return true;
+                    }
 
                     if (keyName.Equals("register", StringComparison.InvariantCultureIgnoreCase))
                     {

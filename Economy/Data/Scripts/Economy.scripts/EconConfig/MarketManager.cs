@@ -8,6 +8,7 @@
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Ingame;
+    using VRage.Game;
     using VRage.ModAPI;
     using VRage.Utils;
     using VRageMath;
@@ -182,16 +183,36 @@
                             continue;
                         IMyEntity entity;
                         if (!MyAPIGateway.Entities.TryGetEntityById(market.EntityId, out entity))
+                        {
+                            // Close the market, because the cube no longer exists.
+                            market.Open = false;
                             continue;
+                        }
                         if (entity.Closed || entity.MarkedForClose)
+                        {
+                            // Close the market, because the cube no longer exists.
+                            market.Open = false;
                             continue;
+                        }
                         IMyBeacon beacon = entity as IMyBeacon;
                         if (beacon == null)
                             continue;
-                        if (market.DisplayName != beacon.CustomName)
-                            market.DisplayName = beacon.CustomName; // update the market name if it's out of date.
                         if (!beacon.IsWorking)
                             continue;
+
+                        // TODO: I'm not sure if these two commands will impact perfomance.
+                        var player = MyAPIGateway.Players.FindPlayerBySteamId(market.MarketId);
+                        if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                        {
+                            // Close the market, because it's no longer owner by the player.
+                            market.Open = false;
+                            continue;
+                        }
+
+                        // only update the name after the owner check.
+                        if (market.DisplayName != beacon.CustomName)
+                            market.DisplayName = beacon.CustomName; // update the market name if it's out of date.
+
                         var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, beacon.Radius);
                         if (sphere.Contains(position) == ContainmentType.Contains)
                             list.Add(market);
@@ -293,12 +314,24 @@
                 if (beacon == null)
                     continue;
 
+                if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                {
+                    // Close the market, because it's no longer owner by the player.
+                    market.Open = false;
+                    continue;
+                }
+
                 if (market.DisplayName != beacon.CustomName)
                     market.DisplayName = beacon.CustomName; // update the market name if it's out of date.
+
+                // TODO: should only return markets in the set range.
 
                 var distance = (position - beacon.WorldMatrix.Translation).Length();
                 list.Add(beacon, distance);
             }
+
+            if (list.Count == 0)
+                return null;
 
             var closetEntity = list.OrderBy(f => f.Value).First().Key;
             var closetMarket = EconomyScript.Instance.Data.Markets.First(m => m.MarketId == player.SteamUserId && (!isOpen.HasValue || m.Open == isOpen.Value) && m.EntityId == closetEntity.EntityId);

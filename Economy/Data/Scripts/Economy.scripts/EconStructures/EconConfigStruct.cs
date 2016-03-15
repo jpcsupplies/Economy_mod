@@ -26,8 +26,9 @@
             EnablePlayerPayments = true;
             EnableNpcTradezones = true;
             EnablePlayerTradezones = false; // TODO: default it off until it is working.
-            TradeZoneLicenceCost = 20000;
             MaximumPlayerTradeZones = 1;
+            TradeZoneLicenceCost = 20000;
+            TradeZoneReestablishRatio = 0.5m;
         }
 
         #region properties
@@ -51,6 +52,11 @@
         /// The cost to create a Player trade zone.
         /// </summary>
         public decimal TradeZoneLicenceCost;
+
+        /// <summary>
+        /// The cost ratio for Reestablishing a broken trade zone.
+        /// </summary>
+        public decimal TradeZoneReestablishRatio;
 
         /// <summary>
         /// The maximum number of trade zones a player an create.

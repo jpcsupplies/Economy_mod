@@ -379,6 +379,31 @@
 
                 #endregion
 
+                #region TradeZoneReestablishRatio
+
+                case "tradezonereestablishratio":
+                    if (string.IsNullOrEmpty(Value))
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneReestablishRatio: {0}", EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
+                    else
+                    {
+                        decimal decimalTest;
+                        if (decimal.TryParse(Value, out decimalTest))
+                        {
+                            // TODO: perhaps we should truncate the value.
+
+                            if (decimalTest >= 0)
+                            {
+                                EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio = decimalTest;
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneReestablishRatio updated to: {0} ", EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
+                                return;
+                            }
+                        }
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneReestablishRatio: {0}", EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
+                    }
+                    break;
+
+                #endregion
 
                 #region MaximumPlayerZones
 

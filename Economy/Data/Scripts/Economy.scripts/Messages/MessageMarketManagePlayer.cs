@@ -49,28 +49,16 @@
         [ProtoMember(6)]
         public decimal ItemSellPrice;
 
+        /// <summary>
+        /// Looking for a specific market name.
+        /// </summary>
+        [ProtoMember(7)]
+        public string FindMarketName;
 
-
-        //[ProtoMember(2)]
-        //public string MarketName;
-
-        //[ProtoMember(3)]
-        //public decimal X;
-
-        //[ProtoMember(4)]
-        //public decimal Y;
-
-        //[ProtoMember(5)]
-        //public decimal Z;
-
-        //[ProtoMember(6)]
-        //public decimal Size;
-
-        //[ProtoMember(7)]
-        //public MarketZoneType Shape;
-
-        [ProtoMember(8)]
-        public string OldMarketName;
+        public static void SendListMessage()
+        {
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.List });
+        }
 
         public static void SendRegisterMessage(long entityId)
         {
@@ -153,6 +141,73 @@
 
             switch (CommandType)
             {
+                #region list
+
+                case PlayerMarketManage.List:
+                    {
+                        var msg = new StringBuilder();
+                        var markets = EconomyScript.Instance.Data.Markets.Where(m => m.MarketId == player.SteamUserId).ToArray();
+
+                        if (markets.Length == 0)
+                        {
+                            msg.AppendLine("You do not have any registered markets currently.");
+                            msg.AppendFormat("You can register up to {0} trade zones.\r\n", EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
+                        }
+                        else
+                        {
+                            msg.AppendFormat("You have {0} markets currently registered trade zones from a maximum of {1}.\r\n", markets.Length, EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
+                            msg.AppendLine();
+
+                            int counter = 1;
+                            foreach (var market in markets.OrderBy(m => m.DisplayName))
+                            {
+                                bool destroyed = false;
+
+                                IMyEntity entity;
+                                if (!MyAPIGateway.Entities.TryGetEntityById(market.EntityId, out entity))
+                                    destroyed = true;
+
+                                if (entity != null && (entity.Closed || entity.MarkedForClose))
+                                    destroyed = true;
+
+                                IMyBeacon beacon = entity as IMyBeacon;
+                                if (beacon == null)
+                                    destroyed = true;
+
+                                if (destroyed)
+                                {
+                                    msg.AppendFormat("{0}: '{1}' unteathered.\r\n", counter, market.DisplayName);
+                                }
+                                else
+                                {
+                                    if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                                    {
+                                        msg.AppendFormat("{0}: '{1}' occupied.\r\n", counter, market.DisplayName);
+                                    }
+                                    else
+                                    {
+                                        msg.AppendFormat("{0}: '{1}' {2}.\r\n", counter, market.DisplayName, market.Open ? "open" : "closed");
+                                    }
+                                }
+
+                                counter++;
+                            }
+
+                            msg.AppendLine();
+                            msg.AppendFormat("If you have an unteathered market, you can reestablish the market on a new beacon for a cost of {0} {1}.",
+                                EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost * EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio,
+                                EconomyScript.Instance.ServerConfig.CurrencyName);
+                            msg.AppendLine("If you have an occupied market, you can open it again at no cost after recapturing the beacon.");
+                        }
+
+                        msg.AppendLine();
+                        msg.AppendFormat("The Trade Zone Licence is {0:#,#.######} {1}.", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost, EconomyScript.Instance.ServerConfig.CurrencyName);
+                        MessageClientDialogMessage.SendMessage(SenderSteamId, "TZ LIST", " ", msg.ToString());
+                        return;
+                    }
+
+                #endregion
+
                 #region register
 
                 case PlayerMarketManage.Register:
