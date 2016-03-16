@@ -201,6 +201,7 @@
     /// </summary>
     public enum PlayerMarketManage : byte
     {
+        List,
         Register,
         Unregister,
         Open,
