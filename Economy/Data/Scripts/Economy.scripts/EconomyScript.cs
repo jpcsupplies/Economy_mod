@@ -88,12 +88,22 @@ namespace Economy.scripts
         /// <summary>
         /// pattern defines econfig commands.
         /// </summary>
-        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(LimitedRange)|(TradeTimeout)|(StartingBalance)|(CurrencyName)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeZoneLicence)))(?:\s+(?<value>.+))?)?";
+        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(TradeZoneLicence)|(TradeZoneReestablishRatio)|(MaximumPlayerZones)))(?:\s+(?<value>.+))?)?";
 
         /// <summary>
-        /// pattern defines how to register or unregister a player trade zone.
+        /// pattern defines how to register a player trade zone.
         /// </summary>
-        const string PlayerZoneAddPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(?<key>(list)|(register)|(unregister)|(open)|(close))";
+        const string PlayerZoneAddPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(register)\s+(?:(?:""(?<zonename>[^""]|.*?)"")|(?<zonename>[^\s]*))\s+(?<Size>(\d+(\.\d*)?))";
+
+        /// <summary>
+        /// pattern defines how to unregister or modify specific player trade zone.
+        /// </summary>
+        const string PlayerZoneModifyPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(?<key>(unregister)|(open)|(close))\s+(?:(?:""(?<zonename>[^""]|.*?)"")|(?<zonename>[^\s]*))";
+
+        /// <summary>
+        /// pattern defines how to use paramterless player trade zone commands.
+        /// </summary>
+        const string PlayerZoneListPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(?<key>(list))";
 
         /// <summary>
         /// pattern defines how to change an item in a player trade zone.
@@ -145,6 +155,11 @@ namespace Economy.scripts
         public bool DebugOn = false;
 
         public static CultureInfo ServerCulture;
+
+        /// <summary>
+        /// Manages the confirmation of players market registrations securely.
+        /// </summary>
+        public readonly Dictionary<long, MessageMarketManagePlayer> PlayerMarketRegister = new Dictionary<long, MessageMarketManagePlayer>();
 
         #endregion
 
@@ -639,64 +654,64 @@ namespace Economy.scripts
                 match = Regex.Match(messageText, PlayerZoneAddPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
+                    string tradezoneName = match.Groups["zonename"].Value;
+                    decimal size = Convert.ToDecimal(match.Groups["Size"].Value, CultureInfo.InvariantCulture);
+
+                    var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
+                    if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof (MyObjectBuilder_Beacon))
+                    {
+                        MyAPIGateway.Utilities.ShowMessage("TZ", "You need to target a beacon to register a trade zone.");
+                        return true;
+                    }
+
+                    if (selectedBlock.GetPlayerRelationToOwner() != MyRelationsBetweenPlayerAndBlock.Owner)
+                    {
+                        MyAPIGateway.Utilities.ShowMessage("TZ", "You must own the beacon to register it as trade zone.");
+                        return true;
+                    }
+
+                    MessageMarketManagePlayer.SendRegisterMessage(selectedBlock.EntityId, tradezoneName, size);
+                    return true;
+                }
+
+                match = Regex.Match(messageText, PlayerZoneModifyPattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
                     string keyName = match.Groups["key"].Value;
-
-                    if (keyName.Equals("list", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        MessageMarketManagePlayer.SendListMessage();
-                        return true;
-                    }
-
-                    if (keyName.Equals("register", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
-                        if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof(MyObjectBuilder_Beacon))
-                        {
-                            MyAPIGateway.Utilities.ShowMessage("TZ", "You need to target a beacon to register a trade zone.");
-                            return true;
-                        }
-
-                        if (selectedBlock.GetPlayerRelationToOwner() != MyRelationsBetweenPlayerAndBlock.Owner)
-                        {
-                            MyAPIGateway.Utilities.ShowMessage("TZ", "You must own the beacon to register it as trade zone.");
-                            return true;
-                        }
-
-                        MessageMarketManagePlayer.SendRegisterMessage(selectedBlock.EntityId);
-                        return true;
-                    }
+                    string tradezoneName = match.Groups["zonename"].Value;
 
                     // going to make the player look at the cube that they need to unregister, in case they have more than 1 in the vicinity.
                     if (keyName.Equals("unregister", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
-                        if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof(MyObjectBuilder_Beacon))
-                        {
-                            MyAPIGateway.Utilities.ShowMessage("TZ", "You need to target a beacon to register a trade zone.");
-                            return true;
-                        }
-
-                        if (selectedBlock.GetPlayerRelationToOwner() != MyRelationsBetweenPlayerAndBlock.Owner)
-                        {
-                            MyAPIGateway.Utilities.ShowMessage("TZ", "You must own the beacon to register it as trade zone.");
-                            return true;
-                        }
-
-                        MessageMarketManagePlayer.SendUnregisterMessage(selectedBlock.EntityId);
+                        MessageMarketManagePlayer.SendUnregisterMessage(tradezoneName);
                         return true;
                     }
 
                     // the player can open or close the closest currently closed market.
                     if (keyName.Equals("open", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        MessageMarketManagePlayer.SendOpenMessage();
+                        MessageMarketManagePlayer.SendOpenMessage(tradezoneName);
                         return true;
                     }
 
                     // the player can open or close the closest currently open market.
                     if (keyName.Equals("close", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        MessageMarketManagePlayer.SendCloseMessage();
+                        MessageMarketManagePlayer.SendCloseMessage(tradezoneName);
+                        return true;
+                    }
+
+                    MyAPIGateway.Utilities.ShowMessage("TZ", "CHECK2");
+                }
+
+                match = Regex.Match(messageText, PlayerZoneListPattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    string keyName = match.Groups["key"].Value;
+
+                    if (keyName.Equals("list", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        MessageMarketManagePlayer.SendListMessage();
                         return true;
                     }
                 }

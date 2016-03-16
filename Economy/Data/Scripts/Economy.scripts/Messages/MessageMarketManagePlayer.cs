@@ -1,7 +1,6 @@
 ﻿namespace Economy.scripts.Messages
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     using EconConfig;
@@ -11,73 +10,99 @@
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Ingame;
     using VRage.Game;
+    using VRage.Library.Utils;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
-    using VRageMath;
     using IMyCubeBlock = Sandbox.ModAPI.IMyCubeBlock;
 
     [ProtoContract]
     public class MessageMarketManagePlayer : MessageBase
     {
+        #region Serialized fields
+
         [ProtoMember(1)]
         public PlayerMarketManage CommandType;
 
         [ProtoMember(2)]
+        public string MarketName;
+
+        [ProtoMember(3)]
+        public decimal Size;
+
+        [ProtoMember(4)]
         public long EntityId;
 
         /// <summary>
         /// item id we are setting
         /// </summary>
-        [ProtoMember(3)]
+        [ProtoMember(5)]
         public string ItemTypeId;
 
         /// <summary>
         /// item subid we are setting
         /// </summary>
-        [ProtoMember(4)]
+        [ProtoMember(6)]
         public string ItemSubTypeName;
 
         /// <summary>
         /// unit price to buy item at.
         /// </summary>
-        [ProtoMember(5)]
+        [ProtoMember(7)]
         public decimal ItemBuyPrice;
 
         /// <summary>
         /// unit price to sell item at.
         /// </summary>
-        [ProtoMember(6)]
+        [ProtoMember(8)]
         public decimal ItemSellPrice;
 
         /// <summary>
         /// Looking for a specific market name.
         /// </summary>
-        [ProtoMember(7)]
+        [ProtoMember(9)]
         public string FindMarketName;
+
+        [ProtoMember(10)]
+        public decimal LicenceCost;
+
+        [ProtoMember(11)]
+        public long ConfirmCode;
+
+        [ProtoMember(12)]
+        public bool ConfirmFlag;
+
+        #endregion
+
+        #region Send message Methods
 
         public static void SendListMessage()
         {
             ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.List });
         }
 
-        public static void SendRegisterMessage(long entityId)
+        public static void SendRegisterMessage(long entityId, string marketName, decimal size)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Register, EntityId = entityId });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Register, EntityId = entityId, MarketName = marketName, Size = size });
         }
 
-        public static void SendUnregisterMessage(long entityId)
+        public static void SendConfirmMessage(long confirmCode, bool confirmFlag)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Unregister, EntityId = entityId });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.ConfirmRegister, ConfirmCode = confirmCode, ConfirmFlag = confirmFlag });
         }
 
-        public static void SendOpenMessage()
+        public static void SendUnregisterMessage(string marketName)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Open });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Unregister, MarketName = marketName });
         }
 
-        public static void SendCloseMessage()
+        public static void SendOpenMessage(string marketName)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Close });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Open, MarketName = marketName });
+        }
+
+        public static void SendCloseMessage(string marketName)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Close, MarketName = marketName });
         }
 
         public static void SendFactionModeMessage()
@@ -120,10 +145,26 @@
             ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Limit });
         }
 
+        #endregion
+
+        #region client processing
+
         public override void ProcessClient()
         {
-            // never processed on client
+            if (CommandType == PlayerMarketManage.ConfirmRegister)
+            {
+                string msg = string.Format("Please confirm the registration of a new trade zone called '{0}', with a size of {1}m radius.\r\n" +
+                                           "The full cost to register it is {2} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.CurrencyName);
+                MyAPIGateway.Utilities.ShowMissionScreen("Please confirm", " ", " ", msg, ConfirmDialog, "Accept");
+            }
         }
+
+        private void ConfirmDialog(ResultEnum result)
+        {
+            SendConfirmMessage(ConfirmCode, result == ResultEnum.OK);
+        }
+
+        #endregion
 
         public override void ProcessServer()
         {
@@ -174,19 +215,25 @@
                                 if (beacon == null)
                                     destroyed = true;
 
+                                // TODO: should add a basic stock count. total sum of items in the market.
+
                                 if (destroyed)
                                 {
-                                    msg.AppendFormat("{0}: '{1}' unteathered.\r\n", counter, market.DisplayName);
+                                    msg.AppendFormat("{0}: '{1}' {2:N}m unteathered.\r\n", counter, market.DisplayName, market.MarketZoneSphere.Value.Radius);
                                 }
                                 else
                                 {
                                     if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
                                     {
-                                        msg.AppendFormat("{0}: '{1}' occupied.\r\n", counter, market.DisplayName);
+                                        msg.AppendFormat("{0}: '{1}' {2:N}m occupied.\r\n", counter, market.DisplayName, market.MarketZoneSphere.Value.Radius);
+                                    }
+                                    else if (!beacon.IsWorking)
+                                    {
+                                        msg.AppendFormat("{0}: '{1}' {2:N}m turned off.\r\n", counter, market.DisplayName, market.MarketZoneSphere.Value.Radius);
                                     }
                                     else
                                     {
-                                        msg.AppendFormat("{0}: '{1}' {2}.\r\n", counter, market.DisplayName, market.Open ? "open" : "closed");
+                                        msg.AppendFormat("{0}: '{1}' {2:N}m {3}.\r\n", counter, market.DisplayName, market.MarketZoneSphere.Value.Radius, market.Open ? "open" : "closed");
                                     }
                                 }
 
@@ -234,11 +281,31 @@
                             return;
                         }
 
+                        // TODO: need configurable size limit.
+                        if (Size < 1 || Size > 5000)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "You cannot make a trade zone greated than 5000m diameter.");
+                            return;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(MarketName) || MarketName == "*")
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "Invalid name supplied for the Trade Zone name.");
+                            return;
+                        }
+
                         // This also prevents other players from using the same beacon for a market, in case they have already hacked the trade beacon.
                         var checkMarket = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.EntityId == EntityId);
                         if (checkMarket != null)
                         {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A market has already been registered to beacon '{0}'.", beaconBlock.CustomName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A trade zone has already been registered to beacon '{0}'.", beaconBlock.CustomName);
+                            return;
+                        }
+
+                        checkMarket = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase) && m.MarketId == SenderSteamId);
+                        if (checkMarket != null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A trade zone of name '{0}' already exists.", checkMarket.DisplayName);
                             return;
                         }
 
@@ -249,61 +316,68 @@
                             return;
                         }
 
+                        // Calculate the full licence cost.
+                        // TODO: use cost base + radius size for price.
+                        decimal licenceCost = EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost;
+
                         // Check the account can afford the licence.
                         var account = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
-                        if (account.BankBalance < EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost)
+                        if (account.BankBalance < licenceCost)
                         {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "The Trade Zone Licence is {0:#,#.######} {1}. You cannot afford it.", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost, EconomyScript.Instance.ServerConfig.CurrencyName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "The Trade Zone Licence is {0:#,#.######} {1}. You cannot afford it.", licenceCost, EconomyScript.Instance.ServerConfig.CurrencyName);
                             return;
                         }
 
-                        // deduct account balance.
-                        account.BankBalance -= EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost;
-                        var marketAccount = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
-                        marketAccount.BankBalance += EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost; // TODO: send fee to a core account instead.
-
-                        EconDataManager.CreatePlayerMarket(player.SteamUserId, beaconBlock.EntityId, beaconBlock.Radius, beaconBlock.CustomName);
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A new market called registered to beacon '{0}'.", beaconBlock.CustomName);
+                        var msg = new MessageMarketManagePlayer { CommandType = PlayerMarketManage.ConfirmRegister, EntityId = EntityId, MarketName = MarketName, Size = Size, LicenceCost = licenceCost, ConfirmCode = MyRandom.Instance.NextLong() };
+                        EconomyScript.Instance.PlayerMarketRegister.Add(msg.ConfirmCode, msg);
+                        ConnectionHelper.SendMessageToPlayer(SenderSteamId, msg);
                     }
                     break;
 
+                #endregion
+
+                #region ConfirmRegister
+
+                case PlayerMarketManage.ConfirmRegister:
+                    {
+                        if (!EconomyScript.Instance.PlayerMarketRegister.ContainsKey(ConfirmCode))
+                            return;
+
+                        if (ConfirmFlag)
+                        {
+                            var msg = EconomyScript.Instance.PlayerMarketRegister[ConfirmCode];
+                            // deduct account balance.
+                            var account = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
+                            account.BankBalance -= msg.LicenceCost;
+                            var marketAccount = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
+                            marketAccount.BankBalance += msg.LicenceCost; // TODO: send fee to a core account instead.
+
+                            EconDataManager.CreatePlayerMarket(player.SteamUserId, msg.EntityId, (double)msg.Size, msg.MarketName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A new trade zone called registered to beacon '{0}'.", msg.MarketName);
+                        }
+                        else
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "Registration cancelled.");
+                        }
+
+                        EconomyScript.Instance.PlayerMarketRegister.Remove(ConfirmCode);
+                        break;
+                    }
                 #endregion
 
                 #region unregister
 
                 case PlayerMarketManage.Unregister:
                     {
-                        IMyCubeBlock cubeBlock = MyAPIGateway.Entities.GetEntityById(EntityId) as IMyCubeBlock;
-
-                        if (cubeBlock == null)
-                        {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ UNREGISTER", "The specified block does not exist.");
-                            return;
-                        }
-
-                        IMyBeacon beaconBlock = cubeBlock as IMyBeacon;
-
-                        if (beaconBlock == null)
-                        {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ UNREGISTER", "You need to target a beacon to register a trade zone.");
-                            return;
-                        }
-
-                        if (beaconBlock.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
-                        {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ UNREGISTER", "You must own the beacon to register it as trade zone.");
-                            return;
-                        }
-
-                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.EntityId == EntityId && m.MarketId == SenderSteamId);
+                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase) && m.MarketId == SenderSteamId);
                         if (market == null)
                         {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ UNREGISTER", "You do not have a market registered at this location.");
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ UNREGISTER", "You do not have a market by that name.");
                             return;
                         }
 
                         EconomyScript.Instance.Data.Markets.Remove(market);
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "TZ UNREGISTER", "The market registered to beacon '{0}' has been removed.", beaconBlock.CustomName);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "TZ UNREGISTER", "The market '{0}' has been removed.", MarketName);
                     }
                     break;
 
@@ -313,10 +387,36 @@
 
                 case PlayerMarketManage.Open:
                     {
-                        var market = MarketManager.FindClosestPlayerMarket(player, false);
+                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase) && m.MarketId == SenderSteamId);
                         if (market == null)
                         {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ OPEN", "You have no closed markets.");
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ OPEN", "You do not have a market by that name.");
+                            return;
+                        }
+
+                        IMyEntity entity;
+                        if (!MyAPIGateway.Entities.TryGetEntityById(market.EntityId, out entity))
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ OPEN", "You cannot open that market as it is unteathered.");
+                            return;
+                        }
+
+                        IMyBeacon beacon = entity as IMyBeacon;
+                        if (entity.Closed || entity.MarkedForClose || beacon == null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ OPEN", "You cannot open that market as it is unteathered.");
+                            return;
+                        }
+
+                        if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ OPEN", "You cannot open that market you don't own the block anymore.");
+                            return;
+                        }
+
+                        if (market.Open)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ OPEN", "That market is already open.");
                             return;
                         }
 
@@ -331,10 +431,36 @@
 
                 case PlayerMarketManage.Close:
                     {
-                        var market = MarketManager.FindClosestPlayerMarket(player, true);
+                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase) && m.MarketId == SenderSteamId);
                         if (market == null)
                         {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ CLOSE", "You have no open markets.");
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ CLOSE", "You do not have a market by that name.");
+                            return;
+                        }
+
+                        IMyEntity entity;
+                        if (!MyAPIGateway.Entities.TryGetEntityById(market.EntityId, out entity))
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ CLOSE", "You cannot close that market as it is unteathered.");
+                            return;
+                        }
+
+                        IMyBeacon beacon = entity as IMyBeacon;
+                        if (entity.Closed || entity.MarkedForClose || beacon == null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ CLOSE", "You cannot close that market as it is unteathered.");
+                            return;
+                        }
+
+                        if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ CLOSE", "You cannot close that market you don't own the block anymore.");
+                            return;
+                        }
+
+                        if (!market.Open)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ CLOSE", "That market is already closed.");
                             return;
                         }
 

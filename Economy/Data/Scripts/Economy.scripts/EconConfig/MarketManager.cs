@@ -209,11 +209,7 @@
                             continue;
                         }
 
-                        // only update the name after the owner check.
-                        if (market.DisplayName != beacon.CustomName)
-                            market.DisplayName = beacon.CustomName; // update the market name if it's out of date.
-
-                        var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, beacon.Radius);
+                        var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, market.MarketZoneSphere.Value.Radius);
                         if (sphere.Contains(position) == ContainmentType.Contains)
                             list.Add(market);
                         break;
@@ -320,9 +316,6 @@
                     market.Open = false;
                     continue;
                 }
-
-                if (market.DisplayName != beacon.CustomName)
-                    market.DisplayName = beacon.CustomName; // update the market name if it's out of date.
 
                 // TODO: should only return markets in the set range.
 

@@ -923,7 +923,8 @@
                 EntityId = entityId,
                 DisplayName = blockCustomName,
                 MarketItems = new List<MarketItemStruct>(),
-                MarketZoneType = MarketZoneType.EntitySphere
+                MarketZoneType = MarketZoneType.EntitySphere,
+                MarketZoneSphere = new BoundingSphereD(Vector3D.Zero, size)
             };
 
             // Add missing items that are covered by Default items, with 0 quantity.
