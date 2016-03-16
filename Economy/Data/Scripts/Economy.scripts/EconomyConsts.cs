@@ -203,6 +203,7 @@
     {
         List,
         Register,
+        ConfirmRegister,
         Unregister,
         Open,
         Close,

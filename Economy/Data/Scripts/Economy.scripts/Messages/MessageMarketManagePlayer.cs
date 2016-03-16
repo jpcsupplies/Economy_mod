@@ -1,7 +1,6 @@
 ﻿namespace Economy.scripts.Messages
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     using EconConfig;
@@ -11,14 +10,16 @@
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Ingame;
     using VRage.Game;
+    using VRage.Library.Utils;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
-    using VRageMath;
     using IMyCubeBlock = Sandbox.ModAPI.IMyCubeBlock;
 
     [ProtoContract]
     public class MessageMarketManagePlayer : MessageBase
     {
+        #region Serialized fields
+
         [ProtoMember(1)]
         public PlayerMarketManage CommandType;
 
@@ -61,6 +62,19 @@
         [ProtoMember(9)]
         public string FindMarketName;
 
+        [ProtoMember(10)]
+        public decimal LicenceCost;
+
+        [ProtoMember(11)]
+        public long ConfirmCode;
+
+        [ProtoMember(12)]
+        public bool ConfirmFlag;
+
+        #endregion
+
+        #region Send message Methods
+
         public static void SendListMessage()
         {
             ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.List });
@@ -69,6 +83,11 @@
         public static void SendRegisterMessage(long entityId, string marketName, decimal size)
         {
             ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Register, EntityId = entityId, MarketName = marketName, Size = size });
+        }
+
+        public static void SendConfirmMessage(long confirmCode, bool confirmFlag)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.ConfirmRegister, ConfirmCode = confirmCode, ConfirmFlag = confirmFlag });
         }
 
         public static void SendUnregisterMessage(string marketName)
@@ -126,10 +145,26 @@
             ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Limit });
         }
 
+        #endregion
+
+        #region client processing
+
         public override void ProcessClient()
         {
-            // never processed on client
+            if (CommandType == PlayerMarketManage.ConfirmRegister)
+            {
+                string msg = string.Format("Please confirm the registration of a new trade zone called '{0}', with a size of {1}m radius.\r\n" +
+                                           "The full cost to register it is {2} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.CurrencyName);
+                MyAPIGateway.Utilities.ShowMissionScreen("Please confirm", " ", " ", msg, ConfirmDialog, "Accept");
+            }
         }
+
+        private void ConfirmDialog(ResultEnum result)
+        {
+            SendConfirmMessage(ConfirmCode, result == ResultEnum.OK);
+        }
+
+        #endregion
 
         public override void ProcessServer()
         {
@@ -179,6 +214,8 @@
                                 IMyBeacon beacon = entity as IMyBeacon;
                                 if (beacon == null)
                                     destroyed = true;
+
+                                // TODO: should add a basic stock count. total sum of items in the market.
 
                                 if (destroyed)
                                 {
@@ -244,6 +281,13 @@
                             return;
                         }
 
+                        // TODO: need configurable size limit.
+                        if (Size < 1 || Size > 5000)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "You cannot make a trade zone greated than 5000m diameter.");
+                            return;
+                        }
+
                         if (string.IsNullOrWhiteSpace(MarketName) || MarketName == "*")
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "Invalid name supplied for the Trade Zone name.");
@@ -254,7 +298,7 @@
                         var checkMarket = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.EntityId == EntityId);
                         if (checkMarket != null)
                         {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A market has already been registered to beacon '{0}'.", beaconBlock.CustomName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A trade zone has already been registered to beacon '{0}'.", beaconBlock.CustomName);
                             return;
                         }
 
@@ -272,24 +316,53 @@
                             return;
                         }
 
+                        // Calculate the full licence cost.
+                        // TODO: use cost base + radius size for price.
+                        decimal licenceCost = EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost;
+
                         // Check the account can afford the licence.
                         var account = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
-                        if (account.BankBalance < EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost)
+                        if (account.BankBalance < licenceCost)
                         {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "The Trade Zone Licence is {0:#,#.######} {1}. You cannot afford it.", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost, EconomyScript.Instance.ServerConfig.CurrencyName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "The Trade Zone Licence is {0:#,#.######} {1}. You cannot afford it.", licenceCost, EconomyScript.Instance.ServerConfig.CurrencyName);
                             return;
                         }
 
-                        // deduct account balance.
-                        account.BankBalance -= EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost;
-                        var marketAccount = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
-                        marketAccount.BankBalance += EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost; // TODO: send fee to a core account instead.
-
-                        EconDataManager.CreatePlayerMarket(player.SteamUserId, beaconBlock.EntityId, (double)Size, MarketName);
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A new market called registered to beacon '{0}'.", MarketName);
+                        var msg = new MessageMarketManagePlayer { CommandType = PlayerMarketManage.ConfirmRegister, EntityId = EntityId, MarketName = MarketName, Size = Size, LicenceCost = licenceCost, ConfirmCode = MyRandom.Instance.NextLong() };
+                        EconomyScript.Instance.PlayerMarketRegister.Add(msg.ConfirmCode, msg);
+                        ConnectionHelper.SendMessageToPlayer(SenderSteamId, msg);
                     }
                     break;
 
+                #endregion
+
+                #region ConfirmRegister
+
+                case PlayerMarketManage.ConfirmRegister:
+                    {
+                        if (!EconomyScript.Instance.PlayerMarketRegister.ContainsKey(ConfirmCode))
+                            return;
+
+                        if (ConfirmFlag)
+                        {
+                            var msg = EconomyScript.Instance.PlayerMarketRegister[ConfirmCode];
+                            // deduct account balance.
+                            var account = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
+                            account.BankBalance -= msg.LicenceCost;
+                            var marketAccount = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
+                            marketAccount.BankBalance += msg.LicenceCost; // TODO: send fee to a core account instead.
+
+                            EconDataManager.CreatePlayerMarket(player.SteamUserId, msg.EntityId, (double)msg.Size, msg.MarketName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A new trade zone called registered to beacon '{0}'.", msg.MarketName);
+                        }
+                        else
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "Registration cancelled.");
+                        }
+
+                        EconomyScript.Instance.PlayerMarketRegister.Remove(ConfirmCode);
+                        break;
+                    }
                 #endregion
 
                 #region unregister

@@ -156,6 +156,11 @@ namespace Economy.scripts
 
         public static CultureInfo ServerCulture;
 
+        /// <summary>
+        /// Manages the confirmation of players market registrations securely.
+        /// </summary>
+        public readonly Dictionary<long, MessageMarketManagePlayer> PlayerMarketRegister = new Dictionary<long, MessageMarketManagePlayer>();
+
         #endregion
 
         #region attaching events and wiring up
