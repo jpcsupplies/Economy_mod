@@ -385,20 +385,19 @@ namespace Economy.scripts
             {
                 //Hud, displays users balance, trade network name, and optionally faction and free storage space (% or unit?) in cargo and/or inventory
                 //may also eventually be used to display info about completed objectives in missions/jobs/bounties/employment etc
-                //needs to call this at init (working), and at each call to message handling(working), and on recieving any notification of payment(cant access until public level).
+                //needs to call this at init (working), and at each call to message handling(working), and on recieving any notification of payment.
                 //since other balance altering scenarios such as selling stock requires a command or prompt by player calling this
                 //at message handler should update in those scenarios automatically. That should avoid need for a timing loop and have no obvious sim impact
 
                 /* We need a routine populating a field similar the the below regularly, which pushes
-                 * updates to the x y z location readout if it is enabled - have not yet figured out
-                 * how to pull x y z out last attempt was totally broken code.
+                 * updates to the x y z location readout if it is enabled
                  * this will also be critical for checking against mission conditions
                  * once missions are functional, that require a user travelling to a location
-                 * var position = ((IMyEntity)character).WorldMatrix.Translation;
                 
                  * something like this can be used to populate the trade region part of the hud as well
                  * where we find ourself in a trade region
                  * it could probably hang off the timer code that updates lcds
+                 var position = ((IMyEntity)character).WorldMatrix.Translation;
                  var markets = MarketManager.FindMarketsFromLocation(position);
                  */
                 /* account.BankBalance.ToString("0.######"); */
@@ -588,10 +587,10 @@ namespace Economy.scripts
 
             #region debug
             //used to test whatever crazy stuff im trying to work out
-            if (split[0].Equals("/debug", StringComparison.InvariantCultureIgnoreCase))
+            if (split[0].Equals("/debug", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
 
-                // throwing a connection to a foreign server from server ie in lobby worlds or we have moved worlds
+                //test throwing a connection to a foreign server from server ie in lobby worlds or we have moved worlds
                 MyAPIGateway.Multiplayer.JoinServer("49.50.248.34:27045");
                 
 
@@ -705,7 +704,7 @@ namespace Economy.scripts
                         return true;
                     }
 
-                    MyAPIGateway.Utilities.ShowMessage("TZ", "CHECK2");
+                    MyAPIGateway.Utilities.ShowMessage("TZ", "CHECK2 Unexpected Keyname or Zone");
                 }
 
                 match = Regex.Match(messageText, PlayerZoneListPattern, RegexOptions.IgnoreCase);
@@ -773,7 +772,8 @@ namespace Economy.scripts
                 else
                 { //everything else goes here - note this doesnt allow for spaces in names
                     //ill probably have to either get a regex from midspace or split by "" to extract names
-                    if (split.Length == 3)
+                    //backup command evaluation matrix - not used replaced by regex logix - delete later.
+                    /* if (split.Length == 3)
                     {
                         if (split[1].Equals("unregister", StringComparison.InvariantCultureIgnoreCase)) { }
                         if (split[1].Equals("move", StringComparison.InvariantCultureIgnoreCase)) { }
@@ -797,8 +797,9 @@ namespace Economy.scripts
                     {
                         if (split[1].Equals("buyprice", StringComparison.InvariantCultureIgnoreCase)) { }
                         if (split[1].Equals("sellprice", StringComparison.InvariantCultureIgnoreCase)) { }
-                    }
-                }
+                    } */
+                }  
+                //something slipped through the cracks lets get out of here before something odd happens.
                 return true;
             }
             #endregion tradezone
@@ -1014,18 +1015,8 @@ namespace Economy.scripts
                 bool offerToMarket = false;
 
                 match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
-                //just have to figure out how to read coords and take stuff out of inventory and it should be pretty straightforward..
-                //first off is there any point in proceeding
 
-
-                //in this release the only valid trade area is the default 0:0:0 area of map or other players?
-                //but should still go through the motions so backend is ready
-                //by default in initialisation we alerady created a bank entry for the NPC
-                //now we take our regex fields populated above and start checking
-                //what the player seems to want us to do - switch needs to be converted to the regex populated fields
-                //using split at the moment for debugging and structruing desired logic
-
-                //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
+                 //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
                 //then populate the other fields.  
                 //string reply = "match " + match.Groups["qty"].Value + match.Groups["item"].Value + match.Groups["user"].Value + match.Groups["price"].Value;
                 if (match.Success)
@@ -1152,9 +1143,7 @@ namespace Economy.scripts
             #endregion seen
 
             #region hud
-            //command to allow players to customise their hud? 
-            //all it does is show or hide, todo:   need option to show or hide individual elements see region "hud display" 
-            //eg cargo, faction, trade zone, contract/mission/subsidy count, balance?
+            //command to allow players to customise their hud?             
             if (split[0].Equals("/hud", StringComparison.InvariantCultureIgnoreCase))
             {
                 if (split.Length == 1 || split.Length >= 4 || (split.Length == 2 && split[1].Equals("help", StringComparison.InvariantCultureIgnoreCase)))
