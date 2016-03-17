@@ -209,7 +209,7 @@
                             continue;
                         }
 
-                        var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, market.MarketZoneSphere.Value.Radius);
+                        var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, market.MarketZoneSphere.HasValue ? market.MarketZoneSphere.Value.Radius : 1);
                         if (sphere.Contains(position) == ContainmentType.Contains)
                             list.Add(market);
                         break;
