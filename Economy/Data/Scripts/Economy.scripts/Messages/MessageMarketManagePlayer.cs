@@ -8,12 +8,12 @@
     using ProtoBuf;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
-    using Sandbox.ModAPI.Ingame;
     using VRage.Game;
+    using VRage.Game.ModAPI;
     using VRage.Library.Utils;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
-    using IMyCubeBlock = Sandbox.ModAPI.IMyCubeBlock;
+    using IMyBeacon = Sandbox.ModAPI.Ingame.IMyBeacon;
 
     [ProtoContract]
     public class MessageMarketManagePlayer : MessageBase

@@ -7,12 +7,15 @@ namespace Economy.scripts
     using Sandbox.Definitions;
     using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
+    using SpaceEngineers.Game.ModAPI;
     using VRage;
     using VRage.Game;
     using VRage.Game.Entity;
+    using VRage.Game.ModAPI;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
+    using IMyShipConnector = Sandbox.ModAPI.Ingame.IMyShipConnector; // There isn't a non-Ingame interface for IMyShipConnector at this time.
 
     public static class Extensions
     {
@@ -191,7 +194,7 @@ namespace Economy.scripts
             return definitionManager.GetAllDefinitions().Where(e => e.Id.TypeId == typeof(VRage.Game.ObjectBuilders.Definitions.MyObjectBuilder_GasProperties)).Cast<MyGasProperties>().ToList();
         }
 
-        public static Sandbox.ModAPI.IMyInventory GetPlayerInventory(this IMyPlayer player)
+        public static IMyInventory GetPlayerInventory(this IMyPlayer player)
         {
             var character = player.GetCharacter();
             if (character == null)
@@ -199,11 +202,22 @@ namespace Economy.scripts
             return character.GetPlayerInventory();
         }
 
-        public static Sandbox.ModAPI.IMyInventory GetPlayerInventory(this IMyCharacter character)
+        public static IMyInventory GetPlayerInventory(this IMyCharacter character)
         {
             if (character == null)
                 return null;
             return ((MyEntity)character).GetInventory();
+        }
+
+        // copy of Sandbox.ModAPI.Ingame.TerminalBlockExtentions, but without Ingame.
+        public static void ApplyAction(this IMyTerminalBlock block, string actionName)
+        {
+            block.GetActionWithName(actionName).Apply(block);
+        }
+
+        public static void ApplyAction(this Sandbox.ModAPI.Ingame.IMyTerminalBlock block, string actionName)
+        {
+            block.GetActionWithName(actionName).Apply(block);
         }
 
         #region attached grids
@@ -303,8 +317,7 @@ namespace Economy.scripts
                 }
                 else if (block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_ShipConnector) && type == AttachedGrids.All)
                 {
-                    // There isn't a non-Ingame interface for IMyShipConnector at this time.
-                    var connector = (Sandbox.ModAPI.Ingame.IMyShipConnector)block.FatBlock;
+                    var connector = (IMyShipConnector)block.FatBlock;
 
                     if (connector.IsConnected == false || connector.IsLocked == false || connector.OtherConnector == null)
                         continue;
@@ -317,23 +330,24 @@ namespace Economy.scripts
                         GetAttachedGrids(otherGrid, ref results, type);
                     }
                 }
-                else if (block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_LandingGear) && type == AttachedGrids.All)
-                {
-                    var landingGear = (IMyLandingGear)block.FatBlock;
-                    if (landingGear.IsLocked == false)
-                        continue;
+                // Commented out temporarily, as it isn't been used, but may not work under 1.126.
+                //else if (block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_LandingGear) && type == AttachedGrids.All)
+                //{
+                //    var landingGear = (IMyLandingGear)block.FatBlock;
+                //    if (landingGear.IsLocked == false)
+                //        continue;
 
-                    var entity = landingGear.GetAttachedEntity();
-                    if (entity == null || !(entity is IMyCubeGrid))
-                        continue;
+                //    var entity = landingGear.GetAttachedEntity();
+                //    if (entity == null || !(entity is IMyCubeGrid))
+                //        continue;
 
-                    var otherGrid = (IMyCubeGrid)entity;
-                    if (!results.Any(e => e.EntityId == otherGrid.EntityId))
-                    {
-                        results.Add(otherGrid);
-                        GetAttachedGrids(otherGrid, ref results, type);
-                    }
-                }
+                //    var otherGrid = (IMyCubeGrid)entity;
+                //    if (!results.Any(e => e.EntityId == otherGrid.EntityId))
+                //    {
+                //        results.Add(otherGrid);
+                //        GetAttachedGrids(otherGrid, ref results, type);
+                //    }
+                //}
             }
 
             // Loop through all other grids, find their Landing gear, and figure out if they are attached to <cubeGrid>.
@@ -341,35 +355,35 @@ namespace Economy.scripts
             var checkList = results; // cannot use ref paramter in Lambada expression!?!.
             MyAPIGateway.Entities.GetEntities(allShips, e => e is IMyCubeGrid && !checkList.Contains(e));
 
-            if (type == AttachedGrids.All)
-            {
-                foreach (IMyCubeGrid ship in allShips)
-                {
-                    blocks = new List<IMySlimBlock>();
-                    ship.GetBlocks(blocks,
-                        b =>
-                            b != null && b.FatBlock != null && !b.FatBlock.BlockDefinition.TypeId.IsNull &&
-                            b.FatBlock is IMyLandingGear);
+            //if (type == AttachedGrids.All)
+            //{
+            //    foreach (IMyCubeGrid ship in allShips)
+            //    {
+            //        blocks = new List<IMySlimBlock>();
+            //        ship.GetBlocks(blocks,
+            //            b =>
+            //                b != null && b.FatBlock != null && !b.FatBlock.BlockDefinition.TypeId.IsNull &&
+            //                b.FatBlock is IMyLandingGear);
 
-                    foreach (var block in blocks)
-                    {
-                        var landingGear = (IMyLandingGear)block.FatBlock;
-                        if (landingGear.IsLocked == false)
-                            continue;
+            //        foreach (var block in blocks)
+            //        {
+            //            var landingGear = (IMyLandingGear)block.FatBlock;
+            //            if (landingGear.IsLocked == false)
+            //                continue;
 
-                        var entity = landingGear.GetAttachedEntity();
+            //            var entity = landingGear.GetAttachedEntity();
 
-                        if (entity == null || entity.EntityId != cubeGrid.EntityId)
-                            continue;
+            //            if (entity == null || entity.EntityId != cubeGrid.EntityId)
+            //                continue;
 
-                        if (!results.Any(e => e.EntityId == ship.EntityId))
-                        {
-                            results.Add(ship);
-                            GetAttachedGrids(ship, ref results, type);
-                        }
-                    }
-                }
-            }
+            //            if (!results.Any(e => e.EntityId == ship.EntityId))
+            //            {
+            //                results.Add(ship);
+            //                GetAttachedGrids(ship, ref results, type);
+            //            }
+            //        }
+            //    }
+            //}
         }
 
         #endregion

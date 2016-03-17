@@ -9,9 +9,10 @@
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Ingame;
     using VRage.Game;
+    using VRage.Game.ModAPI;
     using VRage.ModAPI;
-    using VRage.Utils;
     using VRageMath;
+    using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
 
     public static class MarketManager
     {
@@ -201,8 +202,11 @@
                             continue;
 
                         // TODO: I'm not sure if these two commands will impact perfomance.
+
+                        // player will be null if the player is not online.
+                        // I'm not sure if there is a way to may a steamId to a playerId without them been online.
                         var player = MyAPIGateway.Players.FindPlayerBySteamId(market.MarketId);
-                        if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                        if (player != null && beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
                         {
                             // Close the market, because it's no longer owner by the player.
                             market.Open = false;
@@ -297,7 +301,7 @@
                 return null;
             }
 
-            var list = new Dictionary<Sandbox.ModAPI.Ingame.IMyTerminalBlock, double>();
+            var list = new Dictionary<IMyTerminalBlock, double>();
 
             foreach (var market in markets)
             {

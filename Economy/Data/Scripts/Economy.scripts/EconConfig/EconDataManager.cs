@@ -873,8 +873,8 @@
                 else
                 {
                     // Disable any blackmarket items.
-                    if (!defaultItem.IsBlacklisted)
-                        item.IsBlacklisted = false;
+                    if (defaultItem.IsBlacklisted)
+                        item.IsBlacklisted = true;
                 }
             }
         }
@@ -904,8 +904,8 @@
                 else
                 {
                     // Disable any blackmarket items.
-                    if (!defaultItem.IsBlacklisted)
-                        item.IsBlacklisted = false;
+                    if (defaultItem.IsBlacklisted)
+                        item.IsBlacklisted = true;
                 }
             }
 
@@ -939,8 +939,8 @@
                 else
                 {
                     // Disable any blackmarket items.
-                    if (!defaultItem.IsBlacklisted)
-                        item.IsBlacklisted = false;
+                    if (defaultItem.IsBlacklisted)
+                        item.IsBlacklisted = true;
                 }
             }
 
@@ -987,8 +987,8 @@
                     else
                     {
                         // Disable any blackmarket items.
-                        if (!defaultItem.IsBlacklisted)
-                            item.IsBlacklisted = false;
+                        if (defaultItem.IsBlacklisted)
+                            item.IsBlacklisted = true;
                     }
                 }
             }
