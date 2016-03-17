@@ -7,17 +7,17 @@
     using Economy.scripts;
     using Economy.scripts.EconStructures;
     using ProtoBuf;
-    using Sandbox.Common;
-    using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
     using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
     using VRage;
     using VRage.Game;
     using VRage.Game.Entity;
+    using VRage.Game.ModAPI;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using IMyCargoContainer = Sandbox.ModAPI.Ingame.IMyCargoContainer;
+    using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
 
     /// <summary>
     /// this is to do the actual work of checking and moving the goods.
@@ -218,7 +218,7 @@
                         if (controllingCube != null)
                         {
                             var terminalsys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(controllingCube.CubeGrid);
-                            var blocks = new List<Sandbox.ModAPI.Ingame.IMyTerminalBlock>();
+                            var blocks = new List<IMyTerminalBlock>();
                             terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
                             foreach (var block in blocks)
                                 cargoBlocks.Add((MyEntity)block);
@@ -309,22 +309,32 @@
                         if (SellToMerchant) // && (merchant has enough money  || !EconomyScript.Instance.Config.LimitedSupply)
                                             //this is also a quick fix ideally npc should buy what it can afford and the rest is posted as a sell offer
                         {
-                            if (accountToBuy.BankBalance >= transactionAmount || !EconomyScript.Instance.ServerConfig.LimitedSupply)
+                            if (accountToBuy.BankBalance >= transactionAmount
+                                // || !EconomyScript.Instance.ServerConfig.LimitedSupply // I'm not sure why we check limited supply when selling.
+                                || accountToBuy.SteamId == accountToSell.SteamId)
                             {
                                 // here we look up item price and transfer items and money as appropriate
                                 EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- removing inventory.", SenderSteamId);
                                 RemoveInventory(playerInventory, cargoBlocks, amount, definition.Id);
                                 marketItem.Quantity += ItemQuantity; // increment Market content.
 
-                                accountToBuy.BankBalance -= transactionAmount;
-                                accountToBuy.Date = DateTime.Now;
+                                if (accountToBuy.SteamId != accountToSell.SteamId)
+                                {
+                                    accountToBuy.BankBalance -= transactionAmount;
+                                    accountToBuy.Date = DateTime.Now;
 
-                                accountToSell.BankBalance += transactionAmount;
-                                accountToSell.Date = DateTime.Now;
-                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} {3} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
+                                    accountToSell.BankBalance += transactionAmount;
+                                    accountToSell.Date = DateTime.Now;
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} {3} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
 
-                                MessageUpdateClient.SendAccountMessage(accountToBuy);
-                                MessageUpdateClient.SendAccountMessage(accountToSell);
+                                    MessageUpdateClient.SendAccountMessage(accountToBuy);
+                                    MessageUpdateClient.SendAccountMessage(accountToSell);
+                                }
+                                else
+                                {
+                                    accountToSell.Date = DateTime.Now;
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just arranged transfer of {0} '{1}' into your market.", ItemQuantity, definition.GetDisplayName());
+                                }
                             }
                             else
                             {
@@ -688,7 +698,7 @@
                 accountToSell.NickName, order.Quantity, definition.GetDisplayName(), transactionAmount, EconomyScript.Instance.ServerConfig.CurrencyName);
         }
 
-        private void RemoveInventory(Sandbox.ModAPI.IMyInventory playerInventory, List<MyEntity> cargoBlocks, MyFixedPoint amount, MyDefinitionId definitionId)
+        private void RemoveInventory(IMyInventory playerInventory, List<MyEntity> cargoBlocks, MyFixedPoint amount, MyDefinitionId definitionId)
         {
             var available = playerInventory.GetItemAmount(definitionId);
             if (amount <= available)
@@ -731,7 +741,7 @@
             if (controllingCube != null)
             {
                 var terminalsys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(controllingCube.CubeGrid);
-                var blocks = new List<Sandbox.ModAPI.Ingame.IMyTerminalBlock>();
+                var blocks = new List<IMyTerminalBlock>();
                 terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
                 foreach (var block in blocks)
                     cargoBlocks.Add((MyEntity)block);

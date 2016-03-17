@@ -229,7 +229,7 @@
             // TODO: admin check on ability to afford it? 
             //[maybe later, our pay and reset commands let us steal money from npc anyway best to keep admin abuse features to minimum]
             //[we could put an admin check on blacklist however, allow admins to spawn even blacklisted gear]
-            if (accountToBuy.BankBalance < transactionAmount)
+            if (accountToBuy.BankBalance < transactionAmount && accountToBuy.SteamId != accountToSell.SteamId)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you cannot afford {0} {1}!", transactionAmount, EconomyScript.Instance.ServerConfig.CurrencyName);
                 EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- not enough money.", SenderSteamId);
@@ -240,7 +240,8 @@
                                  //This is a quick fix, ideally it should do a partial buy of what is left and post a buy offer for remainder
             {
                 // here we look up item price and transfer items and money as appropriate
-                if (marketItem.Quantity >= ItemQuantity || !EconomyScript.Instance.ServerConfig.LimitedSupply)
+                if (marketItem.Quantity >= ItemQuantity
+                    || (!EconomyScript.Instance.ServerConfig.LimitedSupply && accountToBuy.SteamId != accountToSell.SteamId))
                 {
                     marketItem.Quantity -= ItemQuantity; // reduce Market content.
                     EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy finalizing by Steam Id '{0}' -- adding to inventory.", SenderSteamId);
@@ -248,15 +249,23 @@
 
                     //EconomyScript.Instance.Config.LimitedSupply
 
-                    accountToSell.BankBalance += transactionAmount;
-                    accountToSell.Date = DateTime.Now;
+                    if (accountToBuy.SteamId != accountToSell.SteamId)
+                    {
+                        accountToSell.BankBalance += transactionAmount;
+                        accountToSell.Date = DateTime.Now;
 
-                    accountToBuy.BankBalance -= transactionAmount;
-                    accountToBuy.Date = DateTime.Now;
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0} {3}", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
+                        accountToBuy.BankBalance -= transactionAmount;
+                        accountToBuy.Date = DateTime.Now;
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0} {3}", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
 
-                    MessageUpdateClient.SendAccountMessage(accountToSell);
-                    MessageUpdateClient.SendAccountMessage(accountToBuy);
+                        MessageUpdateClient.SendAccountMessage(accountToSell);
+                        MessageUpdateClient.SendAccountMessage(accountToBuy);
+                    }
+                    else
+                    {
+                        accountToBuy.Date = DateTime.Now;
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just arranged transfer of {0} '{1}' into your inventory.", ItemQuantity, definition.GetDisplayName());
+                    }
 
                     if (remainingToCollect > 0)
                     {

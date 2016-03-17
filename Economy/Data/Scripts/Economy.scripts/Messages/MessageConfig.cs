@@ -8,6 +8,7 @@
     using ProtoBuf;
     using Sandbox.ModAPI;
     using VRage;
+    using VRage.Game.ModAPI;
 
     /// <summary>
     /// this is to do the actual work of setting new prices and stock levels.
