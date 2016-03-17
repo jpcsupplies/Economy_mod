@@ -353,11 +353,11 @@
 
                 #endregion
 
-                #region TradeZoneLicence
+                #region LicenceMin
 
-                case "tradezonelicence":
+                case "licencemin":
                     if (string.IsNullOrEmpty(Value))
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneLicence: {0}", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LicenceMin: {0}", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMin);
                     else
                     {
                         decimal decimalTest;
@@ -367,23 +367,61 @@
 
                             if (decimalTest >= 0)
                             {
-                                EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost = decimalTest;
-                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneLicence updated to: {0} ", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost);
+                                if (EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMax < decimalTest)
+                                {
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LicenceMin cannot be more than LicenceMax.");
+                                    return;
+                                }
+
+                                EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMin = decimalTest;
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LicenceMin updated to: {0} ", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMin);
                                 return;
                             }
                         }
 
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneLicence: {0}", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LicenceMin: {0}", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMin);
                     }
                     break;
 
                 #endregion
 
-                #region TradeZoneReestablishRatio
+                #region LicenceMax
 
-                case "tradezonereestablishratio":
+                case "licencemax":
                     if (string.IsNullOrEmpty(Value))
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneReestablishRatio: {0}", EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LicenceMax: {0}", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMax);
+                    else
+                    {
+                        decimal decimalTest;
+                        if (decimal.TryParse(Value, out decimalTest))
+                        {
+                            // TODO: perhaps we should truncate the value.
+
+                            if (decimalTest >= 0)
+                            {
+                                if (decimalTest < EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMin)
+                                {
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LicenceMax cannot be less than LicenceMin.");
+                                    return;
+                                }
+
+                                EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMax = decimalTest;
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LicenceMax updated to: {0} ", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMax);
+                                return;
+                            }
+                        }
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LicenceMax: {0}", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMax);
+                    }
+                    break;
+
+                #endregion
+
+                #region ReestablishRatio
+
+                case "reestablishratio":
+                    if (string.IsNullOrEmpty(Value))
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "ReestablishRatio: {0}", EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
                     else
                     {
                         decimal decimalTest;
@@ -394,12 +432,12 @@
                             if (decimalTest >= 0)
                             {
                                 EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio = decimalTest;
-                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneReestablishRatio updated to: {0} ", EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "ReestablishRatio updated to: {0} ", EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
                                 return;
                             }
                         }
 
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeZoneReestablishRatio: {0}", EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "ReestablishRatio: {0}", EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
                     }
                     break;
 
@@ -445,9 +483,12 @@
                     msg.AppendFormat("AccountExpiry: {0}  (days.hours:mins:secs)\r\n", EconomyScript.Instance.ServerConfig.AccountExpiry);
                     msg.AppendFormat("EnableLcds: {0}\r\n", EconomyScript.Instance.ServerConfig.EnableLcds ? "On" : "Off");
                     msg.AppendFormat("EnableNpcTradezones: {0}\r\n", EconomyScript.Instance.ServerConfig.EnableNpcTradezones ? "On" : "Off");
+                    msg.AppendLine();
+                    msg.AppendLine("--- Player Tradezones ---");
                     msg.AppendFormat("EnablePlayerTradezones: {0}\r\n", EconomyScript.Instance.ServerConfig.EnablePlayerTradezones ? "On" : "Off");
                     msg.AppendFormat("EnablePlayerPayments: {0}\r\n", EconomyScript.Instance.ServerConfig.EnablePlayerPayments ? "On" : "Off");
-                    msg.AppendFormat("TradeZoneLicence: {0:#,#.######}\r\n", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost);
+                    msg.AppendFormat("LicenceMin: {0:#,#.######}\r\n", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMin);
+                    msg.AppendFormat("LicenceMax: {0:#,#.######}\r\n", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMax);
                     msg.AppendFormat("MaximumPlayerZones: {0}\r\n", EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
 
                     MessageClientDialogMessage.SendMessage(SenderSteamId, "ECONFIG", " ", msg.ToString());

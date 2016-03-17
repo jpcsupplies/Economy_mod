@@ -27,8 +27,10 @@
             EnableNpcTradezones = true;
             EnablePlayerTradezones = false; // TODO: default it off until it is working.
             MaximumPlayerTradeZones = 1;
-            TradeZoneLicenceCost = 20000;
+            TradeZoneLicenceCostMin = 2000;
+            TradeZoneLicenceCostMax = 20000000;
             TradeZoneReestablishRatio = 0.5m;
+            TradeZoneMaxRadius = 5000;
         }
 
         #region properties
@@ -49,9 +51,19 @@
         public decimal DefaultStartingBalance;
 
         /// <summary>
-        /// The cost to create a Player trade zone.
+        /// The cost to create a Player trade zone when the zone size is at its Minimum allowed radius.
         /// </summary>
-        public decimal TradeZoneLicenceCost;
+        public decimal TradeZoneLicenceCostMin;
+
+        /// <summary>
+        /// The cost to create a Player trade zone when the zone size is at its Maximum allowed radius.
+        /// </summary>
+        public decimal TradeZoneLicenceCostMax;
+
+        /// <summary>
+        /// The cost to create a Player trade zone Maximum allowed radius.
+        /// </summary>
+        public decimal TradeZoneMaxRadius;
 
         /// <summary>
         /// The cost ratio for Reestablishing a broken trade zone.
@@ -204,5 +216,13 @@
         #endregion
 
         public List<MarketItemStruct> DefaultPrices;
+
+        public decimal CalculateZoneCost(decimal radius)
+        {
+            decimal tradeZoneMaxRadius = 1;
+
+            // linear cost on radius.
+            return ((radius - tradeZoneMaxRadius) / (TradeZoneMaxRadius - tradeZoneMaxRadius) * (TradeZoneLicenceCostMax - TradeZoneLicenceCostMin)) + TradeZoneLicenceCostMin;
+        }
     }
 }

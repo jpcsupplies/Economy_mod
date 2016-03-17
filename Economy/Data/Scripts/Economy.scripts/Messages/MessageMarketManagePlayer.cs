@@ -215,25 +215,27 @@
                                 if (beacon == null)
                                     destroyed = true;
 
+                                var radius = market.MarketZoneSphere.HasValue ? market.MarketZoneSphere.Value.Radius : 1;
+
                                 // TODO: should add a basic stock count. total sum of items in the market.
 
                                 if (destroyed)
                                 {
-                                    msg.AppendFormat("{0}: '{1}' {2:N}m unteathered.\r\n", counter, market.DisplayName, market.MarketZoneSphere.Value.Radius);
+                                    msg.AppendFormat("{0}: '{1}' {2:N}m unteathered.\r\n", counter, market.DisplayName, radius);
                                 }
                                 else
                                 {
                                     if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
                                     {
-                                        msg.AppendFormat("{0}: '{1}' {2:N}m occupied.\r\n", counter, market.DisplayName, market.MarketZoneSphere.Value.Radius);
+                                        msg.AppendFormat("{0}: '{1}' {2:N}m occupied.\r\n", counter, market.DisplayName, radius);
                                     }
                                     else if (!beacon.IsWorking)
                                     {
-                                        msg.AppendFormat("{0}: '{1}' {2:N}m turned off.\r\n", counter, market.DisplayName, market.MarketZoneSphere.Value.Radius);
+                                        msg.AppendFormat("{0}: '{1}' {2:N}m turned off.\r\n", counter, market.DisplayName, radius);
                                     }
                                     else
                                     {
-                                        msg.AppendFormat("{0}: '{1}' {2:N}m {3}.\r\n", counter, market.DisplayName, market.MarketZoneSphere.Value.Radius, market.Open ? "open" : "closed");
+                                        msg.AppendFormat("{0}: '{1}' {2:N}m {3}.\r\n", counter, market.DisplayName, radius, market.Open ? "open" : "closed");
                                     }
                                 }
 
@@ -241,14 +243,17 @@
                             }
 
                             msg.AppendLine();
-                            msg.AppendFormat("If you have an unteathered market, you can reestablish the market on a new beacon for a cost of {0} {1}.",
-                                EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost * EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio,
-                                EconomyScript.Instance.ServerConfig.CurrencyName);
+                            msg.AppendFormat("If you have an unteathered market, you can reestablish the market on a new beacon for {0:P} of the cost to establish a new one.\r\n",
+                                EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
                             msg.AppendLine("If you have an occupied market, you can open it again at no cost after recapturing the beacon.");
                         }
 
                         msg.AppendLine();
-                        msg.AppendFormat("The Trade Zone Licence is {0:#,#.######} {1}.", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost, EconomyScript.Instance.ServerConfig.CurrencyName);
+                        msg.AppendFormat("The Trade Zone Licence is {0:#,#.######} {1} for 1m, to {2:#,#.######} {1} for {3:N}m.", 
+                            EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMin, 
+                            EconomyScript.Instance.ServerConfig.CurrencyName,
+                            EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMax,
+                            EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius);
                         MessageClientDialogMessage.SendMessage(SenderSteamId, "TZ LIST", " ", msg.ToString());
                         return;
                     }
@@ -267,6 +272,12 @@
                             return;
                         }
 
+                        if (cubeBlock.CubeGrid.GridSizeEnum != MyCubeSize.Large)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "Only large beacons can be registered as a trade zone.");
+                            return;
+                        }
+
                         IMyBeacon beaconBlock = cubeBlock as IMyBeacon;
 
                         if (beaconBlock == null)
@@ -282,7 +293,7 @@
                         }
 
                         // TODO: need configurable size limit.
-                        if (Size < 1 || Size > 5000)
+                        if (Size < 1 || Size > EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "You cannot make a trade zone greated than 5000m diameter.");
                             return;
@@ -318,7 +329,7 @@
 
                         // Calculate the full licence cost.
                         // TODO: use cost base + radius size for price.
-                        decimal licenceCost = EconomyScript.Instance.ServerConfig.TradeZoneLicenceCost;
+                        decimal licenceCost = EconomyScript.Instance.ServerConfig.CalculateZoneCost(Size);
 
                         // Check the account can afford the licence.
                         var account = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
