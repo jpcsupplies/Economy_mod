@@ -44,13 +44,13 @@
         //If these are being pulled from a client file this will probably cause problems
         //probably should be saved client side
         //probably should get defaults from Economyconsts
-        public bool ShowBalance=true;
-        public bool ShowRegion=false;
-        public bool ShowXYZ=false;
-        public bool ShowContractCount=false;
-        public bool ShowCargoSpace=false;
-        public bool ShowFaction=true;
-        public bool ShowHud=false; // if this is false also dont check xyz, cargo and region in updates
+        public bool ShowBalance = true;
+        public bool ShowRegion = false;
+        public bool ShowXYZ = false;
+        public bool ShowContractCount = false;
+        public bool ShowCargoSpace = false;
+        public bool ShowFaction = true;
+        public bool ShowHud = false; // if this is false also dont check xyz, cargo and region in updates
         public string LazyMissionText = "Mission: Survive | Deadline: Unlimited";
 
         #endregion hudconfig

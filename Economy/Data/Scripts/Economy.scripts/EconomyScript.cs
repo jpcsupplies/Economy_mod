@@ -1146,6 +1146,12 @@ namespace Economy.scripts
             //command to allow players to customise their hud?             
             if (split[0].Equals("/hud", StringComparison.InvariantCultureIgnoreCase))
             {
+                if (ClientConfig == null)
+                {
+                    MyAPIGateway.Utilities.ShowMessage("Warning", "Economy Config has not been received from the Server yet.");
+                    return true;
+                }
+
                 if (split.Length == 1 || split.Length >= 4 || (split.Length == 2 && split[1].Equals("help", StringComparison.InvariantCultureIgnoreCase)))
                 {
                     MyAPIGateway.Utilities.ShowMessage("HUD", "Controls various aspects of hud display. See '/ehelp hud' for more details.");
@@ -1179,13 +1185,22 @@ namespace Economy.scripts
             // bal command
             if (split[0].Equals("/bal", StringComparison.InvariantCultureIgnoreCase))
             {
-                //pull current mission text
-                if (MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network") if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); };
                 match = Regex.Match(messageText, BalPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                     MessageBankBalance.SendMessage(match.Groups["user"].Value);
                 else
                     MyAPIGateway.Utilities.ShowMessage("BAL", "Incorrect parameters");
+
+                // pull current mission text when ClientConfig is ready.
+                if (EconomyScript.Instance.ClientConfig != null
+                    && MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network")
+                {
+                    if (!UpdateHud())
+                    {
+                        MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed");
+                    }
+                }
+
                 return true;
             }
             #endregion bal

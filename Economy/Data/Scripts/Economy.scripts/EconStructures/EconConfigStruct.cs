@@ -30,6 +30,7 @@
             TradeZoneLicenceCostMin = 2000;
             TradeZoneLicenceCostMax = 20000000;
             TradeZoneReestablishRatio = 0.5m;
+            TradeZoneMinRadius = 1;
             TradeZoneMaxRadius = 5000;
         }
 
@@ -59,6 +60,11 @@
         /// The cost to create a Player trade zone when the zone size is at its Maximum allowed radius.
         /// </summary>
         public decimal TradeZoneLicenceCostMax;
+
+        /// <summary>
+        /// The cost to create a Player trade zone Minimum allowed radius.
+        /// </summary>
+        public decimal TradeZoneMinRadius;
 
         /// <summary>
         /// The cost to create a Player trade zone Maximum allowed radius.
@@ -219,10 +225,8 @@
 
         public decimal CalculateZoneCost(decimal radius)
         {
-            decimal tradeZoneMaxRadius = 1;
-
             // linear cost on radius.
-            return ((radius - tradeZoneMaxRadius) / (TradeZoneMaxRadius - tradeZoneMaxRadius) * (TradeZoneLicenceCostMax - TradeZoneLicenceCostMin)) + TradeZoneLicenceCostMin;
+            return ((radius - TradeZoneMinRadius) / (TradeZoneMaxRadius - TradeZoneMinRadius) * (TradeZoneLicenceCostMax - TradeZoneLicenceCostMin)) + TradeZoneLicenceCostMin;
         }
     }
 }

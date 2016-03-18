@@ -2,7 +2,6 @@
 {
     using EconStructures;
     using ProtoBuf;
-    using Sandbox.Common;
     using Sandbox.ModAPI;
     using VRage.Game;
 
@@ -38,6 +37,10 @@
                 EconomyScript.Instance.DelayedConnectionRequestTimer.Close();
             }
 
+            // config has been received already.
+            if (EconomyScript.Instance.ClientConfig != null)
+                return;
+
             if (ClientConfig == null)
             {
                 if (MyAPIGateway.Session.Player.IsAdmin())
@@ -50,6 +53,8 @@
                     MyAPIGateway.Utilities.ShowMissionScreen("Economy", "Warning", " ", "The Economy mod is currently unavailable as it is out of date.\r\nPlease contact your server Administrator.");
                     MyAPIGateway.Utilities.ShowNotification("Warning: The Economy mod is currently unavailable as it is out of date.", 5000, MyFontEnum.Blue);
                 }
+
+                EconomyScript.Instance.ClientLogger.WriteInfo("Warning: The Economy mod is currently unavailable as it is out of date. Please check to make sure you have downloaded the latest version of the mod.");
                 return;
             }
 
