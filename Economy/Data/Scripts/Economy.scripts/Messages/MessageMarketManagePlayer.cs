@@ -293,9 +293,9 @@
                         }
 
                         // TODO: need configurable size limit.
-                        if (Size < 1 || Size > EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius)
+                        if (Size < EconomyScript.Instance.ServerConfig.TradeZoneMinRadius || Size > EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius)
                         {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "You cannot make a trade zone greated than 5000m diameter.");
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "You cannot make a trade zone greated than {0} diameter.", EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius);
                             return;
                         }
 
