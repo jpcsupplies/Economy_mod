@@ -293,9 +293,9 @@
                         }
 
                         // TODO: need configurable size limit.
-                        if (Size < EconomyScript.Instance.ServerConfig.TradeZoneMinRadius || Size > EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius)
+                        if (Size < 1 || Size > EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius)
                         {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A trade zone needs to have a radius between {1} and {0} diameter.", EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius, EconomyScript.Instance.ServerConfig.TradeZoneMinRadius);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A trade zone needs to have a radius between 1 and {0}.", EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius);
                             return;
                         }
 
