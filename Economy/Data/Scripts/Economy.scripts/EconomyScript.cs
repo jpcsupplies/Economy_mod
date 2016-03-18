@@ -703,8 +703,6 @@ namespace Economy.scripts
                         MessageMarketManagePlayer.SendCloseMessage(tradezoneName);
                         return true;
                     }
-
-                    MyAPIGateway.Utilities.ShowMessage("TZ", "CHECK2 Unexpected Keyname or Zone");
                 }
 
                 match = Regex.Match(messageText, PlayerZoneListPattern, RegexOptions.IgnoreCase);
@@ -1575,6 +1573,45 @@ namespace Economy.scripts
                                 "stock      (shows amount of stock on hand of above)\r\n";
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "keywords component, ore, ingot, tools, ammo, stock");
                             MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "LCD Usage", helpreply, null, "Cool");
+                            return true;
+                        case "econfig":
+                            if (MyAPIGateway.Session.Player.IsAdmin()) 
+                                {  
+                                    helpreply = "Controls Economy Behavior settings\r\n" +
+                                    "Setting 	Details\r\n" +
+                                    "Language	Sets language used on LCD pricelists.\r\n" +
+                                    "TradeNetworkName	 Sets name of your Economy Networ.k\r\n" +
+                                    "CurrencyName	Name of the currency.\r\n" +
+                                    "LimitedRange	Require players to be near each other to trade.\r\n" +
+                                    "LimitedSupply	limited or unlimited supply of NPC items.\r\n" +
+                                    "EnableLcds	Allow [Economy] LCDs to display pricing. \r\n" +
+                                    "EnableNpcTradezones	 NPC trade zones are enabled or not.\r\n" +
+                                    "EnablePlayerTradezones	Can players own trade zones.\r\n" +
+                                    "EnablePlayerPayments	Allow players to pay each other directly.\r\n" +
+                                    "TradeTimeout	How long to wait until we cancel a trade\r\n." +
+                                    "AccountExpiry	How long before a player is purged from bank.\r\n" +
+                                    "StartingBalance	How much money to give new players.\r\n" +
+                                    "LicenceMin | LicenceMax	The minimum and maximum Trade License price.\r\n" +
+                                    "ReestablishRatio	The price ratio for relinking to a beacon.\r\n" +
+                                    "MaximumPlayerZones	Number of trade zones a player can own.\r\n";
+                                    MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /econfig SETTING  VALUE");
+                                    MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Economy Config", helpreply, null, "Close");
+                                    return true;
+                                }
+                            else { return false; }
+                        case "tz":
+                            helpreply = "Controls a players trade zone\r\n" +
+                                "/tz register name radius	Register/relink a trade zone.\r\n" +
+                                "/tz unregister name	Unregisters/removes your market\r\n" +
+                                "/tz close  Suspends trade in the market\r\n" +
+                                "/tz open name	market available for trade again\r\n" +
+                                "/tz list	List your registered trading zones\r\n" +
+                                "/tz buy ITEM price	Price to buy ITEM from players\r\n" +
+                                "/tz sell ITEM price	Price sell ITEM to players\r\n" +
+                                "/tz blacklist ITEM	    allow/block  trading this ITEM\r\n" +
+                                "\r\n";
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /tz register|unregister|close|open|list|buy|sell|blacklist item|name radius|price");
+                            MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Trade Zones", helpreply, null, "Close");
                             return true;
                         case "sell":
                             helpreply = "/sell W X Y Z \r\n Sells quantity [W] of item [X] [at price Y] [to player Z]\r\n" +
