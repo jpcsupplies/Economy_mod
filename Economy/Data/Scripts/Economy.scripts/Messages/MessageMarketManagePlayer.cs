@@ -362,8 +362,7 @@
                             // deduct account balance.
                             var account = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
                             account.BankBalance -= msg.LicenceCost;
-                            var marketAccount = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
-                            marketAccount.BankBalance += msg.LicenceCost; // TODO: send fee to a core account instead.
+                            EconomyScript.Instance.Data.CreditBalance += msg.LicenceCost;
 
                             EconDataManager.CreatePlayerMarket(player.SteamUserId, msg.EntityId, (double)msg.Size, msg.MarketName);
                             MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A new trade zone called registered to beacon '{0}'.", msg.MarketName);

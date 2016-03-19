@@ -39,6 +39,7 @@
 
                     //ok lets apply it
                     EconomyScript.Instance.Data.Accounts.Add(myaccount);
+                    EconomyScript.Instance.Data.CreditBalance -= myaccount.BankBalance;
                 }
 
                 MessageClientTextMessage.SendMessage(SenderSteamId, "RESET", "Done");

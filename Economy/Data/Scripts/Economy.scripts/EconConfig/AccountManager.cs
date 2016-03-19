@@ -22,6 +22,7 @@
             {
                 account = CreateNewDefaultAccount(steamId, nickName, language);
                 EconomyScript.Instance.Data.Accounts.Add(account);
+                EconomyScript.Instance.Data.CreditBalance -= account.BankBalance;
             }
             return account;
         }
@@ -70,6 +71,8 @@
 
         public static void ResetAccount(BankAccountStruct account)
         {
+            EconomyScript.Instance.Data.CreditBalance += account.BankBalance;
+            EconomyScript.Instance.Data.CreditBalance -= EconomyScript.Instance.ServerConfig.DefaultStartingBalance;
             account.BankBalance = EconomyScript.Instance.ServerConfig.DefaultStartingBalance;
             account.Date = DateTime.Now;
         }
@@ -96,7 +99,7 @@
             }
         }
 
-        // TODO: this will also need to be called from a scheduler rountine, that runs perhaps once an hour to once a day.
+        // TODO: this will also need to be called from a scheduler routine, that runs perhaps once an hour to once a day.
         public static void CheckAccountExpiry(EconDataStruct data)
         {
             // Instance and Config are both defined before Data, so this is safe to call here.
@@ -115,12 +118,10 @@
                 EconomyScript.Instance.ServerLogger.WriteInfo("Removing Dead Account '{0}' with {1} {2}.", account.NickName, account.BankBalance, EconomyScript.Instance.ServerConfig.CurrencyName);
                 data.Accounts.Remove(account);
 
-                // EconomyScript.Instance.Data would not have been set for the first run though.
-                var marketAccount = data.Accounts.FirstOrDefault(a => a.SteamId == EconomyConsts.NpcMerchantId);
-
-                if (account.BankBalance > 0)
-                    // TODO: do something with the BankBalance if in a faction.
-                    marketAccount.BankBalance += account.BankBalance;
+                // EconomyScript.Instance.Data would not have been set for the first run though, so we use 'data' instead.
+                // Will return positive and negative balance back to the CreditBalance.
+                // TODO: do something with the BankBalance if in a faction.
+                data.CreditBalance += account.BankBalance;
             }
         }
 
