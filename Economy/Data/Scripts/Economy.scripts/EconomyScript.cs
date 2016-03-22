@@ -1601,9 +1601,9 @@ namespace Economy.scripts
                             else { return false; }
                         case "tz":
                             helpreply = "Controls a players trade zone\r\n" +
-                                "/tz register name radius	Register/relink a trade zone.\r\n" +
+                                "/tz register name radius	Register/relink a trade zone.\r\nMust point at Beacon!\r\n" +
                                 "/tz unregister name	Unregisters/removes your market\r\n" +
-                                "/tz close  Suspends trade in the market\r\n" +
+                                "/tz close name Suspends trade in the market named\r\n" +
                                 "/tz open name	market available for trade again\r\n" +
                                 "/tz list	List your registered trading zones\r\n" +
                                 "/tz buy ITEM price	Price to buy ITEM from players\r\n" +
