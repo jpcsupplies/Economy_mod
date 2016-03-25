@@ -15,7 +15,6 @@ namespace Economy.scripts
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
     using System.Timers;
     using Economy.scripts.EconConfig;
     using Economy.scripts.EconStructures;
@@ -24,14 +23,18 @@ namespace Economy.scripts
     using Sandbox.Common;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
+    using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
     using VRage;
     using VRage.Game;
     using VRage.Game.Components;
+    using VRage.Game.Entity;
     using VRage.Game.ModAPI;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
+    using IMyCargoContainer = Sandbox.ModAPI.Ingame.IMyCargoContainer;
+    using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
 
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     public class EconomyScript : MySessionComponentBase
@@ -1055,14 +1058,35 @@ namespace Economy.scripts
                         return true;
                     }
 
+                    MyPhysicalItemDefinition definition;
+                    var id = new MyDefinitionId(content.TypeId, content.SubtypeName);
+                    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
+
                     if (sellAll)
                     {
+                        var cargoBlocks = new List<MyEntity>();
+                        var controllingCube = MyAPIGateway.Session.Player.Controller.ControlledEntity as IMyCubeBlock;
+                        if (controllingCube != null)
+                        {
+                            var terminalsys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(controllingCube.CubeGrid);
+                            var blocks = new List<IMyTerminalBlock>();
+                            terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
+                            foreach (var block in blocks)
+                                cargoBlocks.Add((MyEntity)block);
+                        }
+
                         var character = MyAPIGateway.Session.Player.GetCharacter();
                         // TODO: may have to recheck that character is not null.
                         var inventory = character.GetPlayerInventory();
                         sellQuantity = (decimal)inventory.GetItemAmount(content.GetId());
 
-                        if (sellQuantity == 0)
+                        foreach (MyEntity cubeBlock in cargoBlocks)
+                        {
+                            var cubeInventory = cubeBlock.GetInventory();
+                            sellQuantity += (decimal)cubeInventory.GetItemAmount(definition.Id);
+                        }
+
+                        if (sellQuantity <= 0) // Negative check.
                         {
                             MyAPIGateway.Utilities.ShowMessage("SELL", "You don't have any '{0}' to sell.", content.GetDisplayName());
                             return true;

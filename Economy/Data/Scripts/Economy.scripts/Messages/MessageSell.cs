@@ -231,7 +231,7 @@
                         MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
                         var storedAmount = playerInventory.GetItemAmount(definition.Id);
 
-                        foreach (var cubeBlock in cargoBlocks)
+                        foreach (MyEntity cubeBlock in cargoBlocks)
                         {
                             var cubeInventory = cubeBlock.GetInventory();
                             storedAmount += cubeInventory.GetItemAmount(definition.Id);
