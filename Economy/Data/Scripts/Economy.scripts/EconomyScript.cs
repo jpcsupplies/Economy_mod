@@ -338,22 +338,24 @@ namespace Economy.scripts
 
         public override void SaveData()
         {
-            base.SaveData();
-
             if (_isServerRegistered)
             {
                 if (Data != null)
                 {
-                    ServerLogger.WriteInfo("Save Data");
+                    ServerLogger.WriteInfo("Save Data begin");
                     EconDataManager.SaveData(Data);
+                    ServerLogger.WriteInfo("Save Data end");
                 }
 
                 if (ServerConfig != null)
                 {
-                    ServerLogger.WriteInfo("Save Config");
+                    ServerLogger.WriteInfo("Save Config begin");
                     EconDataManager.SaveConfig(ServerConfig);
+                    ServerLogger.WriteInfo("Save Config end");
                 }
             }
+
+            base.SaveData();
         }
 
         #endregion
