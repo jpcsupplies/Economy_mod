@@ -271,6 +271,9 @@ namespace Economy.scripts
 
         protected override void UnloadData()
         {
+            ClientLogger.WriteStop("UnloadData");
+            ServerLogger.WriteStop("UnloadData");
+
             if (_isClientRegistered)
             {
                 if (MyAPIGateway.Utilities != null)
@@ -338,20 +341,23 @@ namespace Economy.scripts
 
         public override void SaveData()
         {
+            ClientLogger.WriteStop("SaveData");
+            ServerLogger.WriteStop("SaveData");
+
             if (_isServerRegistered)
             {
                 if (Data != null)
                 {
-                    ServerLogger.WriteInfo("Save Data begin");
+                    ServerLogger.WriteInfo("Save Data Started");
                     EconDataManager.SaveData(Data);
-                    ServerLogger.WriteInfo("Save Data end");
+                    ServerLogger.WriteInfo("Save Data End");
                 }
 
                 if (ServerConfig != null)
                 {
-                    ServerLogger.WriteInfo("Save Config begin");
+                    ServerLogger.WriteInfo("Save Config Started");
                     EconDataManager.SaveConfig(ServerConfig);
-                    ServerLogger.WriteInfo("Save Config end");
+                    ServerLogger.WriteInfo("Save Config End");
                 }
             }
 

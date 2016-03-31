@@ -159,13 +159,21 @@
 
         public void Terminate()
         {
-            _isInitialized = false;
             using (_executionLock.AcquireExclusiveUsing())
             {
+                _isInitialized = false;
                 if (_logWriter != null)
                 {
-                    _logWriter.Flush();
-                    _logWriter.Dispose();
+                    try
+                    {
+                        _logWriter.Flush();
+                        _logWriter.Dispose();
+                    }
+                    catch
+                    {
+                        // catch exception caused by SE Server Extender Essential plugin during auto restart
+                        // which causes file stream to be already closed during flush.
+                    }
                     _logWriter = null;
                 }
             }
