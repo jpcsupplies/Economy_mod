@@ -1,6 +1,8 @@
 ﻿namespace Economy.scripts.Messages
 {
     using System;
+    using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using EconConfig;
@@ -57,18 +59,24 @@
         public decimal ItemSellPrice;
 
         /// <summary>
-        /// Looking for a specific market name.
+        /// Market quanity stock limit.
         /// </summary>
         [ProtoMember(9)]
+        public decimal ItemStockLimit;
+
+        /// <summary>
+        /// Looking for a specific market name.
+        /// </summary>
+        [ProtoMember(10)]
         public string FindMarketName;
 
-        [ProtoMember(10)]
+        [ProtoMember(11)]
         public decimal LicenceCost;
 
-        [ProtoMember(11)]
+        [ProtoMember(12)]
         public long ConfirmCode;
 
-        [ProtoMember(12)]
+        [ProtoMember(13)]
         public bool ConfirmFlag;
 
         #endregion
@@ -105,6 +113,16 @@
             ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Close, MarketName = marketName });
         }
 
+        public static void SendLoadMessage(long entityId, string marketName)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Load, MarketName = marketName, EntityId = entityId });
+        }
+
+        public static void SendSaveMessage(long entityId, string marketName)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Save, MarketName = marketName, EntityId = entityId });
+        }
+
         public static void SendFactionModeMessage()
         {
             ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.FactionMode });
@@ -125,14 +143,14 @@
             ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Blacklist, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName });
         }
 
-        public static void SendLoadMessage()
+        public static void SendStockMessage()
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Load });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Stock });
         }
 
-        public static void SendUnloadMessage()
+        public static void SendUnstockMessage()
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Unload });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Unstock });
         }
 
         public static void SendRestrictMessage()
@@ -140,9 +158,9 @@
             ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Restrict });
         }
 
-        public static void SendLimitMessage()
+        public static void SendLimitMessage(string itemTypeId, string itemSubTypeName, decimal itemStockLimit)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Limit });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Limit, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, ItemStockLimit = itemStockLimit });
         }
 
         #endregion
@@ -249,8 +267,8 @@
                         }
 
                         msg.AppendLine();
-                        msg.AppendFormat("The Trade Zone Licence is {0:#,#.######} {1} for 1m, to {2:#,#.######} {1} for {3:N}m.", 
-                            EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMin, 
+                        msg.AppendFormat("The Trade Zone Licence is {0:#,#.######} {1} for 1m, to {2:#,#.######} {1} for {3:N}m.",
+                            EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMin,
                             EconomyScript.Instance.ServerConfig.CurrencyName,
                             EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMax,
                             EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius);
@@ -483,14 +501,218 @@
 
                 #endregion
 
-                case PlayerMarketManage.FactionMode:
+                #region load
+
+                case PlayerMarketManage.Load:
                     {
-                        // TODO:
+                        IMyCubeBlock cubeBlock = MyAPIGateway.Entities.GetEntityById(EntityId) as IMyCubeBlock;
+
+                        if (cubeBlock == null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LOAD", "The specified block does not exist.");
+                            return;
+                        }
+
+                        IMyTextPanel textBlock = cubeBlock as IMyTextPanel;
+
+                        if (textBlock == null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LOAD", "You need to target a Text Panel to load market data.");
+                            return;
+                        }
+
+                        var relation = textBlock.GetUserRelationToOwner(player.PlayerID);
+                        if (relation != MyRelationsBetweenPlayerAndBlock.Owner && relation != MyRelationsBetweenPlayerAndBlock.NoOwnership)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LOAD", "You must own the Text Panel to load market data.");
+                            return;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(MarketName) || MarketName == "*")
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LOAD", "Invalid name supplied for the Trade Zone name.");
+                            return;
+                        }
+
+                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase) && m.MarketId == SenderSteamId);
+                        if (market == null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LOAD", "You do not have a market by that name.");
+                            return;
+                        }
+
+                        StringBuilder msg = new StringBuilder();
+
+                        msg.AppendLine(@"# Limit/Quantity | Sell/Buy | Restriction | ""Name""");
+
+                        var orderedList = new Dictionary<MarketItemStruct, string>();
+                        var groupingList = new Dictionary<MarketItemStruct, MyDefinitionBase>();
+
+                        foreach (var marketItem in market.MarketItems)
+                        {
+                            MarketItemStruct configItem = EconomyScript.Instance.ServerConfig.DefaultPrices.FirstOrDefault(m => m.TypeId == marketItem.TypeId && m.SubtypeName == marketItem.SubtypeName && !m.IsBlacklisted);
+                            if (configItem == null)
+                                continue; // doesn't exist or is blacklisted by server.
+
+                            MyObjectBuilderType result;
+                            if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
+                            {
+                                MyDefinitionBase definition = MyDefinitionManager.Static.GetDefinition(marketItem.TypeId, marketItem.SubtypeName);
+
+                                if (definition != null)
+                                {
+                                    groupingList.Add(marketItem, definition);
+                                    orderedList.Add(marketItem, definition.GetDisplayName());
+                                }
+                            }
+                        }
+
+                        orderedList = orderedList.OrderBy(kvp => kvp.Value).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+                        // TODO: unique name checks on items.
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Ores");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            if (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_Ore))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Ingots");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            if (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_Ingot))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Components");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            if (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_Component))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Ammo");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            if (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_AmmoMagazine))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Tools");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            if (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_PhysicalGunObject))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Other");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            var type = groupingList[kvp.Key].Id.TypeId;
+
+                            if (type == typeof(MyObjectBuilder_Ore)
+                                || type == typeof(MyObjectBuilder_Ingot)
+                                || type == typeof(MyObjectBuilder_Component)
+                                || type == typeof(MyObjectBuilder_AmmoMagazine)
+                                || type == typeof(MyObjectBuilder_PhysicalGunObject))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+                        msg.Append(@"
+# Any text behind the # will be ignored.
+#   They may be removed.
+# Items will be displayed in alphabetical order.
+# The values are:
+# Limit/Quantity | Sell/Buy | Restriction | ""Name""
+# Do not modify the name as this is used to identify 
+#   the item.
+# Do not modify the Quantity. It will have no effect.
+# A limit of -1 means it is blacklisted.
+# A limit of 0 or more, means your market will not not 
+#   allow you stock any more items above that value (no
+#   one can sell you more), but it will sell any items
+#   it has in stock. You can overstock your own market
+#   if you wish, but no one else can.
+# Sell Price, is the price you sell at, which another
+#   player will pay to buy from you.
+# Buy price, is the price you buy at, which another
+#   player will receive in credits to sell to you.
+# The keyword RESET will reset the buy and sell price to
+#   that of the default market as set by the server.
+# The % used in either of the buy or sell price, will apply
+#   that % based on the other value.
+# Ie., a buy price of 3.73, and a sell price of 5% will apply
+#   a 5% markup to the buy and become 3.9165
+# a sell price of 3.9 and a buy price of 5%, will apply a
+#   5% markdown to the sell and become 3.705
+# Restriction flags are not yet implemented and are
+#   placeholders for how to trade with faction members,
+#   allies, neutral players and enemies.
+");
+
+                        textBlock.WritePrivateText(msg.ToString(), false);
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LOAD", "Text panel updated.");
                     }
                     break;
 
+                #endregion
+
+                #region save
+
+                case PlayerMarketManage.Save:
+                    {
+                        // TODO:
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "TZ SAVE", "Not yet.");
+                    }
+                    break;
+
+                #endregion
+
+                case PlayerMarketManage.FactionMode:
+                    {
+                        // TODO:
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "TZ FACTION", "Not yet.");
+                    }
+                    break;
+
+                #region buy price
+
                 case PlayerMarketManage.BuyPrice:
                     {
+                        if (ItemBuyPrice < 0)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ BUYPRICE", "Can not set buy price to less than 0.");
+                            return;
+                        }
+
                         var market = MarketManager.FindClosestPlayerMarket(player);
                         if (market == null)
                         {
@@ -525,15 +747,24 @@
                     }
                     break;
 
+                #endregion
+
+                #region sell price
+
                 case PlayerMarketManage.SellPrice:
                     {
+                        if (ItemSellPrice < 0)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ SELLPRICE", "Can not set buy price to less than 0.");
+                            return;
+                        }
+
                         var market = MarketManager.FindClosestPlayerMarket(player);
                         if (market == null)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "TZ SELLPRICE", "You have no open markets.");
                             return;
                         }
-
 
                         var marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
                         if (marketItem == null)
@@ -562,13 +793,15 @@
                     }
                     break;
 
-                case PlayerMarketManage.Load:
+                #endregion
+
+                case PlayerMarketManage.Stock:
                     {
                         // TODO:
                     }
                     break;
 
-                case PlayerMarketManage.Unload:
+                case PlayerMarketManage.Unstock:
                     {
                         // TODO:
                     }
@@ -584,11 +817,19 @@
                         }
 
                         // TODO:
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RESTRICT", "Not yet.");
                     }
                     break;
 
                 case PlayerMarketManage.Limit:
                     {
+                        if (ItemStockLimit < 0)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LIMIT", "Can not set stock limit to less than 0.");
+                            return;
+                        }
+
                         var market = MarketManager.FindClosestPlayerMarket(player);
                         if (market == null)
                         {
@@ -596,9 +837,37 @@
                             return;
                         }
 
-                        // TODO:
+                        var marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
+                        if (marketItem == null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LIMIT", "Sorry, the items you are trying to set doesn't have a market entry!");
+                            return;
+                        }
+
+                        MyDefinitionBase definition = null;
+                        MyObjectBuilderType result;
+                        if (MyObjectBuilderType.TryParse(ItemTypeId, out result))
+                        {
+                            var id = new MyDefinitionId(result, ItemSubTypeName);
+                            MyDefinitionManager.Static.TryGetDefinition(id, out definition);
+                        }
+
+                        if (definition == null)
+                        {
+                            // Passing bad data?
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LIMIT", "Sorry, the item you specified doesn't exist!");
+                            return;
+                        }
+
+                        marketItem.StockLimit = ItemStockLimit;
+                        if (ItemStockLimit == decimal.MaxValue)
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LIMIT", "Item '{0}'; Set stock limit to {1}", definition.GetDisplayName(), "MAX");
+                        else
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LIMIT", "Item '{0}'; Set stock limit to {1}", definition.GetDisplayName(), ItemStockLimit);
                     }
                     break;
+
+                #region blacklist
 
                 case PlayerMarketManage.Blacklist:
                     {
@@ -642,6 +911,8 @@
                         MessageClientTextMessage.SendMessage(SenderSteamId, "TZ BUYPRICE", "Item '{0}'; Set Blacklist to {1}", definition.GetDisplayName(), marketItem.IsBlacklisted ? "On" : "Off");
                     }
                     break;
+
+                    #endregion
             }
         }
     }

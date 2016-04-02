@@ -157,6 +157,15 @@
             }
         }
 
+        public void Flush()
+        {
+            if (!_isInitialized)
+                return;
+
+            if (_logWriter != null)
+                _logWriter.Flush();
+        }
+
         public void Terminate()
         {
             using (_executionLock.AcquireExclusiveUsing())

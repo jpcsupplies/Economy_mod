@@ -11,6 +11,7 @@
     using Sandbox.ModAPI;
     using VRage;
     using VRage.Game;
+    using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
 
@@ -20,6 +21,8 @@
     [ProtoContract]
     public class MessageBuy : MessageBase
     {
+        #region properties
+
         /// <summary>
         /// person, NPC, offer or faction to submit an offer to buy from
         /// </summary>
@@ -66,6 +69,8 @@
         [ProtoMember(8)]
         public bool FindOnMarket;
 
+        #endregion
+
         public static void SendMessage(string toUserName, decimal itemQuantity, string itemTypeId, string itemSubTypeName, decimal itemPrice, bool useBankBuyPrice, bool sellToMerchant, bool offerToMarket)
         {
             ConnectionHelper.SendMessageToServer(new MessageBuy { FromUserName = toUserName, ItemQuantity = itemQuantity, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, ItemPrice = itemPrice, UseBankSellPrice = useBankBuyPrice, BuyFromMerchant = sellToMerchant, FindOnMarket = offerToMarket });
@@ -89,12 +94,12 @@
             // Get player steam ID
             var buyingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
 
-            MyPhysicalItemDefinition definition = null;
+            MyDefinitionBase definition = null;
             MyObjectBuilderType result;
             if (MyObjectBuilderType.TryParse(ItemTypeId, out result))
             {
                 var id = new MyDefinitionId(result, ItemSubTypeName);
-                MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
+                MyDefinitionManager.Static.TryGetDefinition(id, out definition);
             }
 
             if (definition == null)
@@ -102,6 +107,13 @@
                 // Someone hacking, and passing bad data?
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the item you specified doesn't exist!");
                 EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- item doesn't exist.", SenderSteamId);
+                return;
+            }
+
+            if (definition.Id.TypeId == typeof (MyObjectBuilder_GasProperties))
+            {
+                // TODO: buy gasses!
+                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Cannot buy gasses currently.");
                 return;
             }
 

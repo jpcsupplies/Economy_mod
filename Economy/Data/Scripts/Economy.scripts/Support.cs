@@ -527,8 +527,8 @@
         //    if (MyObjectBuilderType.TryParse(typeId, out result))
         //    {
         //        var id = new MyDefinitionId(result, subtypeName);
-        //        MyPhysicalItemDefinition definition;
-        //        if (MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition))
+        //        MyDefinitionBase definition;
+        //        if (MyDefinitionManager.Static.TryGetDefinition(id, out definition))
         //            return definition.GetDisplayName();
         //    }
         //    return "";

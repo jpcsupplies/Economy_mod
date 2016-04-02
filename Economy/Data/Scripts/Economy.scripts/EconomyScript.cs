@@ -24,16 +24,19 @@ namespace Economy.scripts
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
     using Sandbox.Game.Entities;
+    using Sandbox.Game.EntityComponents;
     using Sandbox.ModAPI;
     using VRage;
     using VRage.Game;
     using VRage.Game.Components;
     using VRage.Game.Entity;
     using VRage.Game.ModAPI;
+    using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
     using IMyCargoContainer = Sandbox.ModAPI.Ingame.IMyCargoContainer;
+    using IMyOxygenTank = Sandbox.ModAPI.Ingame.IMyOxygenTank;
     using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
 
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
@@ -100,7 +103,7 @@ namespace Economy.scripts
         /// <summary>
         /// pattern defines how to unregister or modify specific player trade zone.
         /// </summary>
-        const string PlayerZoneModifyPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(?<key>(unregister)|(open)|(close))\s+(?:(?:""(?<zonename>[^""]|.*?)"")|(?<zonename>[^\s]*))";
+        const string PlayerZoneModifyPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(?<key>(unregister)|(open)|(close)|(save)|(load))\s+(?:(?:""(?<zonename>[^""]|.*?)"")|(?<zonename>[^\s]*))";
 
         /// <summary>
         /// pattern defines how to use paramterless player trade zone commands.
@@ -110,7 +113,7 @@ namespace Economy.scripts
         /// <summary>
         /// pattern defines how to change an item in a player trade zone.
         /// </summary>
-        const string PlayerZoneItemPattern = @"(?<command>/tz)\s+(?:(?<blacklist>blacklist)|(?<buy>buy)|(?<sell>sell))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+))))?";
+        const string PlayerZoneItemPattern = @"(?<command>/tz)\s+(?:(?<blacklist>blacklist)|(?<buy>buy)|(?<sell>sell)|(?<limit>limit))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>([+-]?((\d+(\.\d*)?)|(\.\d+)))|(MAX)))?";
 
         /// <summary>
         /// pattern defines how to retrieve a price list.
@@ -209,7 +212,7 @@ namespace Economy.scripts
             ClientLogger.WriteStart("Economy Client Log Started");
             ClientLogger.WriteInfo("Economy Client Version {0}", EconomyConsts.ModCommunicationVersion);
             if (ClientLogger.IsActive)
-                VRage.Utils.MyLog.Default.WriteLine(String.Format("##Mod## Economy Client Logging File: {0}", ClientLogger.LogFile));
+                VRage.Utils.MyLog.Default.WriteLine(string.Format("##Mod## Economy Client Logging File: {0}", ClientLogger.LogFile));
 
             MyAPIGateway.Utilities.MessageEntered += GotMessage;
 
@@ -225,6 +228,7 @@ namespace Economy.scripts
 
             // let the server know we are ready for connections
             MessageConnectionRequest.SendMessage(EconomyConsts.ModCommunicationVersion);
+            ClientLogger.Flush();
         }
 
         private void InitServer()
@@ -263,6 +267,8 @@ namespace Economy.scripts
             _timer3600Events = new Timer(3600000);
             _timer3600Events.Elapsed += Timer3600EventsOnElapsed;
             _timer3600Events.Start();
+
+            ServerLogger.Flush();
         }
 
         #endregion
@@ -271,8 +277,8 @@ namespace Economy.scripts
 
         protected override void UnloadData()
         {
-            ClientLogger.WriteStop("UnloadData");
-            ServerLogger.WriteStop("UnloadData");
+            ClientLogger.WriteStop("Shutting down");
+            ServerLogger.WriteStop("Shutting down");
 
             if (_isClientRegistered)
             {
@@ -714,6 +720,46 @@ namespace Economy.scripts
                         MessageMarketManagePlayer.SendCloseMessage(tradezoneName);
                         return true;
                     }
+
+                    if (keyName.Equals("load", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
+                        if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof(MyObjectBuilder_TextPanel))
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You need to target a Text panel to load market data.");
+                            return true;
+                        }
+
+                        var relation = selectedBlock.GetPlayerRelationToOwner();
+                        if (relation != MyRelationsBetweenPlayerAndBlock.Owner && relation != MyRelationsBetweenPlayerAndBlock.NoOwnership)
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You must own the Text panel to load market data.");
+                            return true;
+                        }
+
+                        MessageMarketManagePlayer.SendLoadMessage(selectedBlock.EntityId, tradezoneName);
+                        return true;
+                    }
+
+                    if (keyName.Equals("save", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
+                        if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof(MyObjectBuilder_TextPanel))
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You need to target a Text panel to save market data.");
+                            return true;
+                        }
+
+                        var relation = selectedBlock.GetPlayerRelationToOwner();
+                        if (relation != MyRelationsBetweenPlayerAndBlock.Owner && relation != MyRelationsBetweenPlayerAndBlock.NoOwnership)
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You must own the Text panel to save market data.");
+                            return true;
+                        }
+
+                        MessageMarketManagePlayer.SendSaveMessage(selectedBlock.EntityId, tradezoneName);
+                        return true;
+                    }
                 }
 
                 match = Regex.Match(messageText, PlayerZoneListPattern, RegexOptions.IgnoreCase);
@@ -731,17 +777,19 @@ namespace Economy.scripts
                 match = Regex.Match(messageText, PlayerZoneItemPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
-                    // TODO: ###############################
-                    // This code copied from the /set pattern, and hasn't been tested yet.
-
                     string itemName = match.Groups["item"].Value.Trim();
                     bool setbuy = match.Groups["buy"].Value.Equals("buy", StringComparison.InvariantCultureIgnoreCase);
                     bool setsell = match.Groups["sell"].Value.Equals("sell", StringComparison.InvariantCultureIgnoreCase);
+                    bool setlimit = match.Groups["limit"].Value.Equals("limit", StringComparison.InvariantCultureIgnoreCase);
                     bool blacklist = match.Groups["blacklist"].Value.Equals("blacklist", StringComparison.InvariantCultureIgnoreCase);
                     decimal amount = 0;
-                    if (setbuy || setsell) // must be setting a price
-                        if (!decimal.TryParse(match.Groups["price"].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
+                    if (setbuy || setsell || setlimit) // must be setting a price
+                    {
+                        if (match.Groups["price"].Value.Equals("MAX", StringComparison.InvariantCultureIgnoreCase))
+                            amount = decimal.MaxValue;
+                        else if (!decimal.TryParse(match.Groups["price"].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
                             amount = 0;
+                    }
 
                     // ok what item are we setting?
                     MyObjectBuilder_Base content;
@@ -770,16 +818,18 @@ namespace Economy.scripts
                     {
                         MessageMarketManagePlayer.SendSellPriceMessage(content.TypeId.ToString(), content.SubtypeName, amount);
                     }
+                    else if (setlimit)
+                    {
+                        MessageMarketManagePlayer.SendLimitMessage(content.TypeId.ToString(), content.SubtypeName, amount);
+                    }
 
                     return true;
-
-
-                    // TODO: ###############################
                 }
 
-                if (split.Length <= 1) { MyAPIGateway.Utilities.ShowMessage("TradeZone", "Nothing to do? Valid Options register, unregister, move, factionmode, buy/sell|blacklist/restrict/limit,"); }
-                else
-                { //everything else goes here - note this doesnt allow for spaces in names
+                MyAPIGateway.Utilities.ShowMessage("TradeZone", "Nothing to do? Valid Options register, unregister, move, factionmode, buy/sell|blacklist/restrict/limit,");
+
+                
+                 //everything else goes here - note this doesnt allow for spaces in names
                     //ill probably have to either get a regex from midspace or split by "" to extract names
                     //backup command evaluation matrix - not used replaced by regex logix - delete later.
                     /* if (split.Length == 3)
@@ -807,7 +857,6 @@ namespace Economy.scripts
                         if (split[1].Equals("buyprice", StringComparison.InvariantCultureIgnoreCase)) { }
                         if (split[1].Equals("sellprice", StringComparison.InvariantCultureIgnoreCase)) { }
                     } */
-                }  
                 //something slipped through the cracks lets get out of here before something odd happens.
                 return true;
             }
@@ -1066,32 +1115,69 @@ namespace Economy.scripts
                         return true;
                     }
 
-                    MyPhysicalItemDefinition definition;
+                    MyDefinitionBase definition;
                     var id = new MyDefinitionId(content.TypeId, content.SubtypeName);
-                    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
+                    MyDefinitionManager.Static.TryGetDefinition(id, out definition);
 
                     if (sellAll)
                     {
-                        var cargoBlocks = new List<MyEntity>();
+                        var cargoBlocks = new List<MyCubeBlock>();
+                        var tankBlocks = new List<MyCubeBlock>();
                         var controllingCube = MyAPIGateway.Session.Player.Controller.ControlledEntity as IMyCubeBlock;
                         if (controllingCube != null)
                         {
                             var terminalsys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(controllingCube.CubeGrid);
                             var blocks = new List<IMyTerminalBlock>();
                             terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
-                            foreach (var block in blocks)
-                                cargoBlocks.Add((MyEntity)block);
+                            cargoBlocks.AddRange(blocks.Cast<MyCubeBlock>());
+
+                            terminalsys.GetBlocksOfType<IMyOxygenTank>(blocks);
+                            tankBlocks.AddRange(blocks.Cast<MyCubeBlock>());
                         }
 
                         var character = MyAPIGateway.Session.Player.GetCharacter();
-                        // TODO: may have to recheck that character is not null.
-                        var inventory = character.GetPlayerInventory();
-                        sellQuantity = (decimal)inventory.GetItemAmount(content.GetId());
 
-                        foreach (MyEntity cubeBlock in cargoBlocks)
+                        if (id.TypeId == typeof(MyObjectBuilder_GasProperties))
                         {
-                            var cubeInventory = cubeBlock.GetInventory();
-                            sellQuantity += (decimal)cubeInventory.GetItemAmount(definition.Id);
+                            //var comp = ((MyEntity)character).Components;
+                            //var oxyComp = comp.Get<MyCharacterOxygenComponent>();  // MyCharacterOxygenComponent not whitelisted.
+                            //var cap = oxyComp.OxygenCapacity;
+                            //var cap = ((MyCharacter)character).OxygenComponent.OxygenCapacity;  // MyCharacter not whitelisted.
+                            //var lvl = character.EnvironmentOxygenLevel;
+                            //MyAPIGateway.Utilities.ShowMessage("SELL", "Check {0}/{1}", lvl, cap);
+
+                            sellQuantity = 0; // Player Oxygen and Hydrogen levels cannot be adjusted.
+
+                            foreach (MyCubeBlock cubeBlock in tankBlocks)
+                            {
+                                MyGasTankDefinition gasTankDefintion = cubeBlock.BlockDefinition as MyGasTankDefinition;
+
+                                if (gasTankDefintion == null || gasTankDefintion.StoredGasId != definition.Id)
+                                    continue;
+
+                                var tankLevel = ((IMyOxygenTank)cubeBlock).GetOxygenLevel();
+                                sellQuantity += (decimal)tankLevel * (decimal)gasTankDefintion.Capacity;
+
+                                // Testing the component.
+                                //var charComponent = cubeBlock.Components.Get<MyResourceSourceComponent>(); // MyResourceSourceComponent not whitelisted.
+                                //charComponent.SetRemainingCapacityByType(definition.Id, 0.5f);
+                            }
+
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "Cannot sell gas yet.");
+                            // TODO: cannot change levels of Tank Block, or access player levels. Game doesn't allow it yet.
+                            return true;
+                        }
+                        else
+                        {
+                            // TODO: may have to recheck that character is not null.
+                            var inventory = character.GetPlayerInventory();
+                            sellQuantity = (decimal)inventory.GetItemAmount(content.GetId());
+
+                            foreach (MyCubeBlock cubeBlock in cargoBlocks)
+                            {
+                                var cubeInventory = cubeBlock.GetInventory();
+                                sellQuantity += (decimal)cubeInventory.GetItemAmount(definition.Id);
+                            }
                         }
 
                         if (sellQuantity <= 0) // Negative check.
