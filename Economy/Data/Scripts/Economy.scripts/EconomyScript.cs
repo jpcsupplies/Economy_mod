@@ -93,12 +93,12 @@ namespace Economy.scripts
         /// <summary>
         /// pattern defines econfig commands.
         /// </summary>
-        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(LicenceMin)|(LicenceMax)|(ReestablishRatio)|(MaximumPlayerZones)))(?:\s+(?<value>.+))?)?";
+        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(LicenceMin)|(LicenceMax)|(RelinkRatio)|(MaximumPlayerZones)))(?:\s+(?<value>.+))?)?";
 
         /// <summary>
         /// pattern defines how to register a player trade zone.
         /// </summary>
-        const string PlayerZoneAddPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(register)\s+(?:(?:""(?<zonename>[^""]|.*?)"")|(?<zonename>[^\s]*))\s+(?<Size>(\d+(\.\d*)?))";
+        const string PlayerZoneAddPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(?<key>(register)|(relink))\s+(?:(?:""(?<zonename>[^""]|.*?)"")|(?<zonename>[^\s]*))\s+(?<Size>(\d+(\.\d*)?))";
 
         /// <summary>
         /// pattern defines how to unregister or modify specific player trade zone.
@@ -674,6 +674,7 @@ namespace Economy.scripts
                 match = Regex.Match(messageText, PlayerZoneAddPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
+                    string keyName = match.Groups["key"].Value;
                     string tradezoneName = match.Groups["zonename"].Value;
                     decimal size = Convert.ToDecimal(match.Groups["Size"].Value, CultureInfo.InvariantCulture);
 
@@ -690,8 +691,17 @@ namespace Economy.scripts
                         return true;
                     }
 
-                    MessageMarketManagePlayer.SendRegisterMessage(selectedBlock.EntityId, tradezoneName, size);
-                    return true;
+                    if (keyName.Equals("register", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        MessageMarketManagePlayer.SendRegisterMessage(selectedBlock.EntityId, tradezoneName, size);
+                        return true;
+                    }
+
+                    if (keyName.Equals("relink", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        MessageMarketManagePlayer.SendRelinkMessage(selectedBlock.EntityId, tradezoneName, size);
+                        return true;
+                    }
                 }
 
                 match = Regex.Match(messageText, PlayerZoneModifyPattern, RegexOptions.IgnoreCase);
@@ -1710,7 +1720,7 @@ namespace Economy.scripts
                                     "AccountExpiry	How long before a player is purged from bank.\r\n" +
                                     "StartingBalance	How much money to give new players.\r\n" +
                                     "LicenceMin | LicenceMax	The minimum and maximum Trade License price.\r\n" +
-                                    "ReestablishRatio	The price ratio for relinking to a beacon.\r\n" +
+                                    "RelinkRatio	The price ratio for relinking to a beacon.\r\n" +
                                     "MaximumPlayerZones	Number of trade zones a player can own.\r\n";
                                     MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /econfig SETTING  VALUE");
                                     MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Economy Config", helpreply, null, "Close");

@@ -93,9 +93,14 @@
             ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Register, EntityId = entityId, MarketName = marketName, Size = size });
         }
 
-        public static void SendConfirmMessage(long confirmCode, bool confirmFlag)
+        public static void SendRelinkMessage(long entityId, string marketName, decimal size)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.ConfirmRegister, ConfirmCode = confirmCode, ConfirmFlag = confirmFlag });
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Relink, EntityId = entityId, MarketName = marketName, Size = size });
+        }
+
+        public static void SendConfirmMessage(long confirmCode, bool confirmFlag, PlayerMarketManage confirmType)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = confirmType, ConfirmCode = confirmCode, ConfirmFlag = confirmFlag });
         }
 
         public static void SendUnregisterMessage(string marketName)
@@ -169,17 +174,33 @@
 
         public override void ProcessClient()
         {
-            if (CommandType == PlayerMarketManage.ConfirmRegister)
+            switch (CommandType)
             {
-                string msg = string.Format("Please confirm the registration of a new trade zone called '{0}', with a size of {1}m radius.\r\n" +
-                                           "The full cost to register it is {2} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.CurrencyName);
-                MyAPIGateway.Utilities.ShowMissionScreen("Please confirm", " ", " ", msg, ConfirmDialog, "Accept");
+                case PlayerMarketManage.ConfirmRegister:
+                    {
+                        string msg = string.Format("Please confirm the registration of a new trade zone called '{0}', with a size of {1}m radius.\r\n" +
+                                                   "The full cost to register it is {2} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.CurrencyName);
+                        MyAPIGateway.Utilities.ShowMissionScreen("Please confirm", " ", " ", msg, ConfirmRegisterResponse, "Accept");
+                    }
+                    break;
+                case PlayerMarketManage.ConfirmRelink:
+                    {
+                        string msg = string.Format("Please confirm the relink of the existing trade zone called '{0}', with a size of {1}m radius.\r\n" +
+                                                   "The cost to relink it is {2} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.CurrencyName);
+                        MyAPIGateway.Utilities.ShowMissionScreen("Please confirm", " ", " ", msg, ConfirmRelinkResponse, "Accept");
+                    }
+                    break;
             }
         }
 
-        private void ConfirmDialog(ResultEnum result)
+        private void ConfirmRegisterResponse(ResultEnum result)
         {
-            SendConfirmMessage(ConfirmCode, result == ResultEnum.OK);
+            SendConfirmMessage(ConfirmCode, result == ResultEnum.OK, PlayerMarketManage.ConfirmRegister);
+        }
+
+        private void ConfirmRelinkResponse(ResultEnum result)
+        {
+            SendConfirmMessage(ConfirmCode, result == ResultEnum.OK, PlayerMarketManage.ConfirmRelink);
         }
 
         #endregion
@@ -262,7 +283,7 @@
 
                             msg.AppendLine();
                             msg.AppendFormat("If you have an unteathered market, you can reestablish the market on a new beacon for {0:P} of the cost to establish a new one.\r\n",
-                                EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
+                                EconomyScript.Instance.ServerConfig.TradeZoneRelinkRatio);
                             msg.AppendLine("If you have an occupied market, you can open it again at no cost after recapturing the beacon.");
                         }
 
@@ -349,7 +370,7 @@
 
                         // Calculate the full licence cost.
                         // TODO: use cost base + radius size for price.
-                        decimal licenceCost = EconomyScript.Instance.ServerConfig.CalculateZoneCost(Size);
+                        decimal licenceCost = EconomyScript.Instance.ServerConfig.CalculateZoneCost(Size, false);
 
                         // Check the account can afford the licence.
                         var account = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
@@ -359,7 +380,82 @@
                             return;
                         }
 
-                        var msg = new MessageMarketManagePlayer { CommandType = PlayerMarketManage.ConfirmRegister, EntityId = EntityId, MarketName = MarketName, Size = Size, LicenceCost = licenceCost, ConfirmCode = MyRandom.Instance.NextLong() };
+                        var msg = new MessageMarketManagePlayer { CommandType = PlayerMarketManage.ConfirmRegister, EntityId = EntityId, MarketName = MarketName, Size = Size, LicenceCost = licenceCost, ConfirmCode = MyRandom.Instance.NextLong(), SenderSteamId = SenderSteamId };
+                        EconomyScript.Instance.PlayerMarketRegister.Add(msg.ConfirmCode, msg);
+                        ConnectionHelper.SendMessageToPlayer(SenderSteamId, msg);
+                    }
+                    break;
+
+                #endregion
+
+                #region relink / Reestablish an unteathered market.
+
+                case PlayerMarketManage.Relink:
+                    {
+                        IMyCubeBlock cubeBlock = MyAPIGateway.Entities.GetEntityById(EntityId) as IMyCubeBlock;
+
+                        if (cubeBlock == null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RELINK", "The specified block does not exist.");
+                            return;
+                        }
+
+                        if (cubeBlock.CubeGrid.GridSizeEnum != MyCubeSize.Large)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RELINK", "Only large beacons can be registered as a trade zone.");
+                            return;
+                        }
+
+                        IMyBeacon beaconBlock = cubeBlock as IMyBeacon;
+
+                        if (beaconBlock == null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RELINK", "You need to target a beacon to register a trade zone.");
+                            return;
+                        }
+
+                        if (beaconBlock.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RELINK", "You must own the beacon to register it as trade zone.");
+                            return;
+                        }
+
+                        // TODO: need configurable size limit.
+                        if (Size < EconomyScript.Instance.ServerConfig.TradeZoneMinRadius || Size > EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RELINK", "A trade zone needs to have a radius between {1:N}m and {0:N}m.",
+                                EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius,
+                                EconomyScript.Instance.ServerConfig.TradeZoneMinRadius);
+                            return;
+                        }
+
+                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase) && m.MarketId == SenderSteamId);
+                        if (market == null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RELINK", "You do not have a market by that name.");
+                            return;
+                        }
+
+                        IMyEntity entity;
+                        if (MyAPIGateway.Entities.TryGetEntityById(market.EntityId, out entity))
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RELINK", "You cannot link that market as it is already teathered to a beacon.");
+                            return;
+                        }
+
+                        // Calculate the full licence cost.
+                        // TODO: use cost base + radius size for price.
+                        decimal licenceCost = EconomyScript.Instance.ServerConfig.CalculateZoneCost(Size, true);
+
+                        // Check the account can afford the licence.
+                        var account = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
+                        if (account.BankBalance < licenceCost)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RELINK", "The Trade Zone Licence is {0:#,#.######} {1}. You cannot afford it.", licenceCost, EconomyScript.Instance.ServerConfig.CurrencyName);
+                            return;
+                        }
+
+                        var msg = new MessageMarketManagePlayer { CommandType = PlayerMarketManage.ConfirmRelink, EntityId = EntityId, MarketName = MarketName, Size = Size, LicenceCost = licenceCost, ConfirmCode = MyRandom.Instance.NextLong(), SenderSteamId = SenderSteamId };
                         EconomyScript.Instance.PlayerMarketRegister.Add(msg.ConfirmCode, msg);
                         ConnectionHelper.SendMessageToPlayer(SenderSteamId, msg);
                     }
@@ -388,6 +484,44 @@
                         else
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "Registration cancelled.");
+                        }
+
+                        EconomyScript.Instance.PlayerMarketRegister.Remove(ConfirmCode);
+                        break;
+                    }
+                #endregion
+
+                #region ConfirmRelink
+
+                case PlayerMarketManage.ConfirmRelink:
+                    {
+                        if (!EconomyScript.Instance.PlayerMarketRegister.ContainsKey(ConfirmCode))
+                            return;
+
+                        if (ConfirmFlag)
+                        {
+                            var msg = EconomyScript.Instance.PlayerMarketRegister[ConfirmCode];
+
+                            var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(msg.MarketName, StringComparison.InvariantCultureIgnoreCase) && m.MarketId == msg.SenderSteamId);
+                            {
+                                if (market == null)
+                                {
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RELINK", "Relink aborted.");
+                                    // TODO: error log. market has gone missing?
+                                    return;
+                                }
+                            }
+
+                            // deduct account balance.
+                            var account = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
+                            account.BankBalance -= msg.LicenceCost;
+                            EconomyScript.Instance.Data.CreditBalance += msg.LicenceCost;
+                            market.EntityId = msg.EntityId;
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RELINK", "A trade zone has been linked to beacon '{0}'.", msg.MarketName);
+                        }
+                        else
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RELINK", "Relink cancelled.");
                         }
 
                         EconomyScript.Instance.PlayerMarketRegister.Remove(ConfirmCode);
@@ -822,6 +956,8 @@
                     }
                     break;
 
+                #region limit
+
                 case PlayerMarketManage.Limit:
                     {
                         if (ItemStockLimit < 0)
@@ -866,6 +1002,8 @@
                             MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LIMIT", "Item '{0}'; Set stock limit to {1}", definition.GetDisplayName(), ItemStockLimit);
                     }
                     break;
+
+                #endregion
 
                 #region blacklist
 
