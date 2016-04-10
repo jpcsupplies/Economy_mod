@@ -1066,8 +1066,6 @@ namespace Economy.scripts
             #endregion set
 
             #region collect
-                       
-            // sell command
             if (split[0].Equals("/collect", StringComparison.InvariantCultureIgnoreCase))
             {
                     MessageSell.SendCollectMessage();
