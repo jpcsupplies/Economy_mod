@@ -539,7 +539,7 @@
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units) which are now in your player inventory.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
                         }
                         else
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units). Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units). Enter '/collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
 
                         // Send message to player if additional offers are pending their attention.
                         DisplayNextOrderToAccept(SenderSteamId);
@@ -554,7 +554,7 @@
 
                 case SellAction.Collect:
                     {
-                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Collect started by Steam Id '{0}'.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Collect or /collect started by Steam Id '{0}'.", SenderSteamId);
                         var collectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
                             (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellTimedout)
                             || (e.TraderId == SenderSteamId && e.TradeState == TradeState.Holding)
@@ -587,7 +587,7 @@
                                 // Someone hacking, and passing bad data?
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
                                 // TODO: more detail on the item.
-                                EconomyScript.Instance.ServerLogger.WriteVerbose("Definition could not be found for item during '/sell collect'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
+                                EconomyScript.Instance.ServerLogger.WriteVerbose("Definition could not be found for item during '/sell collect or /collect'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
                                 continue;
                             }
 

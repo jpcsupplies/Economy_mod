@@ -283,7 +283,7 @@
                     {
                         MarketManager.CreateStockHeld(buyingPlayer.SteamUserId, ItemTypeId, ItemSubTypeName, remainingToCollect, ItemPrice);
                         // TODO: there should be a common command to collect items. Not use /sell.
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There are {0} remaining to collect. Use '/sell collect'", remainingToCollect);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There are {0} remaining to collect. Use '/collect'", remainingToCollect);
                     }
                     EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy complete by Steam Id '{0}' -- items bought.", SenderSteamId);
                 }

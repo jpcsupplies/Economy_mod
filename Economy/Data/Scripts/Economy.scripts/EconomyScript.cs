@@ -1065,6 +1065,16 @@ namespace Economy.scripts
             }
             #endregion set
 
+            #region collect
+                       
+            // sell command
+            if (split[0].Equals("/collect", StringComparison.InvariantCultureIgnoreCase))
+            {
+                    MessageSell.SendCollectMessage();
+                    return true;
+            }
+            #endregion collect
+
             #region sell
             // sell command
             if (split[0].Equals("/sell", StringComparison.InvariantCultureIgnoreCase))
@@ -1729,7 +1739,8 @@ namespace Economy.scripts
                             else { return false; }
                         case "tz":
                             helpreply = "Controls a players trade zone\r\n" +
-                                "/tz register name radius	Register/relink a trade zone.\r\nMust point at Beacon!\r\n" +
+                                "/tz register name radius	Register a trade zone.\r\nMust point at Beacon!\r\n" +
+                                "/tz relink name radius	Relink a trade zone.\r\nMust point at Beacon!\r\n" +
                                 "/tz unregister name	Unregisters/removes your market\r\n" +
                                 "/tz close name Suspends trade in the market named\r\n" +
                                 "/tz open name	market available for trade again\r\n" +
@@ -1767,6 +1778,10 @@ namespace Economy.scripts
                         case "value":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/value X Y - Looks up item [X] of optional quantity [Y] and reports the buy and sell value.");
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /value Ice 20    or   /value ice");
+                            return true;
+                        case "collect":
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/collect - Retrieves anything in overflow storage from trading, and places it into local inventory or cargo space.");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /collect");
                             return true;
                         case "news":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/news Displays a news log of the last few signifiant server events");
@@ -1833,6 +1848,6 @@ namespace Economy.scripts
             MyTexts.LoadTexts(Path.Combine(MyAPIGateway.Utilities.GamePaths.ContentPath, "Data", "Localization"), language.CultureName, language.SubcultureName);
         }
 
-        #endregion
+        #endregion SetLanguage
     }
 }
