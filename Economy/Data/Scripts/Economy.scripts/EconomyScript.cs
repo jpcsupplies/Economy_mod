@@ -1746,7 +1746,7 @@ namespace Economy.scripts
                                 "/tz buy ITEM price	Price to buy ITEM from players\r\n" +
                                 "/tz sell ITEM price	Price sell ITEM to players\r\n" +
                                 "/tz blacklist ITEM	    allow/block  trading this ITEM\r\n" +
-                                "/tz limit ITEM	 #   Limit maximum stock # of ITEM to buy up to.\r\n" +
+                                "/tz limit ITEM	 #   Limit maximum stock # of ITEM to buy up to. Use MAX instead of a qty for no limit.\r\n" +
                                 "\r\n";
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /tz register|unregister|close|open|list|buy|sell|blacklist item|name radius|price");
                             MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Trade Zones", helpreply, null, "Close");
