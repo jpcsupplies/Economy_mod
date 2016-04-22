@@ -372,7 +372,7 @@ namespace Economy.scripts
 
         #endregion
 
-        #region message handling
+        #region message handling and hud
 
         private void GotMessage(string messageText, ref bool sendToOthers)
         {
@@ -497,7 +497,7 @@ namespace Economy.scripts
             EconomyScript.Instance.ClientLogger.WriteVerbose("HandleMessage");
             ConnectionHelper.ProcessData(message);
         }
-        #endregion message handling
+        #endregion message handling and hud
 
         #region timers
 
@@ -1464,6 +1464,15 @@ namespace Economy.scripts
                 //          /npczone add/create <name> <x> <y> <z> <size> <shape>
                 //          /npczone delete/remove <name>
 
+                // /npczone addhere name  
+                // For the lazy admin, or admins that don't know their GPS location, or dont read manuals >:(
+                // uses- default size and shape 2500 and sphere like the 0,0,0 default market, only supports single word for name
+                if (split.Length == 3 && split[1].Equals("addhere", StringComparison.InvariantCultureIgnoreCase))  {
+                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                    MessageMarketManageNpc.SendAddMessage(split[2], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), 2500, MarketZoneType.FixedSphere);
+                    return true;
+                }
+
                 match = Regex.Match(messageText, NpcZoneAddPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
@@ -1796,6 +1805,7 @@ namespace Economy.scripts
                         case "npczone":
                             helpreply = "/npczone list   -  Displays list of all defined NPC market portals\r\n" +
                                 "/npczone add [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]  -  Add a new NPC market zone\r\n" +
+                                "/npczone addhere [name]  -  Add a new NPC market zone from your current location size 2500, shape round\r\n" +
                                 " shape can be sphere or box. Eg /npczone add GunShop 1000 2000 4000 200 box\r\n" +
                                 " /npczone delete [zone name]  - removes the named zone eg. /npczone delete freds\r\n" +
                                 " /npczone rename oldname newname  -  change the ID name of the trade zone\r\n" +
