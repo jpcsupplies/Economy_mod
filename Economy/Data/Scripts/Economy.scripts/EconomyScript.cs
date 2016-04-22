@@ -879,8 +879,9 @@ namespace Economy.scripts
 
             if (split[0].Equals("/pay", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (split.Length <= 2) //Default reason to "no reason given" if a player forgets a reason because nobody reads manuals apparently
-                { match = Regex.Match(messageText+" No Reason Given", PayPattern, RegexOptions.IgnoreCase); } 
+                //MyAPIGateway.Utilities.ShowMessage("debug", "You are here: {0}", messageText + " No Reason Given");
+                if (split.Length <= 3) //Default reason to "no reason given" if a player forgets a reason because nobody reads manuals apparently
+                { match = Regex.Match(messageText+" Some reason?", PayPattern, RegexOptions.IgnoreCase); } 
                 //might need to add a check here preventing normal players paying NPC but not critical since they would be silly to try
                 else { match = Regex.Match(messageText, PayPattern, RegexOptions.IgnoreCase); }
                 if (match.Success)
