@@ -5,6 +5,7 @@
     using System.Linq;
     using Economy.scripts.Messages;
     using Sandbox.ModAPI;
+    using VRage.Game.ModAPI;
 
     /// <summary>
     /// Conains useful methods and fields for organizing the connections.

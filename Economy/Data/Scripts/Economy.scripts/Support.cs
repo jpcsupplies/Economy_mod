@@ -9,9 +9,11 @@
     using Sandbox.ModAPI;
     using VRage;
     using VRage.Game;
+    using VRage.Game.ModAPI;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
+    using IMyControllableEntity = VRage.Game.ModAPI.Interfaces.IMyControllableEntity;
 
     public static class Support
     {
@@ -252,7 +254,7 @@
 
         #region Inventory
 
-        public static bool InventoryAdd(Sandbox.ModAPI.IMyInventory inventory, MyFixedPoint amount, MyDefinitionId definitionId)
+        public static bool InventoryAdd(IMyInventory inventory, MyFixedPoint amount, MyDefinitionId definitionId)
         {
             var content = (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(definitionId);
 
@@ -260,11 +262,11 @@
             if (gasContainer != null)
                 gasContainer.GasLevel = 1f;
 
-            MyObjectBuilder_InventoryItem inventoryItem = new MyObjectBuilder_InventoryItem { Amount = amount, Content = content };
+            MyObjectBuilder_InventoryItem inventoryItem = new MyObjectBuilder_InventoryItem { Amount = amount, PhysicalContent = content };
 
             if (inventory.CanItemsBeAdded(inventoryItem.Amount, definitionId))
             {
-                inventory.AddItems(inventoryItem.Amount, (MyObjectBuilder_PhysicalObject)inventoryItem.Content, -1);
+                inventory.AddItems(inventoryItem.Amount, (MyObjectBuilder_PhysicalObject)inventoryItem.PhysicalContent, -1);
                 return true;
             }
 
@@ -288,7 +290,7 @@
             if (gasContainer != null)
                 gasContainer.GasLevel = 1f;
 
-            floatingBuilder.Item = new MyObjectBuilder_InventoryItem() { Amount = amount, Content = content };
+            floatingBuilder.Item = new MyObjectBuilder_InventoryItem() { Amount = amount, PhysicalContent = content };
             floatingBuilder.PersistentFlags = MyPersistentEntityFlags2.InScene; // Very important
 
             floatingBuilder.PositionAndOrientation = new MyPositionAndOrientation()
@@ -371,7 +373,7 @@
             return null;
         }
 
-        public static IMyEntity FindLookAtEntity(Sandbox.ModAPI.Interfaces.IMyControllableEntity controlledEntity, bool findShips, bool findCubes, bool findPlayers, bool findAsteroids, bool findPlanets, bool findReplicable, bool ignoreProjection)
+        public static IMyEntity FindLookAtEntity(IMyControllableEntity controlledEntity, bool findShips, bool findCubes, bool findPlayers, bool findAsteroids, bool findPlanets, bool findReplicable, bool ignoreProjection)
         {
             IMyEntity entity;
             double distance;
@@ -380,7 +382,7 @@
             return entity;
         }
 
-        public static void FindLookAtEntity(Sandbox.ModAPI.Interfaces.IMyControllableEntity controlledEntity, bool ignoreOccupiedGrid, bool ignoreProjection, out IMyEntity lookEntity, out double lookDistance, out Vector3D hitPoint, bool findShips, bool findCubes, bool findPlayers, bool findAsteroids, bool findPlanets, bool findReplicable)
+        public static void FindLookAtEntity(IMyControllableEntity controlledEntity, bool ignoreOccupiedGrid, bool ignoreProjection, out IMyEntity lookEntity, out double lookDistance, out Vector3D hitPoint, bool findShips, bool findCubes, bool findPlayers, bool findAsteroids, bool findPlanets, bool findReplicable)
         {
             const float range = 5000000;
             Matrix worldMatrix;
@@ -413,7 +415,7 @@
             {
                 if (findShips || findCubes)
                 {
-                    var cubeGrid = entity as Sandbox.ModAPI.IMyCubeGrid;
+                    var cubeGrid = entity as IMyCubeGrid;
 
                     if (cubeGrid != null)
                     {
@@ -444,7 +446,7 @@
 
                 if (findPlayers)
                 {
-                    var controller = entity as Sandbox.ModAPI.Interfaces.IMyControllableEntity;
+                    var controller = entity as IMyControllableEntity;
                     if (controlledEntity.Entity.EntityId != entity.EntityId && controller != null && ray.Intersects(entity.WorldAABB).HasValue)
                     {
                         var distance = (startPosition - entity.GetPosition()).Length();
@@ -525,8 +527,8 @@
         //    if (MyObjectBuilderType.TryParse(typeId, out result))
         //    {
         //        var id = new MyDefinitionId(result, subtypeName);
-        //        MyPhysicalItemDefinition definition;
-        //        if (MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition))
+        //        MyDefinitionBase definition;
+        //        if (MyDefinitionManager.Static.TryGetDefinition(id, out definition))
         //            return definition.GetDisplayName();
         //    }
         //    return "";

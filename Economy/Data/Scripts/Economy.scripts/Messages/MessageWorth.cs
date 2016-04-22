@@ -8,15 +8,16 @@
     using Economy.scripts;
     using Economy.scripts.EconStructures;
     using ProtoBuf;
-    using Sandbox.Common.ObjectBuilders;
     using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.Definitions;
     using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
     using VRage.Game;
     using VRage.Game.Entity;
+    using VRage.Game.ModAPI;
     using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
+    using IMyOxygenTank = Sandbox.ModAPI.Ingame.IMyOxygenTank;
 
     /// <summary>
     /// Will value a grid (ship or station), including attached rotor and piston parts.
@@ -160,7 +161,7 @@
 
                                 #region Go through Gasses for tanks and cockpits.
 
-                                var tank = cube as Sandbox.ModAPI.Ingame.IMyOxygenTank;
+                                var tank = cube as IMyOxygenTank;
                                 var gasTankDefintion = blockDefintion as MyGasTankDefinition;
 
                                 if (gasTankDefintion != null && tank != null)
@@ -244,15 +245,15 @@
 
                     //foreach (var kvp in gridComponents)
                     //{
-                    //    MyPhysicalItemDefinition definition = null;
-                    //    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(kvp.Key, out definition); // Oxygen and Hydrogen do not have available defintions.
+                    //    MyDefinitionBase definition = null;
+                    //    MyDefinitionManager.Static.TryGetDefinition(kvp.Key, out definition);
                     //    str.AppendFormat("'{0}' x {1}.\r\n", definition == null ? kvp.Key.SubtypeName : definition.GetDisplayName(), kvp.Value);
                     //}
 
                     //foreach (var kvp in inventoryComponents)
                     //{
-                    //    MyPhysicalItemDefinition definition = null;
-                    //    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(kvp.Key, out definition);
+                    //    MyDefinitionBase definition = null;
+                    //    MyDefinitionManager.Static.TryGetDefinition(kvp.Key, out definition);
                     //    str.AppendFormat("'{0}' x {1}.\r\n", definition == null ? kvp.Key.SubtypeName : definition.GetDisplayName(), kvp.Value);
                     //}
 

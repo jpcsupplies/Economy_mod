@@ -9,9 +9,10 @@
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Ingame;
     using VRage.Game;
+    using VRage.Game.ModAPI;
     using VRage.ModAPI;
-    using VRage.Utils;
     using VRageMath;
+    using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
 
     public static class MarketManager
     {
@@ -153,8 +154,12 @@
                         ulong tradePartner;
                         if (ulong.TryParse(order.OptionalId, out tradePartner))
                         {
-                            var sellingAccount = EconomyScript.Instance.Data.Accounts.First(a => a.SteamId == order.TraderId);
-                            MessageClientTextMessage.SendMessage(tradePartner, "SELL", "The offer from {0} has now expired.", sellingAccount.NickName);
+                            var sellingAccount = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == order.TraderId);
+                            // If the account is null, then the account may have been cleaned up because it hasn't been used.
+                            if (sellingAccount != null)
+                                MessageClientTextMessage.SendMessage(tradePartner, "SELL", "The offer from {0} has now expired.", sellingAccount.NickName);
+                            else
+                                MessageClientTextMessage.SendMessage(tradePartner, "SELL", "An offer has now expired.");
                         }
                         break;
                 }
@@ -201,8 +206,11 @@
                             continue;
 
                         // TODO: I'm not sure if these two commands will impact perfomance.
+
+                        // player will be null if the player is not online.
+                        // I'm not sure if there is a way to may a steamId to a playerId without them been online.
                         var player = MyAPIGateway.Players.FindPlayerBySteamId(market.MarketId);
-                        if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                        if (player != null && beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
                         {
                             // Close the market, because it's no longer owner by the player.
                             market.Open = false;
@@ -297,7 +305,7 @@
                 return null;
             }
 
-            var list = new Dictionary<Sandbox.ModAPI.Ingame.IMyTerminalBlock, double>();
+            var list = new Dictionary<IMyTerminalBlock, double>();
 
             foreach (var market in markets)
             {

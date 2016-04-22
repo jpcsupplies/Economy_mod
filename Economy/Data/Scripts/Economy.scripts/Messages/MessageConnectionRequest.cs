@@ -36,6 +36,7 @@
                 EconomyScript.Instance.ServerLogger.WriteInfo("Creating new Bank Account for '{0}'", SenderDisplayName);
                 account = AccountManager.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
                 EconomyScript.Instance.Data.Accounts.Add(account);
+                EconomyScript.Instance.Data.CreditBalance -= account.BankBalance;
                 newAccount = true;
             }
             else

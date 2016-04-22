@@ -12,11 +12,11 @@
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Interfaces;
     using VRage.Game;
+    using VRage.Game.ModAPI;
     using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
-    using IMyTextPanel = Sandbox.ModAPI.Ingame.IMyTextPanel;
 
     public class LcdManager
     {
@@ -56,18 +56,18 @@
         public static void BlankLcds()
         {
             var entities = new HashSet<IMyEntity>();
-            MyAPIGateway.Entities.GetEntities(entities, e => e is Sandbox.ModAPI.IMyCubeGrid);
+            MyAPIGateway.Entities.GetEntities(entities, e => e is IMyCubeGrid);
 
             foreach (var entity in entities)
             {
-                var cubeGrid = (Sandbox.ModAPI.IMyCubeGrid) entity;
+                var cubeGrid = (IMyCubeGrid) entity;
                 if (cubeGrid.Physics == null)
                     continue;
 
-                var blocks = new List<Sandbox.ModAPI.IMySlimBlock>();
+                var blocks = new List<IMySlimBlock>();
                 cubeGrid.GetBlocks(blocks, block => block != null && block.FatBlock != null &&
                     block.FatBlock.BlockDefinition.TypeId == typeof (MyObjectBuilder_TextPanel) &&
-                    EconomyConsts.LCDTags.Any(tag => ((Sandbox.ModAPI.IMyTerminalBlock) block.FatBlock).CustomName.IndexOf(tag, StringComparison.InvariantCultureIgnoreCase) >= 0));
+                    EconomyConsts.LCDTags.Any(tag => ((IMyTerminalBlock) block.FatBlock).CustomName.IndexOf(tag, StringComparison.InvariantCultureIgnoreCase) >= 0));
 
                 foreach (var block in blocks)
                 {
@@ -211,6 +211,8 @@
                         var id = new MyDefinitionId(result, marketItem.SubtypeName);
                         var content = Support.ProducedType(id);
 
+                        //if (((Type)id.TypeId).IsSubclassOf(typeof(MyObjectBuilder_GasContainerObject))) // TODO: Not valid call yet.
+
                         // Cannot check the Type of the item, without having to use MyObjectBuilderSerializer.CreateNewObject().
 
                         if (showAll ||
@@ -219,7 +221,7 @@
                             (showComponent && content is MyObjectBuilder_Component) ||
                             (showAmmo && content is MyObjectBuilder_AmmoMagazine) ||
                             (showTools && content is MyObjectBuilder_PhysicalGunObject) || // guns, welders, hand drills, grinders.
-                            (showTools && content is MyObjectBuilder_GasContainerObject) || // aka gas bottle.
+                            (showGasses && content is MyObjectBuilder_GasContainerObject) || // aka gas bottle.
                             (showGasses && content is MyObjectBuilder_GasProperties))  // Type check here allows mods that inherit from the same type to also appear in the lists.
                         {
                             MyDefinitionBase definition;

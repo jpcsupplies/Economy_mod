@@ -29,7 +29,8 @@
             MaximumPlayerTradeZones = 1;
             TradeZoneLicenceCostMin = 2000;
             TradeZoneLicenceCostMax = 20000000;
-            TradeZoneReestablishRatio = 0.5m;
+            TradeZoneRelinkRatio = 0.5m;
+            TradeZoneMinRadius = 1;
             TradeZoneMaxRadius = 5000;
         }
 
@@ -61,14 +62,19 @@
         public decimal TradeZoneLicenceCostMax;
 
         /// <summary>
+        /// The cost to create a Player trade zone Minimum allowed radius.
+        /// </summary>
+        public decimal TradeZoneMinRadius;
+
+        /// <summary>
         /// The cost to create a Player trade zone Maximum allowed radius.
         /// </summary>
         public decimal TradeZoneMaxRadius;
 
         /// <summary>
-        /// The cost ratio for Reestablishing a broken trade zone.
+        /// The cost ratio for Relink/Reestablishing a broken trade zone.
         /// </summary>
-        public decimal TradeZoneReestablishRatio;
+        public decimal TradeZoneRelinkRatio;
 
         /// <summary>
         /// The maximum number of trade zones a player an create.
@@ -217,12 +223,10 @@
 
         public List<MarketItemStruct> DefaultPrices;
 
-        public decimal CalculateZoneCost(decimal radius)
+        public decimal CalculateZoneCost(decimal radius, bool relink)
         {
-            decimal tradeZoneMaxRadius = 1;
-
             // linear cost on radius.
-            return ((radius - tradeZoneMaxRadius) / (TradeZoneMaxRadius - tradeZoneMaxRadius) * (TradeZoneLicenceCostMax - TradeZoneLicenceCostMin)) + TradeZoneLicenceCostMin;
+            return (relink ? TradeZoneRelinkRatio : 1m) * (((radius - TradeZoneMinRadius) / (TradeZoneMaxRadius - TradeZoneMinRadius) * (TradeZoneLicenceCostMax - TradeZoneLicenceCostMin)) + TradeZoneLicenceCostMin);
         }
     }
 }

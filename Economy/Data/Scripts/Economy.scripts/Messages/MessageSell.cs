@@ -7,17 +7,19 @@
     using Economy.scripts;
     using Economy.scripts.EconStructures;
     using ProtoBuf;
-    using Sandbox.Common;
-    using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
     using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
     using VRage;
     using VRage.Game;
     using VRage.Game.Entity;
+    using VRage.Game.ModAPI;
+    using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using IMyCargoContainer = Sandbox.ModAPI.Ingame.IMyCargoContainer;
+    using IMyOxygenTank = Sandbox.ModAPI.Ingame.IMyOxygenTank;
+    using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
 
     /// <summary>
     /// this is to do the actual work of checking and moving the goods.
@@ -25,6 +27,8 @@
     [ProtoContract]
     public class MessageSell : MessageBase
     {
+        #region properties
+
         [ProtoMember(1)]
         public SellAction SellAction;
 
@@ -78,7 +82,11 @@
         public bool OfferToMarket;
 
         //[ProtoMember(10)]
-        //public string zone; //used to identify market we are selling to ??
+        //public string zone; //used to identify market we are selling to ?? 
+
+        #endregion
+
+        #region send message methods
 
         public static void SendAcceptMessage()
         {
@@ -105,6 +113,8 @@
             ConnectionHelper.SendMessageToServer(new MessageSell { SellAction = SellAction.Create, ToUserName = toUserName, ItemQuantity = itemQuantity, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, ItemPrice = itemPrice, UseBankBuyPrice = useBankBuyPrice, SellToMerchant = sellToMerchant, OfferToMarket = offerToMarket });
         }
 
+        #endregion
+
         public override void ProcessClient()
         {
             // never processed on client
@@ -120,6 +130,8 @@
 
             switch (SellAction)
             {
+                #region create
+
                 case SellAction.Create:
                     {
                         EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create started by Steam Id '{0}'.", SenderSteamId);
@@ -127,12 +139,12 @@
                         //* Get player steam ID
                         var sellingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
 
-                        MyPhysicalItemDefinition definition = null;
+                        MyDefinitionBase definition = null;
                         MyObjectBuilderType result;
                         if (MyObjectBuilderType.TryParse(ItemTypeId, out result))
                         {
                             var id = new MyDefinitionId(result, ItemSubTypeName);
-                            MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
+                            MyDefinitionManager.Static.TryGetDefinition(id, out definition);
                         }
 
                         if (definition == null)
@@ -213,15 +225,18 @@
                         EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- cataloging cargo cubes.", SenderSteamId);
 
                         // Build list of all cargo blocks that player is attached to as pilot or passenger.
-                        var cargoBlocks = new List<MyEntity>();
+                        var cargoBlocks = new List<MyCubeBlock>();
+                        var tankBlocks = new List<MyCubeBlock>();
                         var controllingCube = sellingPlayer.Controller.ControlledEntity as IMyCubeBlock;
                         if (controllingCube != null)
                         {
                             var terminalsys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(controllingCube.CubeGrid);
-                            var blocks = new List<Sandbox.ModAPI.Ingame.IMyTerminalBlock>();
+                            var blocks = new List<IMyTerminalBlock>();
                             terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
-                            foreach (var block in blocks)
-                                cargoBlocks.Add((MyEntity)block);
+                            cargoBlocks.AddRange(blocks.Cast<MyCubeBlock>());
+
+                            terminalsys.GetBlocksOfType<IMyOxygenTank>(blocks);
+                            tankBlocks.AddRange(blocks.Cast<MyCubeBlock>());
                         }
 
                         EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- checking inventory.", SenderSteamId);
@@ -231,18 +246,36 @@
                         MyFixedPoint amount = (MyFixedPoint)ItemQuantity;
                         var storedAmount = playerInventory.GetItemAmount(definition.Id);
 
-                        foreach (var cubeBlock in cargoBlocks)
+                        if (definition.Id.TypeId == typeof(MyObjectBuilder_GasProperties))
                         {
-                            var cubeInventory = cubeBlock.GetInventory();
-                            storedAmount += cubeInventory.GetItemAmount(definition.Id);
+                            foreach (MyCubeBlock cubeBlock in tankBlocks)
+                            {
+                                MyGasTankDefinition gasTankDefintion = cubeBlock.BlockDefinition as MyGasTankDefinition;
+
+                                if (gasTankDefintion == null || gasTankDefintion.StoredGasId != definition.Id)
+                                    continue;
+
+                                var tankLevel = ((IMyOxygenTank)cubeBlock).GetOxygenLevel();
+                                storedAmount += (MyFixedPoint)((decimal)tankLevel * (decimal)gasTankDefintion.Capacity);
+                            }
                         }
+                        else
+                        {
+                            foreach (MyCubeBlock cubeBlock in cargoBlocks)
+                            {
+                                var cubeInventory = cubeBlock.GetInventory();
+                                storedAmount += cubeInventory.GetItemAmount(definition.Id);
+                            }
+                        }
+
 
                         if (amount > storedAmount)
                         {
                             // Insufficient items in inventory.
                             // TODO: use of definition.GetDisplayName() isn't localized here.
 
-                            if (cargoBlocks.Count == 0)
+                            if ((definition.Id.TypeId != typeof(MyObjectBuilder_GasProperties) && cargoBlocks.Count == 0)
+                                && (definition.Id.TypeId == typeof(MyObjectBuilder_GasProperties) && tankBlocks.Count == 0))
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your inventory.", ItemQuantity, definition.GetDisplayName(), storedAmount);
                             else
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You don't have {0} of '{1}' to sell. You have {2} in your player and cargo inventory.", ItemQuantity, definition.GetDisplayName(), storedAmount);
@@ -290,6 +323,7 @@
                                 return;
                             }
 
+
                             if (UseBankBuyPrice)
                                 // The player is selling, but the *Market* will *buy* it from the player at this price.
                                 ItemPrice = marketItem.BuyPrice;
@@ -309,22 +343,48 @@
                         if (SellToMerchant) // && (merchant has enough money  || !EconomyScript.Instance.Config.LimitedSupply)
                                             //this is also a quick fix ideally npc should buy what it can afford and the rest is posted as a sell offer
                         {
-                            if (accountToBuy.BankBalance >= transactionAmount || !EconomyScript.Instance.ServerConfig.LimitedSupply)
+                            if (accountToBuy.SteamId != accountToSell.SteamId)
+                            {
+                                var limit = marketItem.StockLimit - marketItem.Quantity;
+
+                                if (limit == 0)
+                                {
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, you cannot sell any more {0} into this market.", definition.GetDisplayName());
+                                    return;
+                                }
+                                if (ItemQuantity > limit)
+                                {
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, you cannot sell any more than {0} of {1} into this market.", limit, definition.GetDisplayName());
+                                    return;
+                                }
+                            }
+
+                            if (accountToBuy.BankBalance >= transactionAmount
+                                // || !EconomyScript.Instance.ServerConfig.LimitedSupply // I'm not sure why we check limited supply when selling.
+                                || accountToBuy.SteamId == accountToSell.SteamId)
                             {
                                 // here we look up item price and transfer items and money as appropriate
                                 EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- removing inventory.", SenderSteamId);
-                                RemoveInventory(playerInventory, cargoBlocks, amount, definition.Id);
+                                RemoveInventory(playerInventory, cargoBlocks, tankBlocks, amount, definition.Id);
                                 marketItem.Quantity += ItemQuantity; // increment Market content.
 
-                                accountToBuy.BankBalance -= transactionAmount;
-                                accountToBuy.Date = DateTime.Now;
+                                if (accountToBuy.SteamId != accountToSell.SteamId)
+                                {
+                                    accountToBuy.BankBalance -= transactionAmount;
+                                    accountToBuy.Date = DateTime.Now;
 
-                                accountToSell.BankBalance += transactionAmount;
-                                accountToSell.Date = DateTime.Now;
-                                MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} {3} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
+                                    accountToSell.BankBalance += transactionAmount;
+                                    accountToSell.Date = DateTime.Now;
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just sold {0} {3} worth of {2} ({1} units)", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
 
-                                MessageUpdateClient.SendAccountMessage(accountToBuy);
-                                MessageUpdateClient.SendAccountMessage(accountToSell);
+                                    MessageUpdateClient.SendAccountMessage(accountToBuy);
+                                    MessageUpdateClient.SendAccountMessage(accountToSell);
+                                }
+                                else
+                                {
+                                    accountToSell.Date = DateTime.Now;
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just arranged transfer of {0} '{1}' into your market.", ItemQuantity, definition.GetDisplayName());
+                                }
                             }
                             else
                             {
@@ -360,7 +420,6 @@
                             return;
                         }
 
-
                         // if other player online, send message.
                         if (buyingPlayer == null)
                         {
@@ -383,7 +442,7 @@
 
                             // remove items from inventory.
                             EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- removing inventory.", SenderSteamId);
-                            RemoveInventory(playerInventory, cargoBlocks, amount, definition.Id);
+                            RemoveInventory(playerInventory, cargoBlocks, tankBlocks, amount, definition.Id);
 
                             // Only send message to targeted player if this is the only offer pending for them.
                             // Otherwise it will be sent when the have with previous orders in their order Queue.
@@ -402,6 +461,10 @@
                             return;
                         }
                     }
+
+                #endregion
+
+                #region accept
 
                 case SellAction.Accept:
                     {
@@ -476,7 +539,7 @@
                             MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units) which are now in your player inventory.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
                         }
                         else
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units). Enter '/sell collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You just purchased {0} {3} worth of {2} ({1} units). Enter '/collect' when you are ready to receive them.", transactionAmount, order.Quantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
 
                         // Send message to player if additional offers are pending their attention.
                         DisplayNextOrderToAccept(SenderSteamId);
@@ -485,9 +548,13 @@
                         return;
                     }
 
+                #endregion
+
+                #region collect
+
                 case SellAction.Collect:
                     {
-                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Collect started by Steam Id '{0}'.", SenderSteamId);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Collect or /collect started by Steam Id '{0}'.", SenderSteamId);
                         var collectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
                             (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellTimedout)
                             || (e.TraderId == SenderSteamId && e.TradeState == TradeState.Holding)
@@ -507,12 +574,12 @@
 
                         foreach (var order in collectableOrders)
                         {
-                            MyPhysicalItemDefinition definition = null;
+                            MyDefinitionBase definition = null;
                             MyObjectBuilderType result;
                             if (MyObjectBuilderType.TryParse(order.TypeId, out result))
                             {
                                 var id = new MyDefinitionId(result, order.SubtypeName);
-                                MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
+                                MyDefinitionManager.Static.TryGetDefinition(id, out definition);
                             }
 
                             if (definition == null)
@@ -520,7 +587,7 @@
                                 // Someone hacking, and passing bad data?
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, the item in your order doesn't exist!");
                                 // TODO: more detail on the item.
-                                EconomyScript.Instance.ServerLogger.WriteVerbose("Definition could not be found for item during '/sell collect'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
+                                EconomyScript.Instance.ServerLogger.WriteVerbose("Definition could not be found for item during '/sell collect or /collect'; '{0}' '{1}'.", order.TypeId, order.SubtypeName);
                                 continue;
                             }
 
@@ -543,6 +610,10 @@
                         EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Collect completed by Steam Id '{0}'.", SenderSteamId);
                         return;
                     }
+
+                #endregion
+
+                #region cancel
 
                 case SellAction.Cancel:
                     {
@@ -603,6 +674,10 @@
                         return;
                     }
 
+                #endregion
+
+                #region deny
+
                 case SellAction.Deny:
                     {
                         EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Deny started by Steam Id '{0}'.", SenderSteamId);
@@ -644,6 +719,8 @@
                         EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Deny completed by Steam Id '{0}'.", SenderSteamId);
                         return;
                     }
+
+                    #endregion
             }
 
             // this is a fall through from the above conditions not yet complete.
@@ -688,35 +765,55 @@
                 accountToSell.NickName, order.Quantity, definition.GetDisplayName(), transactionAmount, EconomyScript.Instance.ServerConfig.CurrencyName);
         }
 
-        private void RemoveInventory(Sandbox.ModAPI.IMyInventory playerInventory, List<MyEntity> cargoBlocks, MyFixedPoint amount, MyDefinitionId definitionId)
+        private void RemoveInventory(IMyInventory playerInventory, List<MyCubeBlock> cargoBlocks, List<MyCubeBlock> tankBlocks, MyFixedPoint amount, MyDefinitionId definitionId)
         {
-            var available = playerInventory.GetItemAmount(definitionId);
-            if (amount <= available)
+            if (definitionId.TypeId == typeof(MyObjectBuilder_GasProperties))
             {
-                playerInventory.RemoveItemsOfType(amount, definitionId);
-                amount = 0;
+                foreach (MyCubeBlock cubeBlock in tankBlocks)
+                {
+                    MyGasTankDefinition gasTankDefintion = cubeBlock.BlockDefinition as MyGasTankDefinition;
+
+                    if (gasTankDefintion == null || gasTankDefintion.StoredGasId != definitionId)
+                        continue;
+
+                    var tank = ((IMyOxygenTank)cubeBlock);
+
+                    // TODO: Cannot set oxygen level of tank yet.
+                    //tank.le
+                    //var tankLevel = ((IMyOxygenTank)cubeBlock).GetOxygenLevel();
+                    //storedAmount += (MyFixedPoint)((decimal)tankLevel * (decimal)gasTankDefintion.Capacity);
+                }
             }
             else
             {
-                playerInventory.RemoveItemsOfType(available, definitionId);
-                amount -= available;
-            }
-
-            foreach (var cubeBlock in cargoBlocks)
-            {
-                if (amount > 0)
+                var available = playerInventory.GetItemAmount(definitionId);
+                if (amount <= available)
                 {
-                    var cubeInventory = cubeBlock.GetInventory();
-                    available = cubeInventory.GetItemAmount(definitionId);
-                    if (amount <= available)
+                    playerInventory.RemoveItemsOfType(amount, definitionId);
+                    amount = 0;
+                }
+                else
+                {
+                    playerInventory.RemoveItemsOfType(available, definitionId);
+                    amount -= available;
+                }
+
+                foreach (var cubeBlock in cargoBlocks)
+                {
+                    if (amount > 0)
                     {
-                        cubeInventory.RemoveItemsOfType(amount, definitionId);
-                        amount = 0;
-                    }
-                    else
-                    {
-                        cubeInventory.RemoveItemsOfType(available, definitionId);
-                        amount -= available;
+                        var cubeInventory = cubeBlock.GetInventory();
+                        available = cubeInventory.GetItemAmount(definitionId);
+                        if (amount <= available)
+                        {
+                            cubeInventory.RemoveItemsOfType(amount, definitionId);
+                            amount = 0;
+                        }
+                        else
+                        {
+                            cubeInventory.RemoveItemsOfType(available, definitionId);
+                            amount -= available;
+                        }
                     }
                 }
             }
@@ -731,7 +828,7 @@
             if (controllingCube != null)
             {
                 var terminalsys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(controllingCube.CubeGrid);
-                var blocks = new List<Sandbox.ModAPI.Ingame.IMyTerminalBlock>();
+                var blocks = new List<IMyTerminalBlock>();
                 terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
                 foreach (var block in blocks)
                     cargoBlocks.Add((MyEntity)block);

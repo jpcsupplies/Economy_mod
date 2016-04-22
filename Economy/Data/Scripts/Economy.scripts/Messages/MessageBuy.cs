@@ -11,6 +11,7 @@
     using Sandbox.ModAPI;
     using VRage;
     using VRage.Game;
+    using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
 
@@ -20,6 +21,8 @@
     [ProtoContract]
     public class MessageBuy : MessageBase
     {
+        #region properties
+
         /// <summary>
         /// person, NPC, offer or faction to submit an offer to buy from
         /// </summary>
@@ -66,6 +69,8 @@
         [ProtoMember(8)]
         public bool FindOnMarket;
 
+        #endregion
+
         public static void SendMessage(string toUserName, decimal itemQuantity, string itemTypeId, string itemSubTypeName, decimal itemPrice, bool useBankBuyPrice, bool sellToMerchant, bool offerToMarket)
         {
             ConnectionHelper.SendMessageToServer(new MessageBuy { FromUserName = toUserName, ItemQuantity = itemQuantity, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, ItemPrice = itemPrice, UseBankSellPrice = useBankBuyPrice, BuyFromMerchant = sellToMerchant, FindOnMarket = offerToMarket });
@@ -89,12 +94,12 @@
             // Get player steam ID
             var buyingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
 
-            MyPhysicalItemDefinition definition = null;
+            MyDefinitionBase definition = null;
             MyObjectBuilderType result;
             if (MyObjectBuilderType.TryParse(ItemTypeId, out result))
             {
                 var id = new MyDefinitionId(result, ItemSubTypeName);
-                MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
+                MyDefinitionManager.Static.TryGetDefinition(id, out definition);
             }
 
             if (definition == null)
@@ -102,6 +107,13 @@
                 // Someone hacking, and passing bad data?
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, the item you specified doesn't exist!");
                 EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- item doesn't exist.", SenderSteamId);
+                return;
+            }
+
+            if (definition.Id.TypeId == typeof (MyObjectBuilder_GasProperties))
+            {
+                // TODO: buy gasses!
+                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Cannot buy gasses currently.");
                 return;
             }
 
@@ -229,7 +241,7 @@
             // TODO: admin check on ability to afford it? 
             //[maybe later, our pay and reset commands let us steal money from npc anyway best to keep admin abuse features to minimum]
             //[we could put an admin check on blacklist however, allow admins to spawn even blacklisted gear]
-            if (accountToBuy.BankBalance < transactionAmount)
+            if (accountToBuy.BankBalance < transactionAmount && accountToBuy.SteamId != accountToSell.SteamId)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you cannot afford {0} {1}!", transactionAmount, EconomyScript.Instance.ServerConfig.CurrencyName);
                 EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- not enough money.", SenderSteamId);
@@ -240,7 +252,8 @@
                                  //This is a quick fix, ideally it should do a partial buy of what is left and post a buy offer for remainder
             {
                 // here we look up item price and transfer items and money as appropriate
-                if (marketItem.Quantity >= ItemQuantity || !EconomyScript.Instance.ServerConfig.LimitedSupply)
+                if (marketItem.Quantity >= ItemQuantity
+                    || (!EconomyScript.Instance.ServerConfig.LimitedSupply && accountToBuy.SteamId != accountToSell.SteamId))
                 {
                     marketItem.Quantity -= ItemQuantity; // reduce Market content.
                     EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy finalizing by Steam Id '{0}' -- adding to inventory.", SenderSteamId);
@@ -248,21 +261,29 @@
 
                     //EconomyScript.Instance.Config.LimitedSupply
 
-                    accountToSell.BankBalance += transactionAmount;
-                    accountToSell.Date = DateTime.Now;
+                    if (accountToBuy.SteamId != accountToSell.SteamId)
+                    {
+                        accountToSell.BankBalance += transactionAmount;
+                        accountToSell.Date = DateTime.Now;
 
-                    accountToBuy.BankBalance -= transactionAmount;
-                    accountToBuy.Date = DateTime.Now;
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0} {3}", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
+                        accountToBuy.BankBalance -= transactionAmount;
+                        accountToBuy.Date = DateTime.Now;
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0} {3}", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
 
-                    MessageUpdateClient.SendAccountMessage(accountToSell);
-                    MessageUpdateClient.SendAccountMessage(accountToBuy);
+                        MessageUpdateClient.SendAccountMessage(accountToSell);
+                        MessageUpdateClient.SendAccountMessage(accountToBuy);
+                    }
+                    else
+                    {
+                        accountToBuy.Date = DateTime.Now;
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just arranged transfer of {0} '{1}' into your inventory.", ItemQuantity, definition.GetDisplayName());
+                    }
 
                     if (remainingToCollect > 0)
                     {
                         MarketManager.CreateStockHeld(buyingPlayer.SteamUserId, ItemTypeId, ItemSubTypeName, remainingToCollect, ItemPrice);
                         // TODO: there should be a common command to collect items. Not use /sell.
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There are {0} remaining to collect. Use '/sell collect'", remainingToCollect);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There are {0} remaining to collect. Use '/collect'", remainingToCollect);
                     }
                     EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy complete by Steam Id '{0}' -- items bought.", SenderSteamId);
                 }

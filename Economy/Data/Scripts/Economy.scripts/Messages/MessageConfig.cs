@@ -2,12 +2,14 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Text;
     using Economy.scripts;
     using Management;
     using ProtoBuf;
     using Sandbox.ModAPI;
     using VRage;
+    using VRage.Game.ModAPI;
 
     /// <summary>
     /// this is to do the actual work of setting new prices and stock levels.
@@ -417,13 +419,26 @@
 
                 #endregion
 
-                #region ReestablishRatio
+                #region RelinkRatio
 
-                case "reestablishratio":
+                case "relinkratio":
                     if (string.IsNullOrEmpty(Value))
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "ReestablishRatio: {0}", EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "RelinkRatio: {0}", EconomyScript.Instance.ServerConfig.TradeZoneRelinkRatio);
                     else
                     {
+                        var numFormat = CultureInfo.CurrentCulture.NumberFormat;
+
+                        NumberFormatInfo nfi = new NumberFormatInfo()
+                        {
+                            CurrencyDecimalDigits = numFormat.PercentDecimalDigits,
+                            CurrencyDecimalSeparator = numFormat.PercentDecimalSeparator,
+                            CurrencyGroupSeparator = numFormat.PercentGroupSeparator,
+                            CurrencyGroupSizes = numFormat.PercentGroupSizes,
+                            CurrencyNegativePattern = numFormat.PercentNegativePattern,
+                            CurrencyPositivePattern = numFormat.PercentPositivePattern,
+                            CurrencySymbol = numFormat.PercentSymbol
+                        };
+
                         decimal decimalTest;
                         if (decimal.TryParse(Value, out decimalTest))
                         {
@@ -431,13 +446,24 @@
 
                             if (decimalTest >= 0)
                             {
-                                EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio = decimalTest;
-                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "ReestablishRatio updated to: {0} ", EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
+                                EconomyScript.Instance.ServerConfig.TradeZoneRelinkRatio = decimalTest;
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "RelinkRatio updated to: {0:P} ", EconomyScript.Instance.ServerConfig.TradeZoneRelinkRatio);
+                                return;
+                            }
+                        }
+                        else if (decimal.TryParse(Value, NumberStyles.Currency, nfi, out decimalTest))
+                        {
+                            // TODO: perhaps we should truncate the value.
+
+                            if (decimalTest >= 0)
+                            {
+                                EconomyScript.Instance.ServerConfig.TradeZoneRelinkRatio = decimalTest / 100;
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "RelinkRatio updated to: {0:P} ", EconomyScript.Instance.ServerConfig.TradeZoneRelinkRatio);
                                 return;
                             }
                         }
 
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "ReestablishRatio: {0}", EconomyScript.Instance.ServerConfig.TradeZoneReestablishRatio);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "RelinkRatio: {0:P}", EconomyScript.Instance.ServerConfig.TradeZoneRelinkRatio);
                     }
                     break;
 
@@ -487,8 +513,9 @@
                     msg.AppendLine("--- Player Tradezones ---");
                     msg.AppendFormat("EnablePlayerTradezones: {0}\r\n", EconomyScript.Instance.ServerConfig.EnablePlayerTradezones ? "On" : "Off");
                     msg.AppendFormat("EnablePlayerPayments: {0}\r\n", EconomyScript.Instance.ServerConfig.EnablePlayerPayments ? "On" : "Off");
-                    msg.AppendFormat("LicenceMin: {0:#,#.######}\r\n", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMin);
-                    msg.AppendFormat("LicenceMax: {0:#,#.######}\r\n", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMax);
+                    msg.AppendFormat("LicenceMin: {0:#,#.######} (at {1:#,#.######}m)\r\n", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMin, EconomyScript.Instance.ServerConfig.TradeZoneMinRadius);
+                    msg.AppendFormat("LicenceMax: {0:#,#.######} (at {1:#,#.######}m)\r\n", EconomyScript.Instance.ServerConfig.TradeZoneLicenceCostMax, EconomyScript.Instance.ServerConfig.TradeZoneMaxRadius);
+                    msg.AppendFormat("RelinkRatio: {0:P}\r\n", EconomyScript.Instance.ServerConfig.TradeZoneRelinkRatio);
                     msg.AppendFormat("MaximumPlayerZones: {0}\r\n", EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
 
                     MessageClientDialogMessage.SendMessage(SenderSteamId, "ECONFIG", " ", msg.ToString());

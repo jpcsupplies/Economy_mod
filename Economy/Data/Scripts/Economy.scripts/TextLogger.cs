@@ -4,6 +4,7 @@
     using System.Diagnostics;
     using System.IO;
     using Sandbox.ModAPI;
+    using VRage;
 
     /// <summary>
     /// Generic text file logger devloped by Midspace for Space Engineers mods.
@@ -17,6 +18,7 @@
         private bool _isInitialized;
         private int _delayedWrite;
         private int _writeCounter;
+        private readonly FastResourceLock _executionLock = new FastResourceLock();
 
         #endregion
 
@@ -155,14 +157,34 @@
             }
         }
 
+        public void Flush()
+        {
+            if (!_isInitialized)
+                return;
+
+            if (_logWriter != null)
+                _logWriter.Flush();
+        }
+
         public void Terminate()
         {
-            _isInitialized = false;
-            if (_logWriter != null)
+            using (_executionLock.AcquireExclusiveUsing())
             {
-                _logWriter.Flush();
-                _logWriter.Close();
-                _logWriter = null;
+                _isInitialized = false;
+                if (_logWriter != null)
+                {
+                    try
+                    {
+                        _logWriter.Flush();
+                        _logWriter.Dispose();
+                    }
+                    catch
+                    {
+                        // catch exception caused by SE Server Extender Essential plugin during auto restart
+                        // which causes file stream to be already closed during flush.
+                    }
+                    _logWriter = null;
+                }
             }
         }
 

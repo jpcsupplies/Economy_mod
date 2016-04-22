@@ -14,7 +14,7 @@
         public static void VerifyAndCreate(EconDataStruct data)
         {
             // we look up our bank record based on our bogus NPC Steam Id/
-            var myNpcAccount = data.Accounts.FirstOrDefault(
+            BankAccountStruct myNpcAccount = data.Accounts.FirstOrDefault(
                 a => a.SteamId == EconomyConsts.NpcMerchantId);
             // Do it have an account already?
             if (myNpcAccount == null)
@@ -24,6 +24,7 @@
 
                 //ok lets apply it
                 data.Accounts.Add(myNpcAccount);
+                data.CreditBalance -= myNpcAccount.BankBalance;
                 EconomyScript.Instance.ServerLogger.WriteInfo("Banker Account Created.");
             }
             else
