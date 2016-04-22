@@ -876,9 +876,13 @@ namespace Economy.scripts
             // pay command
             // eg /pay bob 50 here is your payment
             // eg /pay "Screaming Angles" 10 fish and chips
+
             if (split[0].Equals("/pay", StringComparison.InvariantCultureIgnoreCase))
-            {   //might need to add a check here preventing normal players paying NPC but not critical since they would be silly to try
-                match = Regex.Match(messageText, PayPattern, RegexOptions.IgnoreCase);
+            {
+                if (split.Length <= 2) //Default reason to "no reason given" if a player forgets a reason because nobody reads manuals apparently
+                { match = Regex.Match(messageText+" No Reason Given", PayPattern, RegexOptions.IgnoreCase); } 
+                //might need to add a check here preventing normal players paying NPC but not critical since they would be silly to try
+                else { match = Regex.Match(messageText, PayPattern, RegexOptions.IgnoreCase); }
                 if (match.Success)
                     MessagePayUser.SendMessage(match.Groups["user"].Value,
                         Convert.ToDecimal(match.Groups["value"].Value, CultureInfo.InvariantCulture),
