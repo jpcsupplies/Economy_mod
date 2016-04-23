@@ -747,7 +747,7 @@
       <Quantity>10000</Quantity>
       <SellPrice>10.11</SellPrice>
       <BuyPrice>8.97</BuyPrice>
-      <IsBlacklisted>false</IsBlacklisted>
+      <IsBlacklisted>true</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_GasProperties</TypeId>
@@ -755,7 +755,7 @@
       <Quantity>10000</Quantity>
       <SellPrice>10.11</SellPrice>
       <BuyPrice>8.97</BuyPrice>
-      <IsBlacklisted>false</IsBlacklisted>
+      <IsBlacklisted>true</IsBlacklisted>
     </MarketItem>
   </MarketItems>
 </Market>";

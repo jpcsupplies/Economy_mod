@@ -125,7 +125,7 @@
                                 (ShowComponent && content is MyObjectBuilder_Component) ||
                                 (ShowAmmo && content is MyObjectBuilder_AmmoMagazine) ||
                                 (ShowTools && content is MyObjectBuilder_PhysicalGunObject) || // guns, welders, hand drills, grinders.
-                                (ShowTools && content is MyObjectBuilder_GasContainerObject) || // aka gas bottle.
+                                (ShowGasses && content is MyObjectBuilder_GasContainerObject) || // aka gas bottle.
                                 (ShowGasses && content is MyObjectBuilder_GasProperties))
                             // Type check here allows mods that inherit from the same type to also appear in the lists.
                             {

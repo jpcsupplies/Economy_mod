@@ -176,17 +176,23 @@ namespace Economy.scripts
             MyAPIGateway.Multiplayer.SendEntitiesCreated(entities);
         }
 
-        public static MyPhysicalItemDefinition GetDefinition(this MyDefinitionManager definitionManager, string typeId, string subtypeName)
+        public static MyDefinitionBase GetDefinition(this MyDefinitionManager definitionManager, string typeId, string subtypeName)
         {
-            MyPhysicalItemDefinition definition = null;
             MyObjectBuilderType result;
-            if (MyObjectBuilderType.TryParse(typeId, out result))
-            {
-                var id = new MyDefinitionId(result, subtypeName);
-                MyDefinitionManager.Static.TryGetPhysicalItemDefinition(id, out definition);
-            }
+            if (!MyObjectBuilderType.TryParse(typeId, out result))
+                return null;
 
-            return definition;
+            var id = new MyDefinitionId(result, subtypeName);
+            try
+            {
+                return MyDefinitionManager.Static.GetDefinition(id);
+            }
+            catch
+            {
+                // If a item as been removed, like a mod,
+                // or the mod has broken and failed to load, this will return null.
+                return null;
+            }
         }
 
         public static List<MyGasProperties> GetGasDefinitions(this MyDefinitionManager definitionManager)

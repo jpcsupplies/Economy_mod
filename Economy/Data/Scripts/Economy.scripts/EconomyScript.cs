@@ -15,7 +15,6 @@ namespace Economy.scripts
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
     using System.Timers;
     using Economy.scripts.EconConfig;
     using Economy.scripts.EconStructures;
@@ -24,14 +23,21 @@ namespace Economy.scripts
     using Sandbox.Common;
     using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
+    using Sandbox.Game.Entities;
+    using Sandbox.Game.EntityComponents;
     using Sandbox.ModAPI;
     using VRage;
     using VRage.Game;
     using VRage.Game.Components;
+    using VRage.Game.Entity;
     using VRage.Game.ModAPI;
+    using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
+    using IMyCargoContainer = Sandbox.ModAPI.Ingame.IMyCargoContainer;
+    using IMyOxygenTank = Sandbox.ModAPI.Ingame.IMyOxygenTank;
+    using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
 
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     public class EconomyScript : MySessionComponentBase
@@ -87,17 +93,17 @@ namespace Economy.scripts
         /// <summary>
         /// pattern defines econfig commands.
         /// </summary>
-        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(LicenceMin)|(LicenceMax)|(ReestablishRatio)|(MaximumPlayerZones)))(?:\s+(?<value>.+))?)?";
+        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(LicenceMin)|(LicenceMax)|(RelinkRatio)|(MaximumPlayerZones)))(?:\s+(?<value>.+))?)?";
 
         /// <summary>
         /// pattern defines how to register a player trade zone.
         /// </summary>
-        const string PlayerZoneAddPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(register)\s+(?:(?:""(?<zonename>[^""]|.*?)"")|(?<zonename>[^\s]*))\s+(?<Size>(\d+(\.\d*)?))";
+        const string PlayerZoneAddPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(?<key>(register)|(relink))\s+(?:(?:""(?<zonename>[^""]|.*?)"")|(?<zonename>[^\s]*))\s+(?<Size>(\d+(\.\d*)?))";
 
         /// <summary>
         /// pattern defines how to unregister or modify specific player trade zone.
         /// </summary>
-        const string PlayerZoneModifyPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(?<key>(unregister)|(open)|(close))\s+(?:(?:""(?<zonename>[^""]|.*?)"")|(?<zonename>[^\s]*))";
+        const string PlayerZoneModifyPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(?<key>(unregister)|(open)|(close)|(save)|(load))\s+(?:(?:""(?<zonename>[^""]|.*?)"")|(?<zonename>[^\s]*))";
 
         /// <summary>
         /// pattern defines how to use paramterless player trade zone commands.
@@ -107,7 +113,7 @@ namespace Economy.scripts
         /// <summary>
         /// pattern defines how to change an item in a player trade zone.
         /// </summary>
-        const string PlayerZoneItemPattern = @"(?<command>/tz)\s+(?:(?<blacklist>blacklist)|(?<buy>buy)|(?<sell>sell))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+))))?";
+        const string PlayerZoneItemPattern = @"(?<command>/tz)\s+(?:(?<blacklist>blacklist)|(?<buy>buy)|(?<sell>sell)|(?<limit>limit))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>([+-]?((\d+(\.\d*)?)|(\.\d+)))|(MAX)))?";
 
         /// <summary>
         /// pattern defines how to retrieve a price list.
@@ -206,7 +212,7 @@ namespace Economy.scripts
             ClientLogger.WriteStart("Economy Client Log Started");
             ClientLogger.WriteInfo("Economy Client Version {0}", EconomyConsts.ModCommunicationVersion);
             if (ClientLogger.IsActive)
-                VRage.Utils.MyLog.Default.WriteLine(String.Format("##Mod## Economy Client Logging File: {0}", ClientLogger.LogFile));
+                VRage.Utils.MyLog.Default.WriteLine(string.Format("##Mod## Economy Client Logging File: {0}", ClientLogger.LogFile));
 
             MyAPIGateway.Utilities.MessageEntered += GotMessage;
 
@@ -222,6 +228,7 @@ namespace Economy.scripts
 
             // let the server know we are ready for connections
             MessageConnectionRequest.SendMessage(EconomyConsts.ModCommunicationVersion);
+            ClientLogger.Flush();
         }
 
         private void InitServer()
@@ -260,6 +267,8 @@ namespace Economy.scripts
             _timer3600Events = new Timer(3600000);
             _timer3600Events.Elapsed += Timer3600EventsOnElapsed;
             _timer3600Events.Start();
+
+            ServerLogger.Flush();
         }
 
         #endregion
@@ -268,6 +277,9 @@ namespace Economy.scripts
 
         protected override void UnloadData()
         {
+            ClientLogger.WriteStop("Shutting down");
+            ServerLogger.WriteStop("Shutting down");
+
             if (_isClientRegistered)
             {
                 if (MyAPIGateway.Utilities != null)
@@ -335,27 +347,32 @@ namespace Economy.scripts
 
         public override void SaveData()
         {
-            base.SaveData();
+            ClientLogger.WriteStop("SaveData");
+            ServerLogger.WriteStop("SaveData");
 
             if (_isServerRegistered)
             {
                 if (Data != null)
                 {
-                    ServerLogger.WriteInfo("Save Data");
+                    ServerLogger.WriteInfo("Save Data Started");
                     EconDataManager.SaveData(Data);
+                    ServerLogger.WriteInfo("Save Data End");
                 }
 
                 if (ServerConfig != null)
                 {
-                    ServerLogger.WriteInfo("Save Config");
+                    ServerLogger.WriteInfo("Save Config Started");
                     EconDataManager.SaveConfig(ServerConfig);
+                    ServerLogger.WriteInfo("Save Config End");
                 }
             }
+
+            base.SaveData();
         }
 
         #endregion
 
-        #region message handling
+        #region message handling and hud
 
         private void GotMessage(string messageText, ref bool sendToOthers)
         {
@@ -480,7 +497,7 @@ namespace Economy.scripts
             EconomyScript.Instance.ClientLogger.WriteVerbose("HandleMessage");
             ConnectionHelper.ProcessData(message);
         }
-        #endregion message handling
+        #endregion message handling and hud
 
         #region timers
 
@@ -657,6 +674,7 @@ namespace Economy.scripts
                 match = Regex.Match(messageText, PlayerZoneAddPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
+                    string keyName = match.Groups["key"].Value;
                     string tradezoneName = match.Groups["zonename"].Value;
                     decimal size = Convert.ToDecimal(match.Groups["Size"].Value, CultureInfo.InvariantCulture);
 
@@ -673,8 +691,17 @@ namespace Economy.scripts
                         return true;
                     }
 
-                    MessageMarketManagePlayer.SendRegisterMessage(selectedBlock.EntityId, tradezoneName, size);
-                    return true;
+                    if (keyName.Equals("register", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        MessageMarketManagePlayer.SendRegisterMessage(selectedBlock.EntityId, tradezoneName, size);
+                        return true;
+                    }
+
+                    if (keyName.Equals("relink", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        MessageMarketManagePlayer.SendRelinkMessage(selectedBlock.EntityId, tradezoneName, size);
+                        return true;
+                    }
                 }
 
                 match = Regex.Match(messageText, PlayerZoneModifyPattern, RegexOptions.IgnoreCase);
@@ -704,7 +731,45 @@ namespace Economy.scripts
                         return true;
                     }
 
-                    MyAPIGateway.Utilities.ShowMessage("TZ", "CHECK2 Unexpected Keyname or Zone");
+                    if (keyName.Equals("load", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
+                        if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof(MyObjectBuilder_TextPanel))
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You need to target a Text panel to load market data.");
+                            return true;
+                        }
+
+                        var relation = selectedBlock.GetPlayerRelationToOwner();
+                        if (relation != MyRelationsBetweenPlayerAndBlock.Owner && relation != MyRelationsBetweenPlayerAndBlock.NoOwnership)
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You must own the Text panel to load market data.");
+                            return true;
+                        }
+
+                        MessageMarketManagePlayer.SendLoadMessage(selectedBlock.EntityId, tradezoneName);
+                        return true;
+                    }
+
+                    if (keyName.Equals("save", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
+                        if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof(MyObjectBuilder_TextPanel))
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You need to target a Text panel to save market data.");
+                            return true;
+                        }
+
+                        var relation = selectedBlock.GetPlayerRelationToOwner();
+                        if (relation != MyRelationsBetweenPlayerAndBlock.Owner && relation != MyRelationsBetweenPlayerAndBlock.NoOwnership)
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You must own the Text panel to save market data.");
+                            return true;
+                        }
+
+                        MessageMarketManagePlayer.SendSaveMessage(selectedBlock.EntityId, tradezoneName);
+                        return true;
+                    }
                 }
 
                 match = Regex.Match(messageText, PlayerZoneListPattern, RegexOptions.IgnoreCase);
@@ -722,17 +787,19 @@ namespace Economy.scripts
                 match = Regex.Match(messageText, PlayerZoneItemPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
-                    // TODO: ###############################
-                    // This code copied from the /set pattern, and hasn't been tested yet.
-
                     string itemName = match.Groups["item"].Value.Trim();
                     bool setbuy = match.Groups["buy"].Value.Equals("buy", StringComparison.InvariantCultureIgnoreCase);
                     bool setsell = match.Groups["sell"].Value.Equals("sell", StringComparison.InvariantCultureIgnoreCase);
+                    bool setlimit = match.Groups["limit"].Value.Equals("limit", StringComparison.InvariantCultureIgnoreCase);
                     bool blacklist = match.Groups["blacklist"].Value.Equals("blacklist", StringComparison.InvariantCultureIgnoreCase);
                     decimal amount = 0;
-                    if (setbuy || setsell) // must be setting a price
-                        if (!decimal.TryParse(match.Groups["price"].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
+                    if (setbuy || setsell || setlimit) // must be setting a price
+                    {
+                        if (match.Groups["price"].Value.Equals("MAX", StringComparison.InvariantCultureIgnoreCase))
+                            amount = decimal.MaxValue;
+                        else if (!decimal.TryParse(match.Groups["price"].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
                             amount = 0;
+                    }
 
                     // ok what item are we setting?
                     MyObjectBuilder_Base content;
@@ -761,16 +828,18 @@ namespace Economy.scripts
                     {
                         MessageMarketManagePlayer.SendSellPriceMessage(content.TypeId.ToString(), content.SubtypeName, amount);
                     }
+                    else if (setlimit)
+                    {
+                        MessageMarketManagePlayer.SendLimitMessage(content.TypeId.ToString(), content.SubtypeName, amount);
+                    }
 
                     return true;
-
-
-                    // TODO: ###############################
                 }
 
-                if (split.Length <= 1) { MyAPIGateway.Utilities.ShowMessage("TradeZone", "Nothing to do? Valid Options register, unregister, move, factionmode, buy/sell|blacklist/restrict/limit,"); }
-                else
-                { //everything else goes here - note this doesnt allow for spaces in names
+                MyAPIGateway.Utilities.ShowMessage("TradeZone", "Nothing to do? Valid Options register, unregister, move, factionmode, buy/sell|blacklist/restrict/limit,");
+
+                
+                 //everything else goes here - note this doesnt allow for spaces in names
                     //ill probably have to either get a regex from midspace or split by "" to extract names
                     //backup command evaluation matrix - not used replaced by regex logix - delete later.
                     /* if (split.Length == 3)
@@ -798,7 +867,6 @@ namespace Economy.scripts
                         if (split[1].Equals("buyprice", StringComparison.InvariantCultureIgnoreCase)) { }
                         if (split[1].Equals("sellprice", StringComparison.InvariantCultureIgnoreCase)) { }
                     } */
-                }  
                 //something slipped through the cracks lets get out of here before something odd happens.
                 return true;
             }
@@ -808,9 +876,14 @@ namespace Economy.scripts
             // pay command
             // eg /pay bob 50 here is your payment
             // eg /pay "Screaming Angles" 10 fish and chips
+
             if (split[0].Equals("/pay", StringComparison.InvariantCultureIgnoreCase))
-            {   //might need to add a check here preventing normal players paying NPC but not critical since they would be silly to try
-                match = Regex.Match(messageText, PayPattern, RegexOptions.IgnoreCase);
+            {
+                //MyAPIGateway.Utilities.ShowMessage("debug", "You are here: {0}", messageText + " No Reason Given");
+                if (split.Length <= 3) //Default reason to "no reason given" if a player forgets a reason because nobody reads manuals apparently
+                { match = Regex.Match(messageText+" Some reason?", PayPattern, RegexOptions.IgnoreCase); } 
+                //might need to add a check here preventing normal players paying NPC but not critical since they would be silly to try
+                else { match = Regex.Match(messageText, PayPattern, RegexOptions.IgnoreCase); }
                 if (match.Success)
                     MessagePayUser.SendMessage(match.Groups["user"].Value,
                         Convert.ToDecimal(match.Groups["value"].Value, CultureInfo.InvariantCulture),
@@ -997,6 +1070,14 @@ namespace Economy.scripts
             }
             #endregion set
 
+            #region collect
+            if (split[0].Equals("/collect", StringComparison.InvariantCultureIgnoreCase))
+            {
+                    MessageSell.SendCollectMessage();
+                    return true;
+            }
+            #endregion collect
+
             #region sell
             // sell command
             if (split[0].Equals("/sell", StringComparison.InvariantCultureIgnoreCase))
@@ -1057,14 +1138,72 @@ namespace Economy.scripts
                         return true;
                     }
 
+                    MyDefinitionBase definition;
+                    var id = new MyDefinitionId(content.TypeId, content.SubtypeName);
+                    MyDefinitionManager.Static.TryGetDefinition(id, out definition);
+
                     if (sellAll)
                     {
-                        var character = MyAPIGateway.Session.Player.GetCharacter();
-                        // TODO: may have to recheck that character is not null.
-                        var inventory = character.GetPlayerInventory();
-                        sellQuantity = (decimal)inventory.GetItemAmount(content.GetId());
+                        var cargoBlocks = new List<MyCubeBlock>();
+                        var tankBlocks = new List<MyCubeBlock>();
+                        var controllingCube = MyAPIGateway.Session.Player.Controller.ControlledEntity as IMyCubeBlock;
+                        if (controllingCube != null)
+                        {
+                            var terminalsys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(controllingCube.CubeGrid);
+                            var blocks = new List<IMyTerminalBlock>();
+                            terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
+                            cargoBlocks.AddRange(blocks.Cast<MyCubeBlock>());
 
-                        if (sellQuantity == 0)
+                            terminalsys.GetBlocksOfType<IMyOxygenTank>(blocks);
+                            tankBlocks.AddRange(blocks.Cast<MyCubeBlock>());
+                        }
+
+                        var character = MyAPIGateway.Session.Player.GetCharacter();
+
+                        if (id.TypeId == typeof(MyObjectBuilder_GasProperties))
+                        {
+                            //var comp = ((MyEntity)character).Components;
+                            //var oxyComp = comp.Get<MyCharacterOxygenComponent>();  // MyCharacterOxygenComponent not whitelisted.
+                            //var cap = oxyComp.OxygenCapacity;
+                            //var cap = ((MyCharacter)character).OxygenComponent.OxygenCapacity;  // MyCharacter not whitelisted.
+                            //var lvl = character.EnvironmentOxygenLevel;
+                            //MyAPIGateway.Utilities.ShowMessage("SELL", "Check {0}/{1}", lvl, cap);
+
+                            sellQuantity = 0; // Player Oxygen and Hydrogen levels cannot be adjusted.
+
+                            foreach (MyCubeBlock cubeBlock in tankBlocks)
+                            {
+                                MyGasTankDefinition gasTankDefintion = cubeBlock.BlockDefinition as MyGasTankDefinition;
+
+                                if (gasTankDefintion == null || gasTankDefintion.StoredGasId != definition.Id)
+                                    continue;
+
+                                var tankLevel = ((IMyOxygenTank)cubeBlock).GetOxygenLevel();
+                                sellQuantity += (decimal)tankLevel * (decimal)gasTankDefintion.Capacity;
+
+                                // Testing the component.
+                                //var charComponent = cubeBlock.Components.Get<MyResourceSourceComponent>(); // MyResourceSourceComponent not whitelisted.
+                                //charComponent.SetRemainingCapacityByType(definition.Id, 0.5f);
+                            }
+
+                            MyAPIGateway.Utilities.ShowMessage("SELL", "Cannot sell gas yet.");
+                            // TODO: cannot change levels of Tank Block, or access player levels. Game doesn't allow it yet.
+                            return true;
+                        }
+                        else
+                        {
+                            // TODO: may have to recheck that character is not null.
+                            var inventory = character.GetPlayerInventory();
+                            sellQuantity = (decimal)inventory.GetItemAmount(content.GetId());
+
+                            foreach (MyCubeBlock cubeBlock in cargoBlocks)
+                            {
+                                var cubeInventory = cubeBlock.GetInventory();
+                                sellQuantity += (decimal)cubeInventory.GetItemAmount(definition.Id);
+                            }
+                        }
+
+                        if (sellQuantity <= 0) // Negative check.
                         {
                             MyAPIGateway.Utilities.ShowMessage("SELL", "You don't have any '{0}' to sell.", content.GetDisplayName());
                             return true;
@@ -1146,6 +1285,12 @@ namespace Economy.scripts
             //command to allow players to customise their hud?             
             if (split[0].Equals("/hud", StringComparison.InvariantCultureIgnoreCase))
             {
+                if (ClientConfig == null)
+                {
+                    MyAPIGateway.Utilities.ShowMessage("Warning", "Economy Config has not been received from the Server yet.");
+                    return true;
+                }
+
                 if (split.Length == 1 || split.Length >= 4 || (split.Length == 2 && split[1].Equals("help", StringComparison.InvariantCultureIgnoreCase)))
                 {
                     MyAPIGateway.Utilities.ShowMessage("HUD", "Controls various aspects of hud display. See '/ehelp hud' for more details.");
@@ -1179,13 +1324,22 @@ namespace Economy.scripts
             // bal command
             if (split[0].Equals("/bal", StringComparison.InvariantCultureIgnoreCase))
             {
-                //pull current mission text
-                if (MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network") if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); };
                 match = Regex.Match(messageText, BalPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                     MessageBankBalance.SendMessage(match.Groups["user"].Value);
                 else
                     MyAPIGateway.Utilities.ShowMessage("BAL", "Incorrect parameters");
+
+                // pull current mission text when ClientConfig is ready.
+                if (EconomyScript.Instance.ClientConfig != null
+                    && MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network")
+                {
+                    if (!UpdateHud())
+                    {
+                        MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed");
+                    }
+                }
+
                 return true;
             }
             #endregion bal
@@ -1310,6 +1464,15 @@ namespace Economy.scripts
                 // Example: /npczone list
                 //          /npczone add/create <name> <x> <y> <z> <size> <shape>
                 //          /npczone delete/remove <name>
+
+                // /npczone addhere name  
+                // For the lazy admin, or admins that don't know their GPS location, or dont read manuals >:(
+                // uses- default size and shape 2500 and sphere like the 0,0,0 default market, only supports single word for name
+                if (split.Length == 3 && split[1].Equals("addhere", StringComparison.InvariantCultureIgnoreCase))  {
+                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                    MessageMarketManageNpc.SendAddMessage(split[2], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), 2500, MarketZoneType.FixedSphere);
+                    return true;
+                }
 
                 match = Regex.Match(messageText, NpcZoneAddPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
@@ -1561,6 +1724,47 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "keywords component, ore, ingot, tools, ammo, stock");
                             MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "LCD Usage", helpreply, null, "Cool");
                             return true;
+                        case "econfig":
+                            if (MyAPIGateway.Session.Player.IsAdmin()) 
+                                {  
+                                    helpreply = "Controls Economy Behavior settings\r\n" +
+                                    "Setting 	Details\r\n" +
+                                    "Language	Sets language used on LCD pricelists.\r\n" +
+                                    "TradeNetworkName	 Sets name of your Economy Networ.k\r\n" +
+                                    "CurrencyName	Name of the currency.\r\n" +
+                                    "LimitedRange	Require players to be near each other to trade.\r\n" +
+                                    "LimitedSupply	limited or unlimited supply of NPC items.\r\n" +
+                                    "EnableLcds	Allow [Economy] LCDs to display pricing. \r\n" +
+                                    "EnableNpcTradezones	 NPC trade zones are enabled or not.\r\n" +
+                                    "EnablePlayerTradezones	Can players own trade zones.\r\n" +
+                                    "EnablePlayerPayments	Allow players to pay each other directly.\r\n" +
+                                    "TradeTimeout	How long to wait until we cancel a trade\r\n." +
+                                    "AccountExpiry	How long before a player is purged from bank.\r\n" +
+                                    "StartingBalance	How much money to give new players.\r\n" +
+                                    "LicenceMin | LicenceMax	The minimum and maximum Trade License price.\r\n" +
+                                    "RelinkRatio	The price ratio for relinking to a beacon.\r\n" +
+                                    "MaximumPlayerZones	Number of trade zones a player can own.\r\n";
+                                    MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /econfig SETTING  VALUE");
+                                    MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Economy Config", helpreply, null, "Close");
+                                    return true;
+                                }
+                            else { return false; }
+                        case "tz":
+                            helpreply = "Controls a players trade zone\r\n" +
+                                "/tz register name radius	Register a trade zone.\r\nMust point at Beacon!\r\n" +
+                                "/tz relink name radius	Relink a trade zone.\r\nMust point at Beacon!\r\n" +
+                                "/tz unregister name	Unregisters/removes your market\r\n" +
+                                "/tz close name Suspends trade in the market named\r\n" +
+                                "/tz open name	market available for trade again\r\n" +
+                                "/tz list	List your registered trading zones\r\n" +
+                                "/tz buy ITEM price	Price to buy ITEM from players\r\n" +
+                                "/tz sell ITEM price	Price sell ITEM to players\r\n" +
+                                "/tz blacklist ITEM	    allow/block  trading this ITEM\r\n" +
+                                "/tz limit ITEM	 #   Limit maximum stock # of ITEM to buy up to. Use MAX instead of a qty for no limit.\r\n" +
+                                "\r\n";
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /tz register|unregister|close|open|list|buy|sell|blacklist item|name radius|price");
+                            MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Trade Zones", helpreply, null, "Close");
+                            return true;
                         case "sell":
                             helpreply = "/sell W X Y Z \r\n Sells quantity [W] of item [X] [at price Y] [to player Z]\r\n" +
                                 " Eg sell to another player /sell 1 rifle 10 Bob\r\n" +
@@ -1588,6 +1792,10 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/value X Y - Looks up item [X] of optional quantity [Y] and reports the buy and sell value.");
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /value Ice 20    or   /value ice");
                             return true;
+                        case "collect":
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/collect - Retrieves anything in overflow storage from trading, and places it into local inventory or cargo space.");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /collect");
+                            return true;
                         case "news":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/news Displays a news log of the last few signifiant server events");
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Eg, Pirate attacks, bounties, server competitions etc Example: /news");
@@ -1598,6 +1806,7 @@ namespace Economy.scripts
                         case "npczone":
                             helpreply = "/npczone list   -  Displays list of all defined NPC market portals\r\n" +
                                 "/npczone add [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]  -  Add a new NPC market zone\r\n" +
+                                "/npczone addhere [name]  -  Add a new NPC market zone from your current location size 2500, shape round\r\n" +
                                 " shape can be sphere or box. Eg /npczone add GunShop 1000 2000 4000 200 box\r\n" +
                                 " /npczone delete [zone name]  - removes the named zone eg. /npczone delete freds\r\n" +
                                 " /npczone rename oldname newname  -  change the ID name of the trade zone\r\n" +
@@ -1653,6 +1862,6 @@ namespace Economy.scripts
             MyTexts.LoadTexts(Path.Combine(MyAPIGateway.Utilities.GamePaths.ContentPath, "Data", "Localization"), language.CultureName, language.SubcultureName);
         }
 
-        #endregion
+        #endregion SetLanguage
     }
 }

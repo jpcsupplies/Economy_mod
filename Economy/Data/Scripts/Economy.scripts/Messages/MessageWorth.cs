@@ -245,15 +245,15 @@
 
                     //foreach (var kvp in gridComponents)
                     //{
-                    //    MyPhysicalItemDefinition definition = null;
-                    //    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(kvp.Key, out definition); // Oxygen and Hydrogen do not have available defintions.
+                    //    MyDefinitionBase definition = null;
+                    //    MyDefinitionManager.Static.TryGetDefinition(kvp.Key, out definition);
                     //    str.AppendFormat("'{0}' x {1}.\r\n", definition == null ? kvp.Key.SubtypeName : definition.GetDisplayName(), kvp.Value);
                     //}
 
                     //foreach (var kvp in inventoryComponents)
                     //{
-                    //    MyPhysicalItemDefinition definition = null;
-                    //    MyDefinitionManager.Static.TryGetPhysicalItemDefinition(kvp.Key, out definition);
+                    //    MyDefinitionBase definition = null;
+                    //    MyDefinitionManager.Static.TryGetDefinition(kvp.Key, out definition);
                     //    str.AppendFormat("'{0}' x {1}.\r\n", definition == null ? kvp.Key.SubtypeName : definition.GetDisplayName(), kvp.Value);
                     //}
 
