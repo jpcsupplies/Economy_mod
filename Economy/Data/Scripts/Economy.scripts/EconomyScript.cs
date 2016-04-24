@@ -1889,8 +1889,10 @@ namespace Economy.scripts
                         case "npczone":
                             helpreply = "/npczone list   -  Displays list of all defined NPC market portals\r\n" +
                                 "/npczone add [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]  -  Add a new NPC market zone\r\n" +
-                                "/npczone addhere [name]  -  Add a new NPC market zone from your current location size 2500, shape round\r\n" +
-                                " shape can be sphere or box. Eg /npczone add GunShop 1000 2000 4000 200 box\r\n" +
+                                " shape can be sphere or box. Box is good in a single room.\r\n Eg /npczone add GunShop 1000 2000 4000 200 box\r\n" +
+                                "/npczone addhere [name] [size optional] -  Add a new NPC market zone from your current location\r\n" +
+                                "size defaults to 2500, shape round if not specified.\r\n" +
+                                "/npczone movehere [name] Moves specified zone to your location. Note: Size defaults to 2500 sphere!\r\n" +
                                 " /npczone delete [zone name]  - removes the named zone eg. /npczone delete freds\r\n" +
                                 " /npczone rename oldname newname  -  change the ID name of the trade zone\r\n" +
                                 " /npczone move [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]  -  move/resize the name trade zone\r\n";
