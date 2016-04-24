@@ -1465,14 +1465,15 @@ namespace Economy.scripts
                 //          /npczone add/create <name> <x> <y> <z> <size> <shape>
                 //          /npczone delete/remove <name>
                 //          /npczone addhere <name> [optional size]
+                //          /npczone movehere <name>
 
                 // addhere - For the lazy admin, or admins that don't know their GPS location, or dont read manuals >:(
                 // uses- default size and shape sphere like the 0,0,0 default market, and up to 4 words in name
                 if (split.Length >= 3 && split[1].Equals("addhere", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                        Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
                     
-                    //add support for names with more than one word, default to 2500 if they forget to specify size
+                        //add support for names with more than one word, default to 2500 if they forget to specify size
                         decimal size = 2500; //here is our default size - probably should pull this from globals
                         size = Convert.ToDecimal(EconomyConsts.DefaultTradeRange);
                         //size=Convert.ToDecimal(ClientConfig.DefaultTradeRange);
@@ -1524,10 +1525,7 @@ namespace Economy.scripts
                                 return true;
                             }
                         }
-                        
-                    
                     MyAPIGateway.Utilities.ShowMessage("/npczone addhere zone [radius]", "Invalid option or name too long!");
-               
                     return true;
                 }
                 match = Regex.Match(messageText, NpcZoneAddPattern, RegexOptions.IgnoreCase);
@@ -1573,6 +1571,35 @@ namespace Economy.scripts
                 {
                     MessageMarketManageNpc.SendRenameMessage(match.Groups["nameold"].Value, match.Groups["namenew"].Value);
                     return true;
+                }
+
+                //movehere command - meant to compliment the addhere command and supports similar size zone names
+                if (split.Length >= 3 && split[1].Equals("movehere", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+
+                    //add support for names with more than one word, default to 2500 for size
+                    decimal size = 2500; //here is our default size - probably should pull this from globals
+                    size = Convert.ToDecimal(EconomyConsts.DefaultTradeRange);
+
+                    switch (split.Length)
+                    {
+                        case 3: //npczone movehere blah
+                            MessageMarketManageNpc.SendMoveMessage(split[2], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), size, MarketZoneType.FixedSphere);
+                            return true;
+                        case 4: //npczone movehere blah blah
+                            MessageMarketManageNpc.SendMoveMessage(split[2] + " " + split[3], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), size, MarketZoneType.FixedSphere);
+                            return true;
+                        case 5: //npczone movehere blah blah blah 
+                            MessageMarketManageNpc.SendMoveMessage(split[2] + " " + split[3] + " " + split[4], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), size, MarketZoneType.FixedSphere);
+                            return true;
+                        case 6: //npczone movehere blah blah blah blah
+                            MessageMarketManageNpc.SendMoveMessage(split[2] + " " + split[3] + " " + split[4] + " " + split[5], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), size, MarketZoneType.FixedSphere);
+                            return true;
+                        default: //npczone movehere i wrote some way too long name here
+                            MyAPIGateway.Utilities.ShowMessage("/npczone movehere zone name", "Invalid option or name too long!");
+                            return true;
+                    }
                 }
 
                 match = Regex.Match(messageText, NpcZoneMovePattern, RegexOptions.IgnoreCase);
