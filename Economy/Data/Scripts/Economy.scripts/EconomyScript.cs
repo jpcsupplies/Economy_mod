@@ -376,6 +376,9 @@ namespace Economy.scripts
 
         private void GotMessage(string messageText, ref bool sendToOthers)
         {
+            #region hud display
+            // Update hud
+            if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
             try
             {
                 // here is where we nail the echo back on commands "return" also exits us from processMessage
@@ -387,9 +390,7 @@ namespace Economy.scripts
                 MyAPIGateway.Utilities.ShowMessage("Error", "An exception has been logged in the file: {0}", ClientLogger.LogFileName);
             }
 
-            #region hud display
-            // Update hud
-            if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
+
         }
 
         public bool UpdateHud()
@@ -594,7 +595,7 @@ namespace Economy.scripts
         #region command list
         private bool ProcessMessage(string messageText)
         {
-
+            if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); } //added here to catch bal more frequently
             Match match; // used by the Regular Expression to test user input.
                          // this list is going to get messy since the help and commands themself tell user the same thing 
             string[] split = messageText.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
