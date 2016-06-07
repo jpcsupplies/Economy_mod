@@ -1332,8 +1332,8 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("BAL", "Incorrect parameters");
 
                 // pull current mission text when ClientConfig is ready.
-                if (EconomyScript.Instance.ClientConfig != null
-                    && MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network")
+                if (EconomyScript.Instance.ClientConfig != null)
+                    //&& MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network")
                 {
                     if (!UpdateHud())
                     {
@@ -1682,6 +1682,7 @@ namespace Economy.scripts
             if (split[0].Equals("/reset", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
                 MessageResetAccount.SendMessage();
+                if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); } //added here to catch bal more frequently
                 return true;
                 // don't respond to non-admins.
             }
