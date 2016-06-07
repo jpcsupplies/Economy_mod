@@ -443,6 +443,28 @@ namespace Economy.scripts
                     }
                     readout += " | Agency: " + faction;
 
+                    //mission system
+                    /* 
+                     Mission system will use a set of conditions which are set on commencement of mission. conditions not used are nul
+                     * target location  eg 1000,1000,1000
+                     * target player eg xphoenixxx
+                     * target trade zone eg Trader
+                     * target ship/station id? destruction or capture/rename would end the mission (much like beacons becoming unlinked on trade zones)
+                     * target event eg buy/sell/pay/drop/collect/kill?/capture?
+                     * target reward eg 1000 credits or 100 missile crates etc or a prefab id
+                     * Lazy missiontext is only using mission hud id  0 or 1 at the moment and changing the text based on clientconfig.missionid and active conditions
+                     * this allows us to use the internal hud mission ids with increment for more complex mission chains (eg patrol points multiple objectives etc)
+                     * or skip it entirely for single objective missions (eg deliver x item to y location)
+                     * on top of this we can use a pick-a-path or choose your own adventure style system where we substitute page number with missionID - 
+                     * these style missions will be partially fixed by loading from a mission file allowing admins to design their own story missions
+                     * hard coded missions could be the emergency restock contracts which trigger automatically/randomly as stock levels plummet contracts could work as a
+                     * seperate system as hud space is limited. eg /contracts or we could work it in as a mission chain under main mission system
+                     * this allows for very complicated missions to be assembled using quite simple code (i like simple i understand simple!)
+                     * we need to save clientconfig.missionid client side so players can continue missions
+                     * if conditions are encoded in hud mission text, we could save that too and restore on rejoin
+                     
+                     Below are some sample exaple missions showing a few standard mission types
+                     */
                     switch (ClientConfig.MissionId)
                     {
                         case 1:
