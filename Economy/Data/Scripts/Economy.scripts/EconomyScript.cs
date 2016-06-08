@@ -421,12 +421,13 @@ namespace Economy.scripts
                 /* account.BankBalance.ToString("0.######"); */
 
                 //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
+                Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
                 string readout = ClientConfig.TradeNetworkName + ": ";
                 if (ClientConfig.ShowBalance) readout += string.Format("{0:#,##0.0000} {1}", ClientConfig.BankBalance, ClientConfig.CurrencyName);
                 if (ClientConfig.ShowRegion) readout += " | Trade region: Unknown";
                 if (ClientConfig.ShowXYZ)
                 {
-                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+
                     readout += " | " + string.Format("X: {0:F0} Y: {1:F0} Z: {2:F0}", position.X, position.Y, position.Z);
                 }
                 if (ClientConfig.ShowContractCount) readout += " | Contracts: 0";
@@ -463,8 +464,9 @@ namespace Economy.scripts
                      * we need to save clientconfig.missionid client side so players can continue missions
                      * if conditions are encoded in hud mission text, we could save that too and restore on rejoin
                      
-                     Below are some sample exaple missions showing a few standard mission types
+                     Below are some sample exaple missions showing a few standard mission types which could be used in a tutorial chain.
                      */
+                    //int MissionPayment = 0;
                     switch (ClientConfig.MissionId)
                     {
                         case 1:
@@ -494,6 +496,19 @@ namespace Economy.scripts
                         case 6:
                             ClientConfig.LazyMissionText = "Join a Faction";
                             //MissionPayment = 10000;
+                            break;
+                        case 7:
+                            ClientConfig.LazyMissionText = "Investigate location 0,0,0";
+                            if (position.X >= -50 && position.X <= 50 && position.Y >= -50 && position.Y <= 50 && position.Z >= -50 && position.Z <= 50) {
+                            //play some mission success sound
+                                MessageRewardAccount.SendMessage(1000); //needs a reward value
+                                //mission sceen is meant to use mission hud data i could make it do so..
+                                MyAPIGateway.Utilities.ShowMissionScreen("Mission", "", "Completed", "You have sucessfully investigated the location.\r\n1000 Credits Transferred to your account.", null, "Okay");
+                               
+                                ClientConfig.LazyMissionText = ClientConfig.MissionId + " Mission: completed";
+                                ClientConfig.MissionId++;
+                            }
+                            //MissionPayment = 1000;
                             break;
                         default:
                             ClientConfig.LazyMissionText = ClientConfig.MissionId + " Mission: Survive | Deadline: Unlimited";

@@ -77,6 +77,14 @@
             account.Date = DateTime.Now;
         }
 
+        public static void PayReward(BankAccountStruct account, decimal reward)
+        {
+            EconomyScript.Instance.Data.CreditBalance -= reward;
+          //  EconomyScript.Instance.Data.CreditBalance -= EconomyScript.Instance.ServerConfig.DefaultStartingBalance;
+            account.BankBalance += reward;
+            account.Date = DateTime.Now;
+        }
+
         public static void UpdateLastSeen(ulong steamId, int language)
         {
             var player = MyAPIGateway.Players.FindPlayerBySteamId(steamId);
