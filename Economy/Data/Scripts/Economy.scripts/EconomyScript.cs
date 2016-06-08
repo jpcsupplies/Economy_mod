@@ -642,6 +642,19 @@ namespace Economy.scripts
 
             #region debug
             //used to test whatever crazy stuff im trying to work out
+
+            //placeholder for testing mission success triggers without using a timer yet
+            if (split[0].Equals("/mission", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
+            { int mission;
+            if (split.Length >= 2 && int.TryParse(split[1], out mission)) {
+                                ClientConfig.MissionId = mission;
+                                MyAPIGateway.Utilities.ShowMessage("debug", "Setting mission {0}", mission);
+            }
+                MyAPIGateway.Utilities.ShowMessage("debug", "You are at mission: {0}", ClientConfig.MissionId);
+                if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
+                return true;
+            }
+
             if (split[0].Equals("/debug", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
 
