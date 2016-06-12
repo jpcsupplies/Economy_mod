@@ -373,7 +373,7 @@ namespace Economy.scripts
         #endregion
 
         #region message handling and hud
-
+        //see also MessageConnectionResponse.cs for mission hud calls
         private void GotMessage(string messageText, ref bool sendToOthers)
         {
             #region hud display
@@ -464,7 +464,8 @@ namespace Economy.scripts
                      * we need to save clientconfig.missionid client side so players can continue missions
                      * if conditions are encoded in hud mission text, we could save that too and restore on rejoin
                      
-                     Below are some sample exaple missions showing a few standard mission types which could be used in a tutorial chain.
+                     Below are some sample example missions showing a few standard mission types which could be used in a tutorial chain - or auto generated - or created by
+                     server admins from a custom mission file.
                      */
                     //int MissionPayment = 0;
                     switch (ClientConfig.MissionId)
@@ -498,17 +499,60 @@ namespace Economy.scripts
                             //MissionPayment = 10000;
                             break;
                         case 7:
-                            ClientConfig.LazyMissionText = "Investigate location 0,0,0";
+                            ClientConfig.LazyMissionText = "Investigate location 0,0,0"; //investigate missions could automatically become bounty missions if a hostile is there?
                             if (position.X >= -50 && position.X <= 50 && position.Y >= -50 && position.Y <= 50 && position.Z >= -50 && position.Z <= 50) {
-                            //play some mission success sound
+                                //play some mission success sound goes here
                                 MessageRewardAccount.SendMessage(1000); //needs a reward value
-                                //mission sceen is meant to use mission hud data i could make it do so..
+                                //"show mission screen" is designed to work directly with mission hud data i could use that to run missions when hud off or to
+                                //streamline the following pop up box.
                                 MyAPIGateway.Utilities.ShowMissionScreen("Mission", "", "Completed", "You have sucessfully investigated the location.\r\n1000 Credits Transferred to your account.", null, "Okay");
                                
                                 ClientConfig.LazyMissionText = ClientConfig.MissionId + " Mission: completed";
-                                ClientConfig.MissionId++;
+                                ClientConfig.MissionId++; 
+                                //or in the case of a chain mission we add / advance to the next part of the mission chain
+                                //the next chain could be generated to be different depending how the previous part was completed
+                                //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission"); or 
+                                // if we need to switch to next mission in chain -  MyAPIGateway.Utilities.GetObjectiveLine().AdvanceObjective();
+                                //text of current objective useful for showmissionscreen string etc MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective
+                                //danger here is on mission chains - we need to reset the entire mission chain data and position in the hud - if we advance objective 
+                                //any subsequent new missions will be written to element 1 and we will still be on element 2 or 3 from the old mission.
+                                //I really need a lot more info on the inner workings of the mission system here..
+                                //either that or i avoid using advanceobjective entirely but that will mean we need missionID to be a 2 dimensional array, to track 
+                                //mission and chain position.. which sounds like a safer bet - but wastes memory since the mission system has an element variable already.
+                                 
                             }
                             //MissionPayment = 1000;
+                            break;
+                        case 8:
+                            ClientConfig.LazyMissionText = "Bounty XX for killing player YY";
+                            //This class of mission would need to check the target player(s) are near the current player, and check if they are alive or not.
+                            //Kills would be credited by "guilt by association" if a player for whom there is a bounty mission dies while near another player
+                            //with a bounty on them; then they get the credit for the kill.   It would need some additional checks for example -
+                            //By killer I mean a player with a currently active kill/bounty mission to kill the player who just died.
+                            //1: is the killer piloting a ship or turret,  2: is the killer holding a tool or weapon that can kill a player, 
+                            //3: is the killer currently on a mission to kill them - or in some profession or state that qualifies for bountys. (eg if we add professions)
+                            //Kill credit ranges could also vary.  A player not piloting a ship but holding a tool/weapon 50-200 metres, 
+                            //a player piloting a ship maybe 1000 metres
+                            //Bounties could also be open missions where any player in a faction other than the person who died get a credit for witnessing/causing the death
+                            //in this way we could potentially run automatic bounties on players who are pirates/criminals etc.
+                            //Admittedly this would be more effective on a perminent death server. But is still fun if not.
+                            //Where multiple players are nearby we could simply pay an equal share; although this does present some exploitable problems - 
+                            //This effect could be limited to only players holding a bounty on the dead player allowing for team bounty hunting.
+
+                            //Ideally bounties on AI ships/stations would be useful too, but how can you detect if they have been defeated?
+                            //run an ispowered() check on all ship fragments with that ship/station ID?  Or check the command block is still hostile and powered?
+
+                            //MissionPayment = 10000;
+                            break;
+                        case 9:
+                            ClientConfig.LazyMissionText = "Buy/Sell a ship/station";
+                            //only really applies if we have that feature working yet
+                            //MissionPayment = 10000;
+                            break;
+                        case 10:
+                            ClientConfig.LazyMissionText = "Deliver X item to Trade zone Y";
+                            //MissionPayment = 10000;
+                            //only applies if we implement emergency restock contract missions
                             break;
                         default:
                             ClientConfig.LazyMissionText = ClientConfig.MissionId + " Mission: Survive | Deadline: Unlimited";
