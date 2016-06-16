@@ -373,9 +373,12 @@ namespace Economy.scripts
         #endregion
 
         #region message handling and hud
-
+        //see also MessageConnectionResponse.cs for mission hud calls
         private void GotMessage(string messageText, ref bool sendToOthers)
         {
+            #region hud display
+            // Update hud
+            if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
             try
             {
                 // here is where we nail the echo back on commands "return" also exits us from processMessage
@@ -387,9 +390,7 @@ namespace Economy.scripts
                 MyAPIGateway.Utilities.ShowMessage("Error", "An exception has been logged in the file: {0}", ClientLogger.LogFileName);
             }
 
-            #region hud display
-            // Update hud
-            if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
+
         }
 
         public bool UpdateHud()
@@ -420,12 +421,13 @@ namespace Economy.scripts
                 /* account.BankBalance.ToString("0.######"); */
 
                 //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
+                Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
                 string readout = ClientConfig.TradeNetworkName + ": ";
                 if (ClientConfig.ShowBalance) readout += string.Format("{0:#,##0.0000} {1}", ClientConfig.BankBalance, ClientConfig.CurrencyName);
                 if (ClientConfig.ShowRegion) readout += " | Trade region: Unknown";
                 if (ClientConfig.ShowXYZ)
                 {
-                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+
                     readout += " | " + string.Format("X: {0:F0} Y: {1:F0} Z: {2:F0}", position.X, position.Y, position.Z);
                 }
                 if (ClientConfig.ShowContractCount) readout += " | Contracts: 0";
@@ -442,6 +444,30 @@ namespace Economy.scripts
                     }
                     readout += " | Agency: " + faction;
 
+                    //mission system
+                    /* 
+                     Mission system will use a set of conditions which are set on commencement of mission. conditions not used are nul
+                     * target location  eg 1000,1000,1000
+                     * target player eg xphoenixxx
+                     * target trade zone eg Trader
+                     * target ship/station id? destruction or capture/rename would end the mission (much like beacons becoming unlinked on trade zones)
+                     * target event eg buy/sell/pay/drop/collect/kill?/capture?
+                     * target reward eg 1000 credits or 100 missile crates etc or a prefab id
+                     * Lazy missiontext is only using mission hud id  0 or 1 at the moment and changing the text based on clientconfig.missionid and active conditions
+                     * this allows us to use the internal hud mission ids with increment for more complex mission chains (eg patrol points multiple objectives etc)
+                     * or skip it entirely for single objective missions (eg deliver x item to y location)
+                     * on top of this we can use a pick-a-path or choose your own adventure style system where we substitute page number with missionID - 
+                     * these style missions will be partially fixed by loading from a mission file allowing admins to design their own story missions
+                     * hard coded missions could be the emergency restock contracts which trigger automatically/randomly as stock levels plummet contracts could work as a
+                     * seperate system as hud space is limited. eg /contracts or we could work it in as a mission chain under main mission system
+                     * this allows for very complicated missions to be assembled using quite simple code (i like simple i understand simple!)
+                     * we need to save clientconfig.missionid client side so players can continue missions
+                     * if conditions are encoded in hud mission text, we could save that too and restore on rejoin
+                     
+                     Below are some sample example missions showing a few standard mission types which could be used in a tutorial chain - or auto generated - or created by
+                     server admins from a custom mission file.
+                     */
+                    //int MissionPayment = 0;
                     switch (ClientConfig.MissionId)
                     {
                         case 1:
@@ -471,6 +497,62 @@ namespace Economy.scripts
                         case 6:
                             ClientConfig.LazyMissionText = "Join a Faction";
                             //MissionPayment = 10000;
+                            break;
+                        case 7:
+                            ClientConfig.LazyMissionText = "Investigate location 0,0,0"; //investigate missions could automatically become bounty missions if a hostile is there?
+                            if (position.X >= -50 && position.X <= 50 && position.Y >= -50 && position.Y <= 50 && position.Z >= -50 && position.Z <= 50) {
+                                //play some mission success sound goes here
+                                MessageRewardAccount.SendMessage(1000); //needs a reward value
+                                //"show mission screen" is designed to work directly with mission hud data i could use that to run missions when hud off or to
+                                //streamline the following pop up box.
+                                MyAPIGateway.Utilities.ShowMissionScreen("Mission", "", "Completed", "You have sucessfully investigated the location.\r\n1000 Credits Transferred to your account.", null, "Okay");
+                               
+                                ClientConfig.LazyMissionText = ClientConfig.MissionId + " Mission: completed";
+                                ClientConfig.MissionId++; 
+                                //or in the case of a chain mission we add / advance to the next part of the mission chain
+                                //the next chain could be generated to be different depending how the previous part was completed
+                                //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission"); or 
+                                // if we need to switch to next mission in chain -  MyAPIGateway.Utilities.GetObjectiveLine().AdvanceObjective();
+                                //text of current objective useful for showmissionscreen string etc MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective
+                                //danger here is on mission chains - we need to reset the entire mission chain data and position in the hud - if we advance objective 
+                                //any subsequent new missions will be written to element 1 and we will still be on element 2 or 3 from the old mission.
+                                //I really need a lot more info on the inner workings of the mission system here..
+                                //either that or i avoid using advanceobjective entirely but that will mean we need missionID to be a 2 dimensional array, to track 
+                                //mission and chain position.. which sounds like a safer bet - but wastes memory since the mission system has an element variable already.
+                                 
+                            }
+                            //MissionPayment = 1000;
+                            break;
+                        case 8:
+                            ClientConfig.LazyMissionText = "Bounty XX for killing player YY";
+                            //This class of mission would need to check the target player(s) are near the current player, and check if they are alive or not.
+                            //Kills would be credited by "guilt by association" if a player for whom there is a bounty mission dies while near another player
+                            //with a bounty on them; then they get the credit for the kill.   It would need some additional checks for example -
+                            //By killer I mean a player with a currently active kill/bounty mission to kill the player who just died.
+                            //1: is the killer piloting a ship or turret,  2: is the killer holding a tool or weapon that can kill a player, 
+                            //3: is the killer currently on a mission to kill them - or in some profession or state that qualifies for bountys. (eg if we add professions)
+                            //Kill credit ranges could also vary.  A player not piloting a ship but holding a tool/weapon 50-200 metres, 
+                            //a player piloting a ship maybe 1000 metres
+                            //Bounties could also be open missions where any player in a faction other than the person who died get a credit for witnessing/causing the death
+                            //in this way we could potentially run automatic bounties on players who are pirates/criminals etc.
+                            //Admittedly this would be more effective on a perminent death server. But is still fun if not.
+                            //Where multiple players are nearby we could simply pay an equal share; although this does present some exploitable problems - 
+                            //This effect could be limited to only players holding a bounty on the dead player allowing for team bounty hunting.
+
+                            //Ideally bounties on AI ships/stations would be useful too, but how can you detect if they have been defeated?
+                            //run an ispowered() check on all ship fragments with that ship/station ID?  Or check the command block is still hostile and powered?
+
+                            //MissionPayment = 10000;
+                            break;
+                        case 9:
+                            ClientConfig.LazyMissionText = "Buy/Sell a ship/station";
+                            //only really applies if we have that feature working yet
+                            //MissionPayment = 10000;
+                            break;
+                        case 10:
+                            ClientConfig.LazyMissionText = "Deliver X item to Trade zone Y";
+                            //MissionPayment = 10000;
+                            //only applies if we implement emergency restock contract missions
                             break;
                         default:
                             ClientConfig.LazyMissionText = ClientConfig.MissionId + " Mission: Survive | Deadline: Unlimited";
@@ -594,7 +676,7 @@ namespace Economy.scripts
         #region command list
         private bool ProcessMessage(string messageText)
         {
-
+            if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); } //added here to catch bal more frequently
             Match match; // used by the Regular Expression to test user input.
                          // this list is going to get messy since the help and commands themself tell user the same thing 
             string[] split = messageText.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -604,6 +686,19 @@ namespace Economy.scripts
 
             #region debug
             //used to test whatever crazy stuff im trying to work out
+
+            //placeholder for testing mission success triggers without using a timer yet
+            if (split[0].Equals("/mission", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
+            { int mission;
+            if (split.Length >= 2 && int.TryParse(split[1], out mission)) {
+                                ClientConfig.MissionId = mission;
+                                MyAPIGateway.Utilities.ShowMessage("debug", "Setting mission {0}", mission);
+            }
+                MyAPIGateway.Utilities.ShowMessage("debug", "You are at mission: {0}", ClientConfig.MissionId);
+                if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
+                return true;
+            }
+
             if (split[0].Equals("/debug", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
 
@@ -1331,8 +1426,8 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("BAL", "Incorrect parameters");
 
                 // pull current mission text when ClientConfig is ready.
-                if (EconomyScript.Instance.ClientConfig != null
-                    && MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network")
+                if (EconomyScript.Instance.ClientConfig != null)
+                    //&& MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network")
                 {
                     if (!UpdateHud())
                     {
@@ -1681,6 +1776,7 @@ namespace Economy.scripts
             if (split[0].Equals("/reset", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
                 MessageResetAccount.SendMessage();
+                if (!UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); } //added here to catch bal more frequently
                 return true;
                 // don't respond to non-admins.
             }
