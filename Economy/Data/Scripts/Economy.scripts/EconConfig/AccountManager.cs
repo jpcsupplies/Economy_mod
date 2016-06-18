@@ -77,18 +77,6 @@
             account.Date = DateTime.Now;
         }
 
-        //this is triggered by mission(completed) system or economy API system(if implemented) it adds or subtracts funds from a player
-        //in the case of API use this allows the small possibility of exploiting free money.  Although this would require assistance with the server admin
-        //in which case they probably /want/ the money to be paid.   It probably requires an additional section for transferring funds between players via API as well -
-        //not just from the server ledger, should inter-mod API be implemented.
-        public static void PayReward(BankAccountStruct account, decimal reward)
-        {
-            EconomyScript.Instance.Data.CreditBalance -= reward;
-          //  EconomyScript.Instance.Data.CreditBalance -= EconomyScript.Instance.ServerConfig.DefaultStartingBalance;
-            account.BankBalance += reward;
-            account.Date = DateTime.Now;
-        }
-
         public static void UpdateLastSeen(ulong steamId, int language)
         {
             var player = MyAPIGateway.Players.FindPlayerBySteamId(steamId);

@@ -91,7 +91,7 @@
                     string.Format("{0}, {1} just paid you {2} {4} for {3}", account.NickName, SenderDisplayName, TransactionAmount, Reason, EconomyScript.Instance.ServerConfig.CurrencyName));
 
                 MessageClientTextMessage.SendMessage(SenderSteamId, "PAY",
-                    string.Format("You just paid {0} {1}, {3} for {2}", account.NickName, TransactionAmount, Reason, EconomyScript.Instance.ServerConfig.CurrencyName));
+                    string.Format("You just paid {0} {1} {3} for {2}", account.NickName, TransactionAmount, Reason, EconomyScript.Instance.ServerConfig.CurrencyName));
 
                 EconomyScript.Instance.ServerLogger.WriteVerbose("Pay: '{0}' sent {1} {3} to '{2}'", accountToSpend.NickName, TransactionAmount, ToUserName, EconomyScript.Instance.ServerConfig.CurrencyName);
 

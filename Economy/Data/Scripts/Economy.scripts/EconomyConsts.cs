@@ -308,4 +308,23 @@
         CurrencyName,
         TradeNetworkName
     }
+
+    public enum MissionType : int
+    {
+        None,
+        Mine,
+        Weld,
+        JoinFaction,
+
+        TravelToArea,
+
+        SellOre,
+        BuySomething,
+        PayPlayer,
+        ShipWorth,
+        BuySellShip,
+        DeliverItemToTradeZone,
+
+        KillPlayer,
+    }
 }
