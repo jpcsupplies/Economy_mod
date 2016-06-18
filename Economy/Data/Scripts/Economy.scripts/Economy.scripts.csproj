@@ -104,6 +104,7 @@
     <Compile Include="EconConfig\EconDataManager.cs" />
     <Compile Include="EconStructures\EconDataStruct.cs" />
     <Compile Include="EconConfig\MarketManager.cs" />
+    <Compile Include="EconStructures\MissionStruct.cs" />
     <Compile Include="EconStructures\OrderBookStruct.cs" />
     <Compile Include="EconStructures\MarketItemStruct.cs" />
     <Compile Include="EconStructures\BankStruct.cs" />
@@ -114,6 +115,7 @@
     <Compile Include="EconStructures\BankAccountStruct.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="EconConfig\NpcMerchantManager.cs" />
+    <Compile Include="EconConfig\HudManager.cs" />
     <Compile Include="Management\LcdManager.cs" />
     <Compile Include="Management\SeTextBuilder.cs" />
     <Compile Include="Management\TextPanelWriter.cs" />

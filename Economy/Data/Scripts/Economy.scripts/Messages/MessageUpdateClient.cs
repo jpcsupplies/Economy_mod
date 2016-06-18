@@ -1,5 +1,6 @@
 ﻿namespace Economy.scripts.Messages
 {
+    using EconConfig;
     using EconStructures;
     using ProtoBuf;
 
@@ -60,7 +61,7 @@
                     break;
             }
 
-            EconomyScript.Instance.UpdateHud();
+            HudManager.UpdateHud();
             // TODO: we may invoke additional things here after the Client has updated their balance.
         }
 
