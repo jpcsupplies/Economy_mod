@@ -10,29 +10,43 @@
     /// <summary>
     /// This will manage the Missions.
     /// Currently it is temporarily running from the Client side only, and will need to be controlled server side when finished.
+    /// Mission completion condition checks (for a players current mission) should try if possible to run client side  to 
+    /// distrubute load over players instead of using server sim
     /// </summary>
     public static class HudManager
     {
-        private static string _oldReadout;
-        private static string _oldObjective;
         private static int _hudCounter;
         private static int _missionCounter;
-        private static List<MissionStruct> Missions = new List<MissionStruct>();
+        private static readonly List<MissionStruct> Missions = new List<MissionStruct>();
 
         static HudManager()
         {
             // TODO: this is a temporary structure, before we move this to a configurable data store that can be modified and persisted.
             // Missions will be stored on the server, but only current mission will be passed to the client.
+            // the following are an example of each potential mission type, in a custom missions system these are the types 
+            // of missions available for admins to create, or as a generic set of tutorial missions to teach player how to use economy
             Missions.Add(new MissionStruct
             {
                 MissionId = 0,
                 Designation = MissionType.None,
                 Name = "Mission: Survive | Deadline: Unlimited",
                 Reward = 0
+                //generic no mission status - although we could make a dont die within specific timeframe mission and use that deadline field
+                //sort of like a pirates counter-bounty mission if they dont die in that time they get a reward/escape justice
+                //eg a player with an auto bounty placed on them gets a timer in deadline showing how long until bounty expires
             });
 
-            Missions.Add(new MissionStruct{
+            Missions.Add(new MissionStruct
+            {
                 MissionId = 1,
+                Designation = MissionType.DisplayAccountBalance,
+                Name = "Type /bal to connect to network",
+                Reward = 100
+            });
+
+            Missions.Add(new MissionStruct
+            {
+                MissionId = 2,
                 Designation = MissionType.Mine,
                 Name = "Mine / Sell some ore",
                 Reward = 0
@@ -41,51 +55,69 @@
                 //create a client gps (caption, missionGPS);
                 //write this gps to some sort of list so we know 
                 //we need to remove it once we get there
-            });
-
-            Missions.Add(new MissionStruct
-            {
-                MissionId = 2,
-                Designation = MissionType.BuySomething,
-                Name = "Buy something",
-                Reward = 100
+                //could require it to be a specific ore or any ore
             });
 
             Missions.Add(new MissionStruct
             {
                 MissionId = 3,
-                Designation = MissionType.PayPlayer,
-                Name = "Pay a player",
-                Reward = 600
+                Designation = MissionType.BuySomething,
+                Name = "Buy something",
+                Reward = 100
+                //buy an item or any item from any trade zone or a specific trade zone
             });
 
             Missions.Add(new MissionStruct
             {
                 MissionId = 4,
-                Designation = MissionType.ShipWorth,
-                Name = "Check what a ship/station is worth",
-                Reward = 1000
+                Designation = MissionType.PayPlayer,
+                Name = "Pay a player",
+                Reward = 600
+                //pays any player or a specified player, or a player in a faction?
             });
 
             Missions.Add(new MissionStruct
             {
                 MissionId = 5,
-                Designation = MissionType.Weld,
-                Name = "Build / Weld Something",
-                Reward = 10000
+                Designation = MissionType.TradeWithPlayer,
+                Name = "Buy or Sell an item directly with another player",
+                Reward = 600
+                //sells an item to another player or buys something from someone direct (ie not from a trade zone)
             });
 
             Missions.Add(new MissionStruct
             {
                 MissionId = 6,
-                Designation = MissionType.JoinFaction,
-                Name = "Join a Faction",
-                Reward = 10000
+                Designation = MissionType.ShipWorth,
+                Name = "Check what a ship/station is worth",
+                Reward = 1000
+                //runs the worth command on anything - or on a specified ID or location?
             });
 
             Missions.Add(new MissionStruct
             {
                 MissionId = 7,
+                Designation = MissionType.Weld,
+                Name = "Build / Weld Something",
+                Reward = 10000
+                //doesnt need to be a powered or owned block like activate mission
+                //could have a placed blocks counter eg they have to build 27 blocks (equivalent to a one block room)
+                //Lana suggests it could be help repair another players space ship too
+                //Or require them to build a large/small space ship
+            });
+
+            Missions.Add(new MissionStruct
+            {
+                MissionId = 8,
+                Designation = MissionType.JoinFaction,
+                Name = "Join a Faction",
+                Reward = 10000
+                //player joins ANY faction OR a SPECIFIC faction
+            });
+
+            Missions.Add(new MissionStruct
+            {
+                MissionId = 9,
                 Designation = MissionType.TravelToArea,
                 Name = "Investigate location 0,0,0",
                 SuccessMessage = "You have sucessfully investigated the location.",
@@ -101,11 +133,14 @@
                 //I really need a lot more info on the inner workings of the mission system here..
                 //either that or i avoid using advanceobjective entirely but that will mean we need missionID to be a 2 dimensional array, to track 
                 //mission and chain position.. which sounds like a safer bet - but wastes memory since the mission system has an element variable already.
+                //we could also use waypoints/gps points here which are removed as player investigates them for mission chains
+                //if we ever implement vanity names/scan database trading this could be used to require a player to /scan a specific location too
+                //Lana suggests fly a specific type of ship (large / small / spacesuit) too
             });
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 8,
+                MissionId = 10,
                 Designation = MissionType.KillPlayer,
                 Name = "Bounty XX for killing player YY",
                 Reward = 10000
@@ -116,20 +151,24 @@
                 //1: is the killer piloting a ship or turret,  2: is the killer holding a tool or weapon that can kill a player, 
                 //3: is the killer currently on a mission to kill them - or in some profession or state that qualifies for bountys. (eg if we add professions)
                 //Kill credit ranges could also vary.  A player not piloting a ship but holding a tool/weapon 50-200 metres, 
+                //we may need a way to detect mod/workshop weapons (possible future bug)
                 //a player piloting a ship maybe 1000 metres
                 //Bounties could also be open missions where any player in a faction other than the person who died get a credit for witnessing/causing the death
-                //in this way we could potentially run automatic bounties on players who are pirates/criminals etc.
+                //in this way we could potentially run automatic bounties on players who are pirates/criminals etc. eg if a pirate player kills a player on  trading mission
+                //the pirate automatically has their bountry increased - be cool if we can scan players and auto show bounties in hud if profession used
                 //Admittedly this would be more effective on a perminent death server. But is still fun if not.
                 //Where multiple players are nearby we could simply pay an equal share; although this does present some exploitable problems - 
                 //This effect could be limited to only players holding a bounty on the dead player allowing for team bounty hunting.
 
                 //Ideally bounties on AI ships/stations would be useful too, but how can you detect if they have been defeated?
                 //run an ispowered() check on all ship fragments with that ship/station ID?  Or check the command block is still hostile and powered?
+
+                //Lana suggests kill missions on monsters too.. eg kill 20 spiders
             });
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 9,
+                MissionId = 11,
                 Designation = MissionType.BuySellShip,
                 Name = "Buy/Sell a ship/station",
                 Reward = 10000
@@ -138,11 +177,49 @@
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 10,
+                MissionId = 12,
                 Designation = MissionType.DeliverItemToTradeZone,
                 Name = "Deliver X item to Trade zone Y",
                 Reward = 10000
                 //only applies if we implement emergency restock contract missions
+            });
+
+            Missions.Add(new MissionStruct
+            {
+                MissionId = 13,
+                Designation = MissionType.DeactivateBlock,
+                Name = "Disable/Turnoff Block",
+                Reward = 10000
+                //eg turn off a reactor, disable a warhead etc - if you simply want to grind down warhead etc
+            });
+
+            Missions.Add(new MissionStruct
+            {
+                MissionId = 14,
+                Designation = MissionType.ActivateBlock,
+                Name = "Enable/Turnon/Build or Repair Block",
+                Reward = 10000
+                //eg a block at a given location is of a given type and turned on/ ispowered()?
+            });
+
+            Missions.Add(new MissionStruct
+            {
+                MissionId = 15,
+                Designation = MissionType.DestroyBlock,
+                Name = "Destroy Block",
+                Reward = 10000
+                //eg destroy/remove warhead, remove reactor etc - grinding or blowing up
+
+            });
+
+            Missions.Add(new MissionStruct
+            {
+                MissionId = 16,
+                Designation = MissionType.CaptureBlock,
+                Name = "Capture/Hack Block",
+                Reward = 10000
+                //eg change ownership of block to self (or nominated player in case of steal mission)
+                //Lana suggests steal a persons spaceship as a mission too
             });
         }
 
@@ -178,6 +255,8 @@
 
             if (clientConfig.ShowHud)
             {
+                IMyHudObjectiveLine objective = MyAPIGateway.Utilities.GetObjectiveLine();
+
                 //Hud, displays users balance, trade network name, and optionally faction and free storage space (% or unit?) in cargo and/or inventory
                 //may also eventually be used to display info about completed objectives in missions/jobs/bounties/employment etc
                 //needs to call this at init (working), and at each call to message handling(working), and on recieving any notification of payment.
@@ -201,31 +280,36 @@
                 string readout = null;
                 if (clientConfig.HudReadout != null)
                 {
-                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-
-                    readout = string.Format(clientConfig.HudReadout,
-                        clientConfig.BankBalance,
-                        clientConfig.CurrencyName,
-                        position.X,
-                        position.Y,
-                        position.Z);
+                    // if the player does not have a controlable body yet, no point displaying a hud.
+                    if (MyAPIGateway.Session.Player.Controller != null
+                        && MyAPIGateway.Session.Player.Controller.ControlledEntity != null
+                        && MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity != null)
+                    {
+                        Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                        readout = string.Format(clientConfig.HudReadout,
+                            clientConfig.BankBalance,
+                            clientConfig.CurrencyName,
+                            position.X,
+                            position.Y,
+                            position.Z);
+                    }
                 }
 
                 if (clientConfig.ShowFaction)
                 {
-                    if (_oldObjective != clientConfig.HudObjective)
+                    if (objective.Objectives.Count < 1)
+                        objective.Objectives.Add(clientConfig.HudObjective);
+                    else if (objective.Objectives[0] != clientConfig.HudObjective)
                     {
-                        //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
-                        MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = clientConfig.HudObjective;
-                        //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(reply);
-                        _oldObjective = clientConfig.HudObjective;
+                        // if we wanted a 2nd mission add it like this MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission");
+                        //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(ClientConfig.LazyMissionText); //testing if my global is available
+                        objective.Objectives[0] = clientConfig.HudObjective;
                     }
                 }
 
-                if (_oldReadout != readout)
+                if (objective.Title != readout)
                 {
-                    MyAPIGateway.Utilities.GetObjectiveLine().Title = readout;
-                    _oldReadout = readout;
+                    objective.Title = readout;
                 }
             }
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;  //using title not mission text now
@@ -268,8 +352,16 @@
                 string readout = clientConfig.TradeNetworkName + ": ";
                 if (clientConfig.ShowBalance) readout += "{0:#,##0.0000} {1}";
 
-                Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-                if (clientConfig.ShowRegion) readout += " | Trade region: Unknown";     // TODO: Get tradezone from player current position.
+                string tradeZoneName = "Unknown";
+                if (MyAPIGateway.Session.Player.Controller != null
+                    && MyAPIGateway.Session.Player.Controller.ControlledEntity != null
+                    && MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity != null)
+                {
+                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                    // TODO: Get tradezone from player current position.
+                }
+
+                if (clientConfig.ShowRegion) readout += " | Trade region: " + tradeZoneName;
 
                 if (clientConfig.ShowXYZ)
                     readout += " | " + "X: {2:F0} Y: {3:F0} Z: {4:F0}";
@@ -306,10 +398,10 @@
             EconomyScript.Instance.ClientConfig.MissionId++;
 
             if (missionId >= Missions.Count)
-                missionId = 0;
+                missionId = -1;
 
             EconomyScript.Instance.ClientConfig.MissionId = missionId;
-            EconomyScript.Instance.ClientConfig.LazyMissionText = Missions[EconomyScript.Instance.ClientConfig.MissionId].Name;
+            EconomyScript.Instance.ClientConfig.LazyMissionText = EconomyScript.Instance.ClientConfig.MissionId == -1 ? null : Missions[EconomyScript.Instance.ClientConfig.MissionId].Name;
         }
 
         public static void UpdateMission()
@@ -318,6 +410,12 @@
 
             // client config has not been received from server yet.
             if (clientConfig == null)
+                return;
+
+            // if the player does not have a controlable body yet, no point continuing.
+            if (MyAPIGateway.Session.Player.Controller == null
+                || MyAPIGateway.Session.Player.Controller.ControlledEntity == null
+                || MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity == null)
                 return;
 
             if (clientConfig.ShowFaction)
@@ -357,21 +455,28 @@
                  */
                 //int MissionPayment = 0;
 
-                var mission = Missions[clientConfig.MissionId];
+
+                // no mission currently selected. or no valid mission selected.
+                if (clientConfig.MissionId < 0 || clientConfig.MissionId >= Missions.Count)
+                    return;
+
+                MissionStruct mission = Missions[clientConfig.MissionId];
 
                 bool success = false;
                 switch (mission.Designation)
                 {
                     case MissionType.TravelToArea:
-                    {
-                        success = ((mission.AreaSphere.HasValue && mission.AreaSphere.Value.Contains(position) == ContainmentType.Contains) ||
-                                   (mission.AreaBox.HasValue && mission.AreaBox.Value.Contains(position) == ContainmentType.Contains));
-                        break;
-                    }
+                        {
+                            success = ((mission.AreaSphere.HasValue && mission.AreaSphere.Value.Contains(position) == ContainmentType.Contains) ||
+                                       (mission.AreaBox.HasValue && mission.AreaBox.Value.Contains(position) == ContainmentType.Contains));
+                            break;
+                        }
                 }
 
                 if (success)
                 {
+                    // TODO: Send server to close mission.
+
                     string msg = mission.SuccessMessage;
 
                     if (mission.Reward != 0)
@@ -385,7 +490,7 @@
                     clientConfig.LazyMissionText = clientConfig.MissionId + " Mission: completed";
 
                     // TODO: is a bad idea to increment. We need to fetch the next valid mission, or reset to blank.
-                    FetchMission(0);
+                    FetchMission(-1);
                     //FetchMission(clientConfig.MissionId + 1);
                     UpdateHud();
                 }

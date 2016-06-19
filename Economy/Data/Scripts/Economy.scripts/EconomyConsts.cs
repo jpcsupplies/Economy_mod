@@ -302,11 +302,12 @@
         Static
     }
 
-    public enum ClientUpdateAction: byte
+    public enum ClientUpdateAction : byte
     {
         Account,
         CurrencyName,
-        TradeNetworkName
+        TradeNetworkName,
+        TradeZones
     }
 
     public enum MissionType : int
@@ -318,13 +319,19 @@
 
         TravelToArea,
 
+        DisplayAccountBalance,
         SellOre,
         BuySomething,
         PayPlayer,
+        TradeWithPlayer,
         ShipWorth,
         BuySellShip,
         DeliverItemToTradeZone,
 
         KillPlayer,
+        DeactivateBlock,
+        ActivateBlock,
+        DestroyBlock,
+        CaptureBlock,
     }
 }
