@@ -63,13 +63,11 @@
             EconomyScript.Instance.ClientLogger.WriteInfo("ClientConfig received: Opened {0}  Balance: {1}", ClientConfig.OpenedDate, ClientConfig.BankBalance);
 
             #region Initialise trade network hud
-            
+
+            // Set's up the hud for use.
             MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyScript.Instance.ClientConfig.TradeNetworkName;
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
-            MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Type /bal to connect to network");
-            // if we wanted a 2nd mission add it like this MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission");
-            //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(ClientConfig.LazyMissionText); //testing if my global is available
-
+            MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("");
 
             MyAPIGateway.Utilities.ShowMessage("Economy", "Network Connected!");
             MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Trade Network!", EconomyScript.Instance.ClientConfig.TradeNetworkName);

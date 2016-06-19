@@ -13,11 +13,9 @@
     /// </summary>
     public static class HudManager
     {
-        private static string _oldReadout;
-        private static string _oldObjective;
         private static int _hudCounter;
         private static int _missionCounter;
-        private static List<MissionStruct> Missions = new List<MissionStruct>();
+        private static readonly List<MissionStruct> Missions = new List<MissionStruct>();
 
         static HudManager()
         {
@@ -31,8 +29,16 @@
                 Reward = 0
             });
 
-            Missions.Add(new MissionStruct{
+            Missions.Add(new MissionStruct
+            {
                 MissionId = 1,
+                Designation = MissionType.DisplayAccountBalance,
+                Name = "Type /bal to connect to network",
+                Reward = 100
+            });
+
+            Missions.Add(new MissionStruct{
+                MissionId = 2,
                 Designation = MissionType.Mine,
                 Name = "Mine / Sell some ore",
                 Reward = 0
@@ -45,7 +51,7 @@
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 2,
+                MissionId = 3,
                 Designation = MissionType.BuySomething,
                 Name = "Buy something",
                 Reward = 100
@@ -53,7 +59,7 @@
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 3,
+                MissionId = 4,
                 Designation = MissionType.PayPlayer,
                 Name = "Pay a player",
                 Reward = 600
@@ -61,7 +67,7 @@
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 4,
+                MissionId = 5,
                 Designation = MissionType.ShipWorth,
                 Name = "Check what a ship/station is worth",
                 Reward = 1000
@@ -69,7 +75,7 @@
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 5,
+                MissionId = 6,
                 Designation = MissionType.Weld,
                 Name = "Build / Weld Something",
                 Reward = 10000
@@ -77,7 +83,7 @@
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 6,
+                MissionId = 7,
                 Designation = MissionType.JoinFaction,
                 Name = "Join a Faction",
                 Reward = 10000
@@ -85,7 +91,7 @@
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 7,
+                MissionId = 8,
                 Designation = MissionType.TravelToArea,
                 Name = "Investigate location 0,0,0",
                 SuccessMessage = "You have sucessfully investigated the location.",
@@ -105,7 +111,7 @@
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 8,
+                MissionId = 9,
                 Designation = MissionType.KillPlayer,
                 Name = "Bounty XX for killing player YY",
                 Reward = 10000
@@ -129,7 +135,7 @@
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 9,
+                MissionId = 10,
                 Designation = MissionType.BuySellShip,
                 Name = "Buy/Sell a ship/station",
                 Reward = 10000
@@ -138,7 +144,7 @@
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 10,
+                MissionId = 11,
                 Designation = MissionType.DeliverItemToTradeZone,
                 Name = "Deliver X item to Trade zone Y",
                 Reward = 10000
@@ -178,6 +184,8 @@
 
             if (clientConfig.ShowHud)
             {
+                IMyHudObjectiveLine objective = MyAPIGateway.Utilities.GetObjectiveLine();
+
                 //Hud, displays users balance, trade network name, and optionally faction and free storage space (% or unit?) in cargo and/or inventory
                 //may also eventually be used to display info about completed objectives in missions/jobs/bounties/employment etc
                 //needs to call this at init (working), and at each call to message handling(working), and on recieving any notification of payment.
@@ -201,31 +209,36 @@
                 string readout = null;
                 if (clientConfig.HudReadout != null)
                 {
-                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-
-                    readout = string.Format(clientConfig.HudReadout,
-                        clientConfig.BankBalance,
-                        clientConfig.CurrencyName,
-                        position.X,
-                        position.Y,
-                        position.Z);
+                    // if the player does not have a controlable body yet, no point displaying a hud.
+                    if (MyAPIGateway.Session.Player.Controller != null
+                        && MyAPIGateway.Session.Player.Controller.ControlledEntity != null
+                        && MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity != null)
+                    {
+                        Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                        readout = string.Format(clientConfig.HudReadout,
+                            clientConfig.BankBalance,
+                            clientConfig.CurrencyName,
+                            position.X,
+                            position.Y,
+                            position.Z);
+                    }
                 }
 
                 if (clientConfig.ShowFaction)
                 {
-                    if (_oldObjective != clientConfig.HudObjective)
+                    if (objective.Objectives.Count < 1)
+                        objective.Objectives.Add(clientConfig.HudObjective);
+                    else if (objective.Objectives[0] != clientConfig.HudObjective)
                     {
-                        //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
-                        MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = clientConfig.HudObjective;
-                        //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(reply);
-                        _oldObjective = clientConfig.HudObjective;
+                        // if we wanted a 2nd mission add it like this MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission");
+                        //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(ClientConfig.LazyMissionText); //testing if my global is available
+                        objective.Objectives[0] = clientConfig.HudObjective;
                     }
                 }
 
-                if (_oldReadout != readout)
+                if (objective.Title != readout)
                 {
-                    MyAPIGateway.Utilities.GetObjectiveLine().Title = readout;
-                    _oldReadout = readout;
+                    objective.Title = readout;
                 }
             }
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;  //using title not mission text now
@@ -268,8 +281,16 @@
                 string readout = clientConfig.TradeNetworkName + ": ";
                 if (clientConfig.ShowBalance) readout += "{0:#,##0.0000} {1}";
 
-                Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-                if (clientConfig.ShowRegion) readout += " | Trade region: Unknown";     // TODO: Get tradezone from player current position.
+                string tradeZoneName = "Unknown";
+                if (MyAPIGateway.Session.Player.Controller != null
+                    && MyAPIGateway.Session.Player.Controller.ControlledEntity != null
+                    && MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity != null)
+                {
+                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                    // TODO: Get tradezone from player current position.
+                }
+
+                if (clientConfig.ShowRegion) readout += " | Trade region: " + tradeZoneName; 
 
                 if (clientConfig.ShowXYZ)
                     readout += " | " + "X: {2:F0} Y: {3:F0} Z: {4:F0}";
@@ -306,10 +327,10 @@
             EconomyScript.Instance.ClientConfig.MissionId++;
 
             if (missionId >= Missions.Count)
-                missionId = 0;
+                missionId = -1;
 
             EconomyScript.Instance.ClientConfig.MissionId = missionId;
-            EconomyScript.Instance.ClientConfig.LazyMissionText = Missions[EconomyScript.Instance.ClientConfig.MissionId].Name;
+            EconomyScript.Instance.ClientConfig.LazyMissionText = EconomyScript.Instance.ClientConfig.MissionId == -1 ? null : Missions[EconomyScript.Instance.ClientConfig.MissionId].Name;
         }
 
         public static void UpdateMission()
@@ -318,6 +339,12 @@
 
             // client config has not been received from server yet.
             if (clientConfig == null)
+                return;
+
+            // if the player does not have a controlable body yet, no point continuing.
+            if (MyAPIGateway.Session.Player.Controller == null
+                || MyAPIGateway.Session.Player.Controller.ControlledEntity == null
+                || MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity == null)
                 return;
 
             if (clientConfig.ShowFaction)
@@ -357,7 +384,12 @@
                  */
                 //int MissionPayment = 0;
 
-                var mission = Missions[clientConfig.MissionId];
+
+                // no mission currently selected. or no valid mission selected.
+                if (clientConfig.MissionId < 0 || clientConfig.MissionId >= Missions.Count)
+                    return;
+
+                MissionStruct mission = Missions[clientConfig.MissionId];
 
                 bool success = false;
                 switch (mission.Designation)
@@ -372,6 +404,8 @@
 
                 if (success)
                 {
+                    // TODO: Send server to close mission.
+
                     string msg = mission.SuccessMessage;
 
                     if (mission.Reward != 0)
@@ -385,7 +419,7 @@
                     clientConfig.LazyMissionText = clientConfig.MissionId + " Mission: completed";
 
                     // TODO: is a bad idea to increment. We need to fetch the next valid mission, or reset to blank.
-                    FetchMission(0);
+                    FetchMission(-1);
                     //FetchMission(clientConfig.MissionId + 1);
                     UpdateHud();
                 }

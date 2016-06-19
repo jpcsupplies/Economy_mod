@@ -306,7 +306,8 @@
     {
         Account,
         CurrencyName,
-        TradeNetworkName
+        TradeNetworkName,
+        TradeZones
     }
 
     public enum MissionType : int
@@ -318,6 +319,7 @@
 
         TravelToArea,
 
+        DisplayAccountBalance,
         SellOre,
         BuySomething,
         PayPlayer,
