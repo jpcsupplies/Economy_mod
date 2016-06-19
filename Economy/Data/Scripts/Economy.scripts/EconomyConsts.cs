@@ -321,10 +321,15 @@
         SellOre,
         BuySomething,
         PayPlayer,
+        TradeWithPlayer,
         ShipWorth,
         BuySellShip,
         DeliverItemToTradeZone,
 
         KillPlayer,
+        DeactivateBlock,
+        ActivateBlock,
+        DestroyBlock,
+        CaptureBlock,
     }
 }

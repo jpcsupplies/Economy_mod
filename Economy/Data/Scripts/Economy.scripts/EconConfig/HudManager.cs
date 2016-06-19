@@ -10,6 +10,8 @@
     /// <summary>
     /// This will manage the Missions.
     /// Currently it is temporarily running from the Client side only, and will need to be controlled server side when finished.
+    /// Mission completion condition checks (for a players current mission) should try if possible to run client side  to 
+    /// distrubute load over players instead of using server sim
     /// </summary>
     public static class HudManager
     {
@@ -23,12 +25,17 @@
         {
             // TODO: this is a temporary structure, before we move this to a configurable data store that can be modified and persisted.
             // Missions will be stored on the server, but only current mission will be passed to the client.
+            // the following are an example of each potential mission type, in a custom missions system these are the types 
+            // of missions available for admins to create, or as a generic set of tutorial missions to teach player how to use economy
             Missions.Add(new MissionStruct
             {
                 MissionId = 0,
                 Designation = MissionType.None,
                 Name = "Mission: Survive | Deadline: Unlimited",
                 Reward = 0
+                //generic no mission status - although we could make a dont die within specific timeframe mission and use that deadline field
+                //sort of like a pirates counter-bounty mission if they dont die in that time they get a reward/escape justice
+                //eg a player with an auto bounty placed on them gets a timer in deadline showing how long until bounty expires
             });
 
             Missions.Add(new MissionStruct{
@@ -41,6 +48,7 @@
                 //create a client gps (caption, missionGPS);
                 //write this gps to some sort of list so we know 
                 //we need to remove it once we get there
+                //could require it to be a specific ore or any ore
             });
 
             Missions.Add(new MissionStruct
@@ -49,6 +57,7 @@
                 Designation = MissionType.BuySomething,
                 Name = "Buy something",
                 Reward = 100
+                //buy an item or any item from any trade zone or a specific trade zone
             });
 
             Missions.Add(new MissionStruct
@@ -57,35 +66,49 @@
                 Designation = MissionType.PayPlayer,
                 Name = "Pay a player",
                 Reward = 600
+                //pays any player or a specified player, or a player in a faction?
             });
 
             Missions.Add(new MissionStruct
             {
                 MissionId = 4,
-                Designation = MissionType.ShipWorth,
-                Name = "Check what a ship/station is worth",
-                Reward = 1000
-            });
+                Designation = MissionType.TradeWithPlayer,
+                Name = "Buy or Sell an item directly with another player",
+                Reward = 600
+                //sells an item to another player or buys something from someone direct (ie not from a trade zone)
+            }); 
 
             Missions.Add(new MissionStruct
             {
                 MissionId = 5,
-                Designation = MissionType.Weld,
-                Name = "Build / Weld Something",
-                Reward = 10000
+                Designation = MissionType.ShipWorth,
+                Name = "Check what a ship/station is worth",
+                Reward = 1000
+                //runs the worth command on anything - or on a specified ID or location?
             });
 
             Missions.Add(new MissionStruct
             {
                 MissionId = 6,
-                Designation = MissionType.JoinFaction,
-                Name = "Join a Faction",
+                Designation = MissionType.Weld,
+                Name = "Build / Weld Something",
                 Reward = 10000
+                //doesnt need to be a powered or owned block like activate mission
+                //could have a placed blocks counter eg they have to build 27 blocks (equivalent to a one block room)
             });
 
             Missions.Add(new MissionStruct
             {
                 MissionId = 7,
+                Designation = MissionType.JoinFaction,
+                Name = "Join a Faction",
+                Reward = 10000
+                //player joins ANY faction OR a SPECIFIC faction
+            });
+
+            Missions.Add(new MissionStruct
+            {
+                MissionId = 8,
                 Designation = MissionType.TravelToArea,
                 Name = "Investigate location 0,0,0",
                 SuccessMessage = "You have sucessfully investigated the location.",
@@ -101,11 +124,13 @@
                 //I really need a lot more info on the inner workings of the mission system here..
                 //either that or i avoid using advanceobjective entirely but that will mean we need missionID to be a 2 dimensional array, to track 
                 //mission and chain position.. which sounds like a safer bet - but wastes memory since the mission system has an element variable already.
+                //we could also use waypoints/gps points here which are removed as player investigates them for mission chains
+                //if we ever implement vanity names/scan database trading this could be used to require a player to /scan a specific location too
             });
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 8,
+                MissionId = 9,
                 Designation = MissionType.KillPlayer,
                 Name = "Bounty XX for killing player YY",
                 Reward = 10000
@@ -116,9 +141,11 @@
                 //1: is the killer piloting a ship or turret,  2: is the killer holding a tool or weapon that can kill a player, 
                 //3: is the killer currently on a mission to kill them - or in some profession or state that qualifies for bountys. (eg if we add professions)
                 //Kill credit ranges could also vary.  A player not piloting a ship but holding a tool/weapon 50-200 metres, 
+                //we may need a way to detect mod/workshop weapons (possible future bug)
                 //a player piloting a ship maybe 1000 metres
                 //Bounties could also be open missions where any player in a faction other than the person who died get a credit for witnessing/causing the death
-                //in this way we could potentially run automatic bounties on players who are pirates/criminals etc.
+                //in this way we could potentially run automatic bounties on players who are pirates/criminals etc. eg if a pirate player kills a player on  trading mission
+                //the pirate automatically has their bountry increased - be cool if we can scan players and auto show bounties in hud if profession used
                 //Admittedly this would be more effective on a perminent death server. But is still fun if not.
                 //Where multiple players are nearby we could simply pay an equal share; although this does present some exploitable problems - 
                 //This effect could be limited to only players holding a bounty on the dead player allowing for team bounty hunting.
@@ -129,7 +156,7 @@
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 9,
+                MissionId = 10,
                 Designation = MissionType.BuySellShip,
                 Name = "Buy/Sell a ship/station",
                 Reward = 10000
@@ -138,12 +165,51 @@
 
             Missions.Add(new MissionStruct
             {
-                MissionId = 10,
+                MissionId = 11,
                 Designation = MissionType.DeliverItemToTradeZone,
                 Name = "Deliver X item to Trade zone Y",
                 Reward = 10000
                 //only applies if we implement emergency restock contract missions
             });
+
+            Missions.Add(new MissionStruct
+            {
+                MissionId = 12,
+                Designation = MissionType.DeactivateBlock,
+                Name = "Disable/Turnoff Block",
+                Reward = 10000
+                //eg turn off a reactor, disable a warhead etc - if you simply want to grind down warhead etc
+            });
+
+            Missions.Add(new MissionStruct
+            {
+                MissionId = 13,
+                Designation = MissionType.ActivateBlock,
+                Name = "Enable/Turnon/Build or Repair Block",
+                Reward = 10000
+                //eg a block at a given location is of a given type and turned on/ ispowered()?
+            });
+
+            Missions.Add(new MissionStruct
+            {
+                MissionId = 14,
+                Designation = MissionType.DestroyBlock,
+                Name = "Destroy Block",
+                Reward = 10000
+                //eg destroy/remove warhead, remove reactor etc - grinding or blowing up
+
+            });
+
+            Missions.Add(new MissionStruct
+            {
+                MissionId = 15,
+                Designation = MissionType.CaptureBlock,
+                Name = "Capture/Hack Block",
+                Reward = 10000
+                //eg change ownership of block to self (or nominated player in case of steal mission)
+
+            });
+
         }
 
         public static void UpdateAfterSimulation()

@@ -378,8 +378,7 @@ namespace Economy.scripts
         //see also MessageConnectionResponse.cs for mission hud calls
         private void GotMessage(string messageText, ref bool sendToOthers)
         {
-            #region hud display
-
+           
             try
             {
                 // here is where we nail the echo back on commands "return" also exits us from processMessage
@@ -392,8 +391,7 @@ namespace Economy.scripts
             }
         }
 
-        #endregion hud display
-
+       
         private static void HandleMessage(byte[] message)
         {
             EconomyScript.Instance.ServerLogger.WriteVerbose("HandleMessage");
