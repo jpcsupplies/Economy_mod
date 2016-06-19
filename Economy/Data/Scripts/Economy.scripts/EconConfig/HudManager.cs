@@ -95,6 +95,8 @@
                 Reward = 10000
                 //doesnt need to be a powered or owned block like activate mission
                 //could have a placed blocks counter eg they have to build 27 blocks (equivalent to a one block room)
+                //Lana suggests it could be help repair another players space ship too
+                //Or require them to build a large/small space ship
             });
 
             Missions.Add(new MissionStruct
@@ -126,6 +128,7 @@
                 //mission and chain position.. which sounds like a safer bet - but wastes memory since the mission system has an element variable already.
                 //we could also use waypoints/gps points here which are removed as player investigates them for mission chains
                 //if we ever implement vanity names/scan database trading this could be used to require a player to /scan a specific location too
+                //Lana suggests fly a specific type of ship (large / small / spacesuit) too
             });
 
             Missions.Add(new MissionStruct
@@ -152,6 +155,8 @@
 
                 //Ideally bounties on AI ships/stations would be useful too, but how can you detect if they have been defeated?
                 //run an ispowered() check on all ship fragments with that ship/station ID?  Or check the command block is still hostile and powered?
+
+                //Lana suggests kill missions on monsters too.. eg kill 20 spiders
             });
 
             Missions.Add(new MissionStruct
@@ -207,6 +212,7 @@
                 Name = "Capture/Hack Block",
                 Reward = 10000
                 //eg change ownership of block to self (or nominated player in case of steal mission)
+                //Lana suggests steal a persons spaceship as a mission too
 
             });
 
