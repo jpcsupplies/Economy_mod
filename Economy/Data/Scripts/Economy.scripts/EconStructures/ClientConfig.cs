@@ -38,7 +38,7 @@
         public int MissionId { get; set; }
 
         /// <summary>
-        /// Dynamic Hud text.
+        /// String to hold Hud text, to be updated only when required.
         /// String element positions:
         /// {0} BankBalance, 
         /// {1} CurrencyName
@@ -48,6 +48,9 @@
         /// </summary>
         public string HudReadout { get; set; }
 
+        /// <summary>
+        /// String to hold Hud objective, to be updated only when required.
+        /// </summary>
         public string HudObjective { get; set; }
 
         #endregion
