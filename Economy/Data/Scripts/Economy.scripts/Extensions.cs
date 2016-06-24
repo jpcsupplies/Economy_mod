@@ -15,7 +15,7 @@ namespace Economy.scripts
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
-    using IMyShipConnector = Sandbox.ModAPI.Ingame.IMyShipConnector; // There isn't a non-Ingame interface for IMyShipConnector at this time.
+   // using IMyShipConnector = Sandbox.ModAPI.Ingame.IMyShipConnector; // There isn't a non-Ingame interface for IMyShipConnector at this time.
 
     public static class Extensions
     {
@@ -221,7 +221,7 @@ namespace Economy.scripts
             block.GetActionWithName(actionName).Apply(block);
         }
 
-        public static void ApplyAction(this Sandbox.ModAPI.Ingame.IMyTerminalBlock block, string actionName)
+        public static void ApplyAction(this IMyTerminalBlock block, string actionName)
         {
             block.GetActionWithName(actionName).Apply(block);
         }

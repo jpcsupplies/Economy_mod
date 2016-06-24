@@ -17,7 +17,7 @@
     using VRage.Game.ModAPI;
     using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
-    using IMyOxygenTank = Sandbox.ModAPI.Ingame.IMyOxygenTank;
+   // using IMyOxygenTank = Sandbox.ModAPI.Ingame.IMyOxygenTank;
 
     /// <summary>
     /// Will value a grid (ship or station), including attached rotor and piston parts.

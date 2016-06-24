@@ -7,12 +7,12 @@
     using Messages;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
-    using Sandbox.ModAPI.Ingame;
+    //using Sandbox.ModAPI.Ingame;
     using VRage.Game;
     using VRage.Game.ModAPI;
     using VRage.ModAPI;
     using VRageMath;
-    using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
+    //using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
 
     public static class MarketManager
     {
