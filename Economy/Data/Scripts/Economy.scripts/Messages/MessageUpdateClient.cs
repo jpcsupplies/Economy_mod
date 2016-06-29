@@ -59,6 +59,10 @@
                 case ClientUpdateAction.TradeNetworkName:
                     EconomyScript.Instance.ClientConfig.TradeNetworkName = TradeNetworkName;
                     break;
+
+                    case ClientUpdateAction.TradeZones:
+                    // TODO: 
+                    break;
             }
 
             HudManager.UpdateHud();

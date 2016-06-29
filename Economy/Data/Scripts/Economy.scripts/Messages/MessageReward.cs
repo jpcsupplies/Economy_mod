@@ -35,7 +35,7 @@
                 myaccount.Date = DateTime.Now;
 
                 MessageUpdateClient.SendAccountMessage(myaccount);
-                //MessageClientTextMessage.SendMessage(SenderSteamId, "RESET", "Done");
+                //MessageClientTextMessage.SendMessage(SenderSteamId, "Reward", "Done");
             }
         }
     }
