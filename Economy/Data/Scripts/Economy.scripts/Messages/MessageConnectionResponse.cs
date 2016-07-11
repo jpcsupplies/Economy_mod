@@ -69,8 +69,8 @@
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("");
 
-            MyAPIGateway.Utilities.ShowMessage("Economy", "Network Connected!");
-            MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} Trade Network!", EconomyScript.Instance.ClientConfig.TradeNetworkName);
+            MyAPIGateway.Utilities.ShowMessage("Economy", "Trade Network Connected! Type '/hud on' to display status.");
+            MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} System!", EconomyScript.Instance.ClientConfig.TradeNetworkName);
             MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/ehelp' for more informations about available commands");
 
             // if we need to switch to next mission use this MyAPIGateway.Utilities.GetObjectiveLine().AdvanceObjective();
