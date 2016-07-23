@@ -49,7 +49,7 @@
         /// The starting balance for NPC Bankers.
         /// </summary>
         /// <remarks>This will still be the default value if a Admin does not configure a custom starting balance.</remarks>
-        public const decimal NPCStartingBalance = 20000;
+        public const decimal NPCStartingBalance = 200000;
 
         /// <summary>
         /// Should players be near each other to trade or should it be unlimited distance.
