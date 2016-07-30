@@ -41,7 +41,7 @@
                 MissionId = 1,
                 Designation = MissionType.DisplayAccountBalance,
                 Name = "Type /bal to connect to network",
-                Reward = 100
+                Reward = 10
             });
 
             Missions.Add(new MissionStruct
@@ -122,7 +122,7 @@
                 Name = "Investigate location 0,0,0",
                 SuccessMessage = "You have sucessfully investigated the location.",
                 AreaSphere = new BoundingSphereD(new Vector3D(0, 0, 0), 50),
-                Reward = 1000
+                Reward = 100
                 //or in the case of a chain mission we add / advance to the next part of the mission chain
                 //the next chain could be generated to be different depending how the previous part was completed
                 //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("Mission"); or 
@@ -367,14 +367,14 @@
                     readout += " | " + "X: {2:F0} Y: {3:F0} Z: {4:F0}";
 
                 if (clientConfig.ShowContractCount)
-                    readout += " | Contracts: 0";
+                    readout += " | Tasks: " + (clientConfig.CompletedMissions-1) + " of 2";
                 if (clientConfig.ShowCargoSpace)
                     readout += " | Cargo ? of ?";
                 if (clientConfig.ShowFaction)
                 {
                     string faction = "Free agent";
                     IMyFaction plFaction;
-                    //IMyPlayer Me = MyAPIGateway.Session.Player; why waste the bytes
+                    
                     plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.PlayerID);
                     if (plFaction != null)
                     {
@@ -423,7 +423,7 @@
                 Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
                 string faction = "Free agent";
                 IMyFaction plFaction;
-                //IMyPlayer Me = MyAPIGateway.Session.Player; why waste the bytes
+                
                 plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.PlayerID);
                 if (plFaction != null)
                 {
@@ -475,14 +475,25 @@
 
                 if (success)
                 {
-                    // TODO: Send server to close mission.
+                    clientConfig.SeenBriefing = false; //reset the check that tests if player has seen briefing and/or had gps created already
+                    clientConfig.CompletedMissions++; //increment the completed missions counter
+                    //remove any mission gps if any ;)
+                    var list = MyAPIGateway.Session.GPS.GetGpsList(MyAPIGateway.Session.Player.IdentityId);
+                    foreach (var gps in list)
+                    {
+                        if (gps.Description == "Mission Objective^")
+                        {
+                            MyAPIGateway.Session.GPS.RemoveGps(MyAPIGateway.Session.Player.IdentityId, gps);
+                        }
+                    }
 
-                    string msg = mission.SuccessMessage;
+                    // TODO: Send server to close mission.
+                   string msg = mission.SuccessMessage;
 
                     if (mission.Reward != 0)
                     {
                         MessageRewardAccount.SendMessage(mission.Reward);
-                        msg += "\r\n1000 Credits Transferred to your account.";
+                        msg += "\r\n100 Credits Transferred to your account.";
                     }
 
                     MyAPIGateway.Utilities.ShowMissionScreen("Mission", "", "Completed", msg, null, "Okay");
@@ -490,7 +501,8 @@
                     clientConfig.LazyMissionText = clientConfig.MissionId + " Mission: completed";
 
                     // TODO: is a bad idea to increment. We need to fetch the next valid mission, or reset to blank.
-                    FetchMission(-1);
+                    //FetchMission(-1); 
+                    FetchMission(0);
                     //FetchMission(clientConfig.MissionId + 1);
                     UpdateHud();
                 }

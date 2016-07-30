@@ -508,7 +508,7 @@ namespace Economy.scripts
             //used to test whatever crazy stuff im trying to work out
 
             //placeholder for testing mission success triggers without using a timer yet
-            if (split[0].Equals("/mission", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
+            if (split[0].Equals("/mission", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin() && split.Length>=2)
             {
                 int mission;
                 if (split.Length >= 2 && int.TryParse(split[1], out mission))
@@ -520,9 +520,52 @@ namespace Economy.scripts
                 MyAPIGateway.Utilities.ShowMessage("debug", "You are at mission: {0}", ClientConfig.MissionId);
 
                 // Update the hud after having made a change to the selected mission.
-                
+
                 if (!HudManager.UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
                 return true;
+            }
+            else if (split[0].Equals("/mission", StringComparison.InvariantCultureIgnoreCase) && split.Length==1)
+            {  //we are not an admin how about we start off a demo / tutorial mission chain then
+                //this is only temp; ideally we should have some sort of mission menu system or something more fancy eg a mission LCD menu you navigate with chat commands
+                //at some point we probably need a "new missions available" message somewhere too. 
+                //looks like we need a persistent "completed missions" counter for each client to prevent repeating the same mission chains
+                //for now tho we can just make sure they only run it once per session; and keep rewards tiny.
+                //Chain: Suggest the /bal mission followed by the investigate 0,0,0 mission. Then mayby buy or sell or worth later.
+                //really need a way to let us specify the investigate coords instead of hard coding then i can make random coords for random investigate missions
+                //and of course being able to specify them in custom mission files admins create for their servers.
+                
+                if (ClientConfig.CompletedMissions == 0) { 
+                    //ok we are doing a mission, lets boot up the hud and activate mission relevent read outs
+                    ClientConfig.ShowHud = true;                
+                    ClientConfig.ShowContractCount = true;
+                    MyAPIGateway.Utilities.GetObjectiveLine().Show();
+                    ClientConfig.CompletedMissions=1;
+                    MyAPIGateway.Utilities.ShowMessage("Mission", "Received.");
+                    MyAPIGateway.Utilities.ShowMissionScreen("Mission", "1", "Issue Requested Command", "Welcome To The Mission Network System Agent!\r\nFirstly we need to test our connection is valid..\r\nDon't Worry the easiest way to do this is\r\nsimply run a basic system command.\r\nThe /bal command should do - this requests your bank balance.\r\nAfter closing this window, Please Type /bal to proceed..", null, "Yes Sir!");
+                 //ShowMissionScreen(string screenTitle = null, string currentObjectivePrefix = null, string currentObjective = null, string screenDescription = null, Action<ResultEnum> callback = null, string okButtonCaption = null);
+                }  //hopefully the =1 above will also trigger the if ==1 below .. saving on redundancy
+                if (ClientConfig.CompletedMissions == 1) { HudManager.FetchMission(1); MyAPIGateway.Utilities.ShowMessage("Objective:", "Issue command /bal to proceed."); }
+                if (ClientConfig.CompletedMissions == 2) { 
+                    HudManager.FetchMission(9); 
+                    ClientConfig.ShowXYZ = true;
+                    if (ClientConfig.SeenBriefing)
+                    {
+                        ClientConfig.SeenBriefing = true;
+                        //make a gps point for the objective.  Should probably make this a dedicated proceedure since various mission
+                        //things may need to set a gps point..  eg makegps(x,y,z,description)
+                        //then we could do things like if a player types /mayday  all online members of his faction or players automatically get a Distress beacon gps point etc
+                        //or investigate/mine here/kill this/destroy/repair/etc missions
+                        Vector3D location = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition(); //workaround or not this could be handy for players saving quick gps points for their location.. type command logic
+                        location.X = 0; location.Y = 0; location.Z = 0; //ye not sure how to assign this as the initialised value in a vector need help :) this is my work around
+                        var gps = MyAPIGateway.Session.GPS.Create("Mission Objective^", "Mission Objective^", location, true, false);
+                        MyAPIGateway.Session.GPS.AddGps(MyAPIGateway.Session.Player.IdentityId, gps);
+                        MyAPIGateway.Utilities.ShowMissionScreen("Mission", "2", "Investigate Location", "We need you to investigate location 0,0,0!\r\nHead on over and take a look around..\r\nA GPS point has been created for you.", null, "Yes Sir!");
+                    }
+                    MyAPIGateway.Utilities.ShowMessage("Objective:", "Investigate GPS location. 0,0,0");
+                }
+                if (!HudManager.UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
+                return true;
+            
             }
 
             if (split[0].Equals("/debug", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
@@ -1261,6 +1304,15 @@ namespace Economy.scripts
 
                 // TODO: pull current mission text when ClientConfig is ready.
                 //if (MyAPIGateway.Utilities.GetObjectiveLine().CurrentObjective == "Type /bal to connect to network")
+                if (ClientConfig.CompletedMissions == 1)
+                {
+                    ClientConfig.CompletedMissions++;
+                    MessageRewardAccount.SendMessage(10);
+                    MyAPIGateway.Utilities.ShowMissionScreen("Mission", "1", "Completed", "Great work agent, looks like the network link is solid.\r\n10 Reward Paid..\r\nWhen you are ready /mission again to check for missions..", null, "Yes Sir!");
+                    MyAPIGateway.Utilities.ShowMessage("Objective: ", "Completed! 10 reward paid. Type /mission to check for more missions");
+                    HudManager.FetchMission(0);
+                    if (!HudManager.UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
+                }
 
                 return true;
             }
