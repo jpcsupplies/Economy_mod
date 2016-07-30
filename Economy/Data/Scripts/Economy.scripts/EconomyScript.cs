@@ -548,7 +548,7 @@ namespace Economy.scripts
                 if (ClientConfig.CompletedMissions == 2) { 
                     HudManager.FetchMission(9); 
                     ClientConfig.ShowXYZ = true;
-                    if (ClientConfig.SeenBriefing)
+                    if (!ClientConfig.SeenBriefing)
                     {
                         ClientConfig.SeenBriefing = true;
                         //make a gps point for the objective.  Should probably make this a dedicated proceedure since various mission
