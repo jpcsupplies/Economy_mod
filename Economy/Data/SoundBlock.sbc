@@ -8,6 +8,7 @@
       </Id>
       <Sounds>
         <SoundDesc Id="tradezonedet" SoundName="Trade_zone_detected" />
+        <SoundDesc Id="inithud" SoundName="Init_Hud" />
       </Sounds>
     </SoundCategory>
   </SoundCategories>
@@ -24,6 +25,21 @@
       <Waves>
         <Wave Type="D2">
           <Start>Audio\tzd.xwm</Start>
+        </Wave>
+      </Waves>
+    </Sound>
+    <Sound>
+      <Id>
+        <TypeId>AudioDefinition</TypeId>
+        <SubtypeId>inithud</SubtypeId>
+      </Id>
+      <Category>Sb</Category>
+      <MaxDistance>100</MaxDistance>
+      <Volume>1.00</Volume>
+      <Loopable>false</Loopable>
+      <Waves>
+        <Wave Type="D2">
+          <Start>Audio\hud.xwm</Start>
         </Wave>
       </Waves>
     </Sound>
