@@ -573,6 +573,7 @@ namespace Economy.scripts
 
                 //test throwing a connection to a foreign server from server ie in lobby worlds or we have moved worlds
                 MyAPIGateway.Multiplayer.JoinServer("221.121.159.238:27270");
+<<<<<<< HEAD
 
                 //converting sample data
                /*
@@ -592,6 +593,8 @@ namespace Economy.scripts
                     output2 += Convert.ToChar(element); //converting them back
 	            }
                 */
+=======
+>>>>>>> refs/remotes/origin/master
                 
 
                 //advancing mission display test
