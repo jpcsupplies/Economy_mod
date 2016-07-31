@@ -573,27 +573,7 @@ namespace Economy.scripts
 
                 //test throwing a connection to a foreign server from server ie in lobby worlds or we have moved worlds
                 MyAPIGateway.Multiplayer.JoinServer("221.121.159.238:27270");
-
-
-                //converting sample data
-               /*
-	            // Input string.
-	            string input1 = "123456789";
-
-	            // Invoke GetBytes method.
-	            // ... You can store this array as a field!
-	            byte[] array = Encoding.ASCII.GetBytes(input1);
-                string output1=""; string output2="";
                 
-	            // Loop through contents of the array.
-	            foreach (byte element in array)
-	            {
-	                //Console.WriteLine("{0} = {1} - {2} + {3}", element, (char)element, output1, output2);
-	                output1+=element;  //raw ascii codes stuck together
-                    output2 += Convert.ToChar(element); //converting them back
-	            }
-                */
-               
 
                 //advancing mission display test
                 //ClientConfig.MissionId++;  //yup that works nicely
