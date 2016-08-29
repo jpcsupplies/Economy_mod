@@ -1835,6 +1835,7 @@ namespace Economy.scripts
                                 "ingot      (displays all ingot buy/sell prices)\r\n" +
                                 "Tools      (displays all tool buy/sell prices)\r\n" +
                                 "ammo       (displays all ammunition buy/sell prices)\r\n" +
+                                "#y         (Display only items from line y - eg #10 is item 10 in list)\r\nAllows price lists to run onto more than one LCD\r\n" +
                                 "gas etc may also be supported in future\r\n" +
                                 "stock      (shows amount of stock on hand of above)\r\n";
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "keywords component, ore, ingot, tools, ammo, stock");
