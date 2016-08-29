@@ -1949,6 +1949,18 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /pricelist [optional item type] ore/ingot/component/ammmo/tools etc");
                             MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "pricelist command", helpreply, null, "Close");
                             return true;
+                        case "gps":
+                            helpreply = "/gps add|del X\r\n Quick add or remove a GPS point of optional name [X]\r\n" +
+                                "Eg /gps add\r\n" +
+                                " This will quickadd a gps point at your location\r\n" +
+                                "Eg /gps add gold\r\n" +
+                                " This will quickadd a gps point here called 'gold'\r\n" +
+                                "Eg /gps del gold\r\n" +
+                                " This will remove ALL gps points named or described with the word 'gold'\r\n" +
+                                " \r\n";
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /pricelist [optional item type] ore/ingot/component/ammmo/tools etc");
+                            MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "pricelist command", helpreply, null, "Close");
+                            return true;
 
                     }
                 }
