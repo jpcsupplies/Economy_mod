@@ -538,7 +538,7 @@ namespace Economy.scripts
                 return true;
             }
             #endregion quick gps commands
-
+           
             #region mission
             //placeholder for testing mission success triggers without using a timer yet
             if (split[0].Equals("/mission", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin() && split.Length>=2)
@@ -557,7 +557,7 @@ namespace Economy.scripts
                 if (!HudManager.UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
                 return true;
             }
-            else if (split[0].Equals("/mission", StringComparison.InvariantCultureIgnoreCase) && split.Length==1)
+            else if (split[0].Equals("/mission", StringComparison.InvariantCultureIgnoreCase) && split.Length==1 || false) //added to disable until ready to release
             {  //we are not an admin how about we start off a demo / tutorial mission chain then
                 //this is only temp; ideally we should have some sort of mission menu system or something more fancy eg a mission LCD menu you navigate with chat commands
                 //at some point we probably need a "new missions available" message somewhere too. 
