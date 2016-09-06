@@ -404,6 +404,36 @@
             EconomyScript.Instance.ClientConfig.LazyMissionText = EconomyScript.Instance.ClientConfig.MissionId == -1 ? null : Missions[EconomyScript.Instance.ClientConfig.MissionId].Name;
         }
 
+
+        public static void GPS(double x,double y, double z, string name, string description, bool create)
+        {
+
+            //make a gps point for the objective.  eg GPS(x,y,z,name,description,true)
+            //remove an existing GPS point  eg GPS(x,y,z,name,description,false)
+            //Helps Automate process for creating/removing investigate/mine here/kill this/destroy/repair/etc missions markers
+
+                //ye not sure how to assign this as the initialised value in a vector need help :) this is my work around
+                Vector3D location = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                location.X = x; location.Y = y; location.Z = y;
+                     
+            if (create)
+                {  //make a new GPS
+                    var gps = MyAPIGateway.Session.GPS.Create(name, description, location, true, false);
+                    MyAPIGateway.Session.GPS.AddGps(MyAPIGateway.Session.Player.IdentityId, gps);
+                } 
+            else { //remove a GPS
+                    var list = MyAPIGateway.Session.GPS.GetGpsList(MyAPIGateway.Session.Player.IdentityId);
+                    foreach (var gps in list)
+                    {
+                        if (gps.Description == description || gps.Name == name || gps.Coords==location)
+                        {
+                            MyAPIGateway.Session.GPS.RemoveGps(MyAPIGateway.Session.Player.IdentityId, gps);
+                        }
+                    }
+                }
+
+        }
+
         public static void UpdateMission()
         {
             ClientConfig clientConfig = EconomyScript.Instance.ClientConfig;
@@ -476,17 +506,18 @@
                 if (success)
                 {
                     clientConfig.SeenBriefing = false; //reset the check that tests if player has seen briefing and/or had gps created already
-                    clientConfig.CompletedMissions++; //increment the completed missions counter
-                    //remove any mission gps if any ;)
-                    var list = MyAPIGateway.Session.GPS.GetGpsList(MyAPIGateway.Session.Player.IdentityId);
-                    foreach (var gps in list)
-                    {
-                        if (gps.Description == "Mission Objective^")
-                        {
-                            MyAPIGateway.Session.GPS.RemoveGps(MyAPIGateway.Session.Player.IdentityId, gps);
-                        }
+                    clientConfig.CompletedMissions++; //increment the completed missions counter (note this is not intended to be 'current' mission just a counter)
+                    //it will probably only be used for current mission "chain" tracking later on
+                    if (clientConfig.CompletedMissions >= 3)
+                    { //demo mission chain is over clean up unnecessary hud sections we added earlier
+                        clientConfig.ShowContractCount = false;
+                        clientConfig.ShowXYZ = false;
+
                     }
 
+                    //remove any mission gps if any ;)
+                    GPS(0, 0, 0, "Mission Objective^", "Mission Objective^", false);
+                    
                     // TODO: Send server to close mission.
                    string msg = mission.SuccessMessage;
 

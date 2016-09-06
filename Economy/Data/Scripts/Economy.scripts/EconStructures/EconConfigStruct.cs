@@ -25,7 +25,7 @@
             EnableLcds = true;
             EnablePlayerPayments = true;
             EnableNpcTradezones = true;
-            EnablePlayerTradezones = true; // TODO: default it off until it is working.
+            EnablePlayerTradezones = true;
             MaximumPlayerTradeZones = 1;
             TradeZoneLicenceCostMin = 2000;
             TradeZoneLicenceCostMax = 20000000;

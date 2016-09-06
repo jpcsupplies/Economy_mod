@@ -1,0 +1,25 @@
+The basis is simple, even for those who are novices. To start, use your preferred method to convert the desired audio file to WAV format. I like to use Quick Media Converter, or even better, Audacity. Both are free and readily found in any respectable search engine. Be sure to give your WAV file a simple name, like "1.wav" (without the quotation marks).
+
+Now, place the new WAV file in the xwm-wav conversion folder, and run the cmd executable located within. You should get a command prompt window.
+
+There are three parts to typing out the conversion command. First is to tell cmd to run xWMAEncode.exe. This is done by typing "xwmaencode.exe" (please ignore all quotation marks, do not type them).
+
+The second part is to tell cmd what file xWMAEncode will target. In this case, it's our 1.wav file, so hit the spacebar once to put a space after xwmaencode.exe and type "1.wav"
+
+Lastly, tell cmd how to output the file, the name and format. In this case, we will assume we are replacing the music on Skyrim's main menu. If you are wanting to convert the WAV for a different piece of music, you will need to figure out the proper name for your file. If you don't know what the filename should be offhand, don't worry and keep going, you can always rename the file later. So, one more space to seperate the line, and our last part of the command is "mus_maintheme.xwm"
+
+In our example, the three parts should look like so:
+
+xwmaencode.exe 1.wav mus_maintheme.xwm
+
+Hit Enter/Return, and there will be a brief pause before the final product is deposited in the xwm-wav conversion file. Now, just place it in the appropriate place in your Skyrim data folder and give it a listen.
+
+It should be noted that the process works in reverse, allowing the user to convert XWM to WAV. An example of such would look like so, if one wished to convert the vanilla theme to WAV:
+
+xwmaencode.exe mus_maintheme.xwm skyrim_menu_theme.wav
+
+You can name the output WAV file anything you want in cmd for XWM to WAV conversion, or just give it a simple name and rename it later, whichever you prefer.
+
+
+Enjoy the spoils!
+-arecaidianfox

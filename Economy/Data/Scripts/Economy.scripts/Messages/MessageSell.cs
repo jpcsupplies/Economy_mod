@@ -340,12 +340,12 @@
                         if (!sellingPlayer.IsAdmin())
                             transactionAmount = Math.Abs(transactionAmount);
 
-                        if (SellToMerchant) // && (merchant has enough money  || !EconomyScript.Instance.Config.LimitedSupply)
+                        if (SellToMerchant) // && (merchant has enough money  || !EconomyScript.Instance.ServerConfig.LimitedSupply)
                                             //this is also a quick fix ideally npc should buy what it can afford and the rest is posted as a sell offer
                         {
                             if (accountToBuy.SteamId != accountToSell.SteamId)
                             {
-                                var limit = marketItem.StockLimit - marketItem.Quantity;
+                                decimal limit = EconomyScript.Instance.ServerConfig.LimitedSupply ? marketItem.StockLimit - marketItem.Quantity : ItemQuantity;
 
                                 if (limit == 0)
                                 {
@@ -397,7 +397,8 @@
                         if (OfferToMarket)
                         {
                             // TODO: Here we post offer to appropriate zone market
-
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Offset to market at price is not yet available!");
+                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- Offer to market at price is not yet available.", SenderSteamId);
                             return;
                         }
 

@@ -94,12 +94,22 @@
             bool showPrices = true;
             bool showTest1 = false;
             bool showTest2 = false;
+            bool startFrom = false; //if # is specified eg #20  then run the start line logic
+            int startLine = 0; //this is where our start line placeholder sits
 
             // removed Linq, to reduce the looping through the array. This should only have to do one loop through all items in the array.
             foreach (var str in checkArray)
             {
                 if (str.Equals("stock", StringComparison.InvariantCultureIgnoreCase))
                     showStock = true;
+                if (str.Contains("#"))
+                {
+                    string[] lineNo = str.Split(new Char[] { '#' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (lineNo.Length != 0 && int.TryParse(lineNo[0], out startLine)) { 
+                        //this only runs if they put a number in
+                        startFrom = true;
+                    }
+                }
                 if (str.Equals("*", StringComparison.InvariantCultureIgnoreCase))
                     showAll = true;
                 if (!showAll)
@@ -177,6 +187,12 @@
             else
             {
                 // TODO: not sure if we should display all markets, the cheapest market item, or the closet market.
+                // LOGIC summary: it needs to show the cheapest in stock(in range) sell(to player) price, and the highest (in range) has funds buy(from player) price
+                // but this logic depends on the buy/sell commands defaulting to the same buy/sell rules as above.
+                // where buy /sell commands run out of funds or supply in a given market and need to pull from the next market
+                //it will either have to stop at each price change and notify the player, and/or prompt to keep transacting at each new price, or blindly keep buying until the
+                //order is filled, the market runs out of stock, or the money runs out. Blindly is probably not optimal unless we are using stockmarket logic (buy orders/offers)
+                //so the prompt option is the safer
                 var market = markets.FirstOrDefault();
 
                 // Build a list of the items, so we can get the name so we can the sort the items by name.
@@ -184,7 +200,10 @@
 
                 writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, market.DisplayName);
 
+                string fromLine = " (From item #" + startLine + ".)";
                 writer.AddPublicText("« Market List");
+                if (startLine >=1) writer.AddPublicText(fromLine);
+                
 
                 if (showPrices && showStock)
                 {
@@ -200,10 +219,14 @@
                     writer.AddPublicRightLine(sellColumn, "Sell »");
                 }
 
+                //somewhere here is probably were a start at line # logic would need to be added to split prices between lcds..
+               
                 foreach (var marketItem in market.MarketItems)
                 {
+
                     if (marketItem.IsBlacklisted)
                         continue;
+
 
                     MyObjectBuilderType result;
                     if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
@@ -230,9 +253,12 @@
                         }
                     }
                 }
-
+ int line = 0;
                 foreach (var kvp in list.OrderBy(k => k.Value))
-                {
+                {                    
+                    line++;                   
+                    if (startFrom && line < startLine) //if we have a start line specified skip all lines up to that
+                        continue;
                     writer.AddPublicLeftTrim(buyColumn - 120, kvp.Value);
                     if (showPrices && showStock)
                     {
