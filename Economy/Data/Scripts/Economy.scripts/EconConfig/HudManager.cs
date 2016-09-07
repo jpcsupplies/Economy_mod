@@ -414,7 +414,7 @@
 
                 //ye not sure how to assign this as the initialised value in a vector need help :) this is my work around
                 Vector3D location = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-                location.X = x; location.Y = y; location.Z = y;
+                location.X = x; location.Y = y; location.Z = z;
                      
             if (create)
                 {  //make a new GPS
