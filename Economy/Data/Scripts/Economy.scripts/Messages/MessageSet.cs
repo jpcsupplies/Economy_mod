@@ -144,7 +144,7 @@
 
                 if (ItemQuantity <= 0)
                 {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "Invalid quantity spectified");
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "SET", "Invalid quantity specified");
                     return;
                 }
             }

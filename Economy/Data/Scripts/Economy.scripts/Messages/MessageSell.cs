@@ -391,6 +391,38 @@
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "NPC can't afford {0} {4} worth of {2} ({1} units) NPC only has {3} funds!", transactionAmount, ItemQuantity, definition.GetDisplayName(), accountToBuy.BankBalance, EconomyScript.Instance.ServerConfig.CurrencyName);
                             }
                             EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create completed by Steam Id '{0}' -- to NPC market.", SenderSteamId);
+                            //Sliding price logic. This should  probably factor in the current sale amount too - 
+                            //perhaps breaking up the sale amount into smaller units, and re-running the reactive pricing checks
+                            //after each units.  eg player sells 500000 gravel, break it up into groups of 100000
+                            // and slide the price after each 100000. This would be a pretty major change however
+                            // as the pay player logic would need to pay out on each price change at each price point
+                            // although it would still work without that; it would cause multiple price drops from a single sell
+                            // which is a waste of overhead if the player still gets the original price anyway
+
+                            if (EconomyConsts.PriceScaling) //Check if the option to change price based on stock is on
+                                //this should be updated to point at our config file when its added not consts
+                                //qty price points could also work on quantity as a multiple of price somehow..
+                                //or simplified as a percentage/calculation formula to generate price changes
+                                // this entire section should probably be in its own proceedure with a buy/sell check
+                                //halving item price too many times may result in too many decimal places - added a <0.0001 limit
+                                //the reduction scale probably needs tweaking? Should the price drop by a fraction proprtional to
+                                //the sale size ?  then every sell brings "NPC buy from player" price down.
+
+                            {
+                                 decimal scale = 0;
+                                if (ItemPrice < (decimal)0.00001) { ItemPrice=(decimal)0.00001; } //safety limit to prevent decimal point overflow errors
+                                if ((ItemPrice <= 1) && (ItemPrice > (decimal)0.00001) && (marketItem.Quantity >= 500000)) { scale = (decimal)0.5; } //50%
+                                if ((ItemPrice > 1) && (ItemPrice <= 50) && (marketItem.Quantity >= 200000)) { scale = (decimal)0.75; } //25%
+                                if ((ItemPrice > 50) && (ItemPrice <= 150) && (marketItem.Quantity >= 150000)) { scale = (decimal)0.85; } //15%
+                                if ((ItemPrice > 150) && (ItemPrice <= 300) && (marketItem.Quantity >= 100000)) { scale = (decimal)0.9; } //10%
+                                if ((ItemPrice > 300) && (ItemPrice <= 1000) && (marketItem.Quantity >= 50000)) { scale = (decimal)0.95; } //5%
+                                if ((ItemPrice > 1000) && (ItemPrice <= 5000) && (marketItem.Quantity >= 10000)) { scale = (decimal)0.97; } //3%
+                                if ((ItemPrice > 5000) && (ItemPrice <= 15000) && (marketItem.Quantity >= 5000)) { scale = (decimal)0.98; }// 2%
+                                if ((ItemPrice > 15000) && (marketItem.Quantity >= 500)) { scale = (decimal)0.99; } //1%
+                                marketItem.SellPrice = (marketItem.SellPrice * scale);  
+                                // the increase price again checks go in the "NPC sell to player" section
+                                // Probably should also drag down sell to player price too here
+                            }
                             return;
                         }
 
