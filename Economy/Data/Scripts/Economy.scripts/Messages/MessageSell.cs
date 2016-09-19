@@ -22,7 +22,7 @@
     //using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
 
     /// <summary>
-    /// this is to do the actual work of checking and moving the goods.
+    /// this is to do the actual work of checking and moving the goods when a player is selling to something/someone
     /// </summary>
     [ProtoContract]
     public class MessageSell : MessageBase
@@ -420,7 +420,7 @@
                                 if ((ItemPrice > 5000) && (ItemPrice <= 15000) && (marketItem.Quantity >= 5000)) { scale = (decimal)0.98; }// 2%
                                 if ((ItemPrice > 15000) && (marketItem.Quantity >= 500)) { scale = (decimal)0.99; } //1%
                                 marketItem.SellPrice = (marketItem.SellPrice * scale);  
-                                // the increase price again checks go in the "NPC sell to player" section
+                             
                                 // Probably should also drag down sell to player price too here
                             }
                             return;
