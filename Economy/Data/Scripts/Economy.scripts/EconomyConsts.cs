@@ -21,7 +21,7 @@
 
 
         //milestone level A=Alpha B=Beta, dev = development test version or Milestone eg 1.0A Milestone, 1.1A Dev etc
-        public const string MajorVer = "Econ 3.375A Stable Dev";
+        public const string MajorVer = "Econ 3.38A Test Branch";
 
         //Name our money
         public const string CurrencyName = "Credits";
@@ -53,7 +53,7 @@
 
         /// <summary>Should we have sliding price scales?</summary>
         /// <remarks>This sets if prices should react to available supply.</remarks>
-        public const bool PriceScaling = false;  //default will be true - this should be set/saved in server config
+        public const bool PriceScaling = true;  //default will be true - this should be set/saved in server config
 
         /// <summary>
         /// Should players be near each other to trade or should it be unlimited distance.

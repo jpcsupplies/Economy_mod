@@ -328,7 +328,8 @@
 
                             if (UseBankBuyPrice)
                                 // The player is selling, but the *Market* will *buy* it from the player at this price.
-                                ItemPrice = marketItem.BuyPrice;
+                                if (!EconomyConsts.PriceScaling) ItemPrice = marketItem.BuyPrice; else ItemPrice = ReactivePricing.PriceAdjust(marketItem.BuyPrice, marketItem.Quantity);
+                                // if we are using price scaling adjust the price before our NPC trade (or check player for subsidy pricing)
                         }
 
                         var accountToSell = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
