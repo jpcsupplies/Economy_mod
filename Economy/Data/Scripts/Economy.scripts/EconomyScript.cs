@@ -374,11 +374,11 @@ namespace Economy.scripts
 
         #endregion
 
-        #region message handling and hud
+        #region message handling
         //see also MessageConnectionResponse.cs for mission hud calls
         private void GotMessage(string messageText, ref bool sendToOthers)
         {
-            #region hud display
+ 
 
             try
             {
@@ -392,7 +392,7 @@ namespace Economy.scripts
             }
         }
 
-        #endregion hud display
+ 
 
         private static void HandleMessage(byte[] message)
         {
@@ -400,7 +400,7 @@ namespace Economy.scripts
             EconomyScript.Instance.ClientLogger.WriteVerbose("HandleMessage");
             ConnectionHelper.ProcessData(message);
         }
-        #endregion message handling and hud
+        #endregion message handling
 
         #region timers
 

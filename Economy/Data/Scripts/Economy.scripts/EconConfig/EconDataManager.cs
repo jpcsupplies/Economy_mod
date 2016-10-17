@@ -8,8 +8,21 @@
     using Sandbox.ModAPI;
     using VRageMath;
 
+    public class ReactivePricing {
+        public decimal PriceAdjust(decimal price, decimal onhand)
+        {
+            //
+            // Summary:
+            //     Takes specified price, and adjusts it based on given stock on hand using reactive price rules to
+            //     give us a market buy or sell price that has reacted to overstocked or understocked goods.
+            //     Can be called when buying, selling or displaying prices on lcds or /pricelist command or /value possibly /worth too
+            return 69;
+        }
+    }
+
     public static class EconDataManager
     {
+        // probably should load our reactive pricing rules here somewhere
         #region Load and save CONFIG
 
         public static string GetConfigFilename()
@@ -796,6 +809,9 @@
         {
             return string.Format("EconomyData_{0}.xml", Path.GetFileNameWithoutExtension(MyAPIGateway.Session.CurrentPath));
         }
+
+
+ 
 
         public static EconDataStruct LoadData(List<MarketItemStruct> defaultPrices)
         {

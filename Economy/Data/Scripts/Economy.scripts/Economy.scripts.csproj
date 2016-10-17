@@ -121,7 +121,6 @@
     <Compile Include="Management\TextPanelWriter.cs" />
     <Compile Include="Messages\MessageConfig.cs" />
     <Compile Include="Messages\MessageMarketManagePlayer.cs" />
-    <Compile Include="Messages\MessageMission.cs" />
     <Compile Include="Messages\MessageReward.cs" />
     <Compile Include="Messages\MessageUpdateClient.cs" />
     <Compile Include="Messages\MessageBuy.cs" />

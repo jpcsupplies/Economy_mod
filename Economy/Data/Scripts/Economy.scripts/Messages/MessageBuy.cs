@@ -185,8 +185,9 @@
             var position = ((IMyEntity)character).WorldMatrix.Translation;
 
             MarketItemStruct marketItem = null;
-
-            if (BuyFromMerchant || UseBankSellPrice)
+            //New sliding price logic goes here? use econdatamanager for price adj 
+           // if (EconomyConsts.PriceScaling)
+                if (BuyFromMerchant || UseBankSellPrice)
             {
                 var markets = MarketManager.FindMarketsFromLocation(position);
                 if (markets.Count == 0)
@@ -292,27 +293,7 @@
                     MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There isn't '{0}' of {1} available to purchase! Only {2} available to buy!", ItemQuantity, definition.GetDisplayName(), marketItem.Quantity);
                     EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- not enough stock.", SenderSteamId);
                 }
-                // sliding price logic goes here?
-                if (EconomyConsts.PriceScaling && marketItem.SellPrice>(marketItem.BuyPrice *2)) 
-                    //Check if the option to change price based on stock is on, and that the sell to player price is at least 100% larger than the buy from player price before we start
-                    //sliding the price
-  
-                //the reduction scale probably needs tweaking? Should the price drop by a fraction proprtional to
-                //the sale size ?  then every sell brings "NPC buy from player" price down.
-                {
-                    decimal scale = 0;
-                    if (ItemPrice < (decimal)0.00002) { ItemPrice = (decimal)0.00002; } //safety limit to prevent decimal point overflow errors
-                    if ((ItemPrice <= 1) && (ItemPrice > (decimal)0.00001) && (marketItem.Quantity >= 500000)) { scale = (decimal)0.6; } //40%
-                    if ((ItemPrice > 1) && (ItemPrice <= 50) && (marketItem.Quantity >= 200000)) { scale = (decimal)0.85; } //15%
-                    if ((ItemPrice > 50) && (ItemPrice <= 150) && (marketItem.Quantity >= 150000)) { scale = (decimal)0.9; } //10%
-                    if ((ItemPrice > 150) && (ItemPrice <= 300) && (marketItem.Quantity >= 100000)) { scale = (decimal)0.95; } //5%
-                    if ((ItemPrice > 300) && (ItemPrice <= 1000) && (marketItem.Quantity >= 50000)) { scale = (decimal)0.96; } //4%
-                    if ((ItemPrice > 1000) && (ItemPrice <= 5000) && (marketItem.Quantity >= 10000)) { scale = (decimal)0.97; } //3%
-                    if ((ItemPrice > 5000) && (ItemPrice <= 15000) && (marketItem.Quantity >= 5000)) { scale = (decimal)0.98; }// 2%
-                    if ((ItemPrice > 15000) && (marketItem.Quantity >= 500)) { scale = (decimal)0.99; } //1%
-                    marketItem.BuyPrice = (marketItem.BuyPrice * scale);
 
-                }
                 return;
             }
             else if (FindOnMarket)
