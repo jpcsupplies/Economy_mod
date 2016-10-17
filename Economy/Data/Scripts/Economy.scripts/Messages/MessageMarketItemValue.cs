@@ -78,10 +78,12 @@
             else
             {
                 // TODO: qty may need additional range checking here.
+                // Adjust price to reflect stock
+                decimal AdjPrice = ReactivePricing.PriceAdjust(item.SellPrice, item.Quantity);
 
                 if (Quantity == 1)
                     // set reply to report back the current buy and sell price only since that is all we asked for
-                    reply = String.Format("TRADE - You can buy each '{0}' for {1}, or sell it back for {2} each.", DisplayName, item.SellPrice, item.BuyPrice);
+                    reply = String.Format("TRADE - You can buy each '{0}' for {1}, or sell it back for {2} each. Debug {3}", DisplayName, item.SellPrice, item.BuyPrice, AdjPrice); 
                 else
                     // value BLAH 12 - we must want to know how much we make/pay for buying/selling 12
                     // set reply to current buy and sell price multiplied by the requested qty.

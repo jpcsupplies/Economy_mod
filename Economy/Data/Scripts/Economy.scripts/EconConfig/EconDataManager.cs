@@ -8,14 +8,16 @@
     using Sandbox.ModAPI;
     using VRageMath;
 
-    public class ReactivePricing {
-        public decimal PriceAdjust(decimal price, decimal onhand)
+    public static class ReactivePricing {
+        public static decimal PriceAdjust(decimal price, decimal onhand)
         {
             //
             // Summary:
             //     Takes specified price, and adjusts it based on given stock on hand using reactive price rules to
             //     give us a market buy or sell price that has reacted to overstocked or understocked goods.
             //     Can be called when buying, selling or displaying prices on lcds or /pricelist command or /value possibly /worth too
+
+            //just a placeholder at the moment return test value
             return 69;
         }
     }

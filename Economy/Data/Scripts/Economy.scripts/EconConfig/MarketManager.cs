@@ -7,20 +7,12 @@
     using Messages;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
-<<<<<<< HEAD
-    //using Sandbox.ModAPI.Ingame;
-=======
->>>>>>> refs/remotes/origin/master
     using VRage.Game;
     using VRage.Game.ModAPI;
     using VRage.ModAPI;
     using VRageMath;
-<<<<<<< HEAD
-    //using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
-=======
     using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
     using IMyBeacon = Sandbox.ModAPI.Ingame.IMyBeacon;
->>>>>>> refs/remotes/origin/master
 
     public static class MarketManager
     {

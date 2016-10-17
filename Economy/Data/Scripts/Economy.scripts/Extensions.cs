@@ -221,7 +221,7 @@ namespace Economy.scripts
             block.GetActionWithName(actionName).Apply(block);
         }
 
-        public static void ApplyAction(this IMyTerminalBlock block, string actionName)
+        public static void ApplyAction(this Sandbox.ModAPI.Ingame.IMyTerminalBlock block, string actionName)
         {
             block.GetActionWithName(actionName).Apply(block);
         }
