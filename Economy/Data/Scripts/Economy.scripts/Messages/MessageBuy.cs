@@ -16,7 +16,7 @@
     using VRage.ObjectBuilders;
 
     /// <summary>
-    /// this is to do the actual work of checking and moving the goods.
+    /// this is to do the actual work of checking and moving the goods when a player is buying from something/someone
     /// </summary>
     [ProtoContract]
     public class MessageBuy : MessageBase
@@ -136,7 +136,7 @@
                 return;
             }
 
-            // Who are we buying to?
+            // Who are we buying from?
             BankAccountStruct accountToSell;
             if (BuyFromMerchant)
                 accountToSell = AccountManager.FindAccount(EconomyConsts.NpcMerchantId);
@@ -185,7 +185,7 @@
             var position = ((IMyEntity)character).WorldMatrix.Translation;
 
             MarketItemStruct marketItem = null;
-
+            
             if (BuyFromMerchant || UseBankSellPrice)
             {
                 var markets = MarketManager.FindMarketsFromLocation(position);
@@ -228,7 +228,8 @@
 
                 if (UseBankSellPrice)
                     // The player is buying, but the *Market* will *sell* it to the player at this price.
-                    ItemPrice = marketItem.SellPrice;
+                    if (!EconomyConsts.PriceScaling) ItemPrice = marketItem.SellPrice; else ItemPrice = ReactivePricing.PriceAdjust(marketItem.SellPrice, marketItem.Quantity);
+                    // If price scaling is on, adjust item price (or check player for subsidy pricing)
             }
 
             var accountToBuy = AccountManager.FindOrCreateAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
