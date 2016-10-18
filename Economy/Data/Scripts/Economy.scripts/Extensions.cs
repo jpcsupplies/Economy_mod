@@ -285,10 +285,18 @@ namespace Economy.scripts
                 {
                     // The Rotor Part.
                     IMyMotorRotor motorRotor = block.FatBlock as IMyMotorRotor;
+                    IMyCubeGrid entityParent = null;
                     if (motorRotor == null || motorRotor.Stator == null)
-                        continue;
+                    {
+                        // Wheels appear to not properly populate the Stator property.
+                        IMyCubeBlock altBlock = Support.FindRotorBase(motorRotor.EntityId);
+                        if (altBlock == null)
+                            continue;
 
-                    IMyCubeGrid entityParent = motorRotor.Stator.CubeGrid;
+                        entityParent = altBlock.CubeGrid;
+                    }
+                    else
+                        entityParent = motorRotor.Stator.CubeGrid;
                     if (!results.Any(e => e.EntityId == entityParent.EntityId))
                     {
                         results.Add(entityParent);
