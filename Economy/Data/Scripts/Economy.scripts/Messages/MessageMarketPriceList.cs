@@ -147,10 +147,17 @@
 
                     foreach (var kvp in orderedList)
                     {
+                        decimal showBuy = kvp.Key.BuyPrice;
+                        decimal showSell = kvp.Key.SellPrice;
+                        if ((EconomyConsts.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))
+                        {  
+                            showBuy = ReactivePricing.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity);
+                            showSell = ReactivePricing.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity);
+                        }
                         // TODO: formatting of numbers, and currency name.
                         str.AddLeftTrim(550, kvp.Value);
-                        str.AddRightText(650, kvp.Key.BuyPrice.ToString("0.00", EconomyScript.ServerCulture));
-                        str.AddRightText(850, kvp.Key.SellPrice.ToString("0.00", EconomyScript.ServerCulture));
+                        str.AddRightText(650, showBuy.ToString("0.00", EconomyScript.ServerCulture));
+                        str.AddRightText(850, showSell.ToString("0.00", EconomyScript.ServerCulture));
                         str.AppendLine();
                     }
                     reply = str.ToString();

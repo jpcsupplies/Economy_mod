@@ -9,66 +9,65 @@
     using VRageMath;
     
     public static class ReactivePricing {
-+        public static decimal PriceAdjust(decimal price, decimal onhand)
-+        {
-+            //
-+            // Summary:
-+            //     Takes specified price, and adjusts it based on given stock on hand using reactive price rules to
-+            //     give us a market buy or sell price that has reacted to overstocked or understocked goods.
-+            //     Can be called when buying(done), selling(done) or displaying prices on lcds(done) or /pricelist command or /value(done) possibly /worth too
-+
-+
-+            /* desired logic:
-+        0: presumably we run this server side since the player is unlikely to have the price file, if no file found create one
-+        1: either load the price adjust table from the pricetable file OR use a list/array which already contains the table
-+        2: compare the on hand value supplied with the values in the table if it matches a criteria adjust price
-+        3: repeat this until all table entries have been checked and/or applied as appropriate to slide the price up or down
-+        4: return the calculated price for output to player price list or for buy/sell transactions
-+        *** We also apply transport tycoon style subsides in here too.
-+            */
-+
-+
-+            /*  yes this works           
-+            string text = "Test";
-+            //wrapping in "using" supposedly removes the need for flush or close.. what implications this has on performance however..
-+            using (TextWriter writer = MyAPIGateway.Utilities.WriteFileInGlobalStorage("test.txt")) 
-+            {
-+                writer.WriteLine(text);
-+                writer.Write(" another test");
-+                writer.Write(writer.NewLine);
-+            }
-+
-+            using (TextReader reader = MyAPIGateway.Utilities.ReadFileInGlobalStorage("test.txt"))
-+            {
-+                text = reader.ReadToEnd();
-+                MyAPIGateway.Utilities.ShowMissionScreen("test", "", "file operation", text, null, "Cool");
-+            }
-+            */
-+           
-+            //Hard coded table until implement a price table file load routine
-+            int[] PricePoints = { 0, 10, 50, 1000, 15000, 50000, 100000, 200000 };
-+            decimal[] PriceChange = { 1.3m, 1.2m, 1.1m, 1m, 0.9m, 0.5m, 0.25m, 0.10m }; //damn c# can be dumb - initing an array of decimals with decimals and it assumes are doubles pffft
-+
-+            var x = 0;
-+            do {
-+                if ((onhand > PricePoints[x]) && (PriceChange[x] <1)) 
-+                {
-+                    price = price * PriceChange[x];
-+                }
-+                else
-+                {
-+                        if ((onhand <= PricePoints[x]) && (PriceChange[x] > 1))
-+                        {
-+                            price = price * PriceChange[x];
-+                        }
-+                }
-+                x++;
-+            } while (x < PricePoints.Length);
-+            
-+            return price;
-+        }
-+    }
-+
+        public static decimal PriceAdjust(decimal price, decimal onhand)
+        {
+            //
+            // Summary:
+            //     Takes specified price, and adjusts it based on given stock on hand using reactive price rules to
+            //     give us a market buy or sell price that has reacted to overstocked or understocked goods.
+            //     Can be called when buying(done), selling(done) or displaying prices on lcds(done) or /pricelist command(done) or /value(done) possibly /worth too (possible issues with performance)
+
+
+            /* desired logic:
+        0: presumably we run this server side since the player is unlikely to have the price file, if no file found create one
+        1: either load the price adjust table from the pricetable file OR use a list/array which already contains the table
+        2: compare the on hand value supplied with the values in the table if it matches a criteria adjust price
+        3: repeat this until all table entries have been checked and/or applied as appropriate to slide the price up or down
+        4: return the calculated price for output to player price list or for buy/sell transactions
+        *** We also apply transport tycoon style subsides in here too.
+            */
+
+            /*  yes this works           
+            string text = "Test";
+            //wrapping in "using" supposedly removes the need for flush or close.. what implications this has on performance however..
+            using (TextWriter writer = MyAPIGateway.Utilities.WriteFileInGlobalStorage("test.txt")) 
+            {
+                writer.WriteLine(text);
+                writer.Write(" another test");
+                writer.Write(writer.NewLine);
+            }
+
+            using (TextReader reader = MyAPIGateway.Utilities.ReadFileInGlobalStorage("test.txt"))
+            {
+                text = reader.ReadToEnd();
+                MyAPIGateway.Utilities.ShowMissionScreen("test", "", "file operation", text, null, "Cool");
+            }
+            */
+           
+            //Hard coded table until implement a price table file load routine
+            int[] PricePoints = { 0, 10, 50, 1000, 15000, 50000, 100000, 200000 };
+            decimal[] PriceChange = { 1.3m, 1.2m, 1.1m, 1m, 0.9m, 0.5m, 0.25m, 0.10m }; //damn c# can be dumb - initing an array of decimals with decimals and it assumes are doubles pffft
+
+            var x = 0;
+            do {
+                if ((onhand > PricePoints[x]) && (PriceChange[x] <1)) 
+                {
+                    price = price * PriceChange[x];
+                }
+                else
+                {
+                        if ((onhand <= PricePoints[x]) && (PriceChange[x] > 1))
+                        {
+                            price = price * PriceChange[x];
+                        }
+                }
+                x++;
+            } while (x < PricePoints.Length);
+            
+            return price;
+        }
+    }
+
     
     public static class EconDataManager
     {
