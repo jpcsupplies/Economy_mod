@@ -10,29 +10,50 @@
 
     public static class EconDataManager
     {
+        private const string WorldStorageConfigFilename = "EconomyConfig.xml";
+        private const string WorldStorageDataFilename = "EconomyData.xml";
+
         #region Load and save CONFIG
 
-        public static string GetConfigFilename()
+        public static string GetOldConfigFilename()
         {
             return string.Format("EconomyConfig_{0}.xml", Path.GetFileNameWithoutExtension(MyAPIGateway.Session.CurrentPath));
         }
 
         public static EconConfigStruct LoadConfig()
         {
-            string filename = GetConfigFilename();
-            EconConfigStruct config = null;
+            string oldFilename = GetOldConfigFilename(); // TODO: remove in a few months.
+            EconConfigStruct config;
+            string xmlText;
 
-            if (!MyAPIGateway.Utilities.FileExistsInLocalStorage(filename, typeof(EconConfigStruct)))
+            // new file name and location.
+            if (MyAPIGateway.Utilities.FileExistsInWorldStorage(WorldStorageConfigFilename, typeof(EconConfigStruct)))
+            {
+                TextReader reader = MyAPIGateway.Utilities.ReadFileInWorldStorage(WorldStorageConfigFilename, typeof(EconConfigStruct));
+                xmlText = reader.ReadToEnd();
+                reader.Close();
+            }
+            // old file name and location must be converted upon load to new name and location.
+            else if (MyAPIGateway.Utilities.FileExistsInLocalStorage(oldFilename, typeof(EconConfigStruct)))
+            {
+                EconomyScript.Instance.ServerLogger.WriteInfo("Moving EconConfigStruct file to new location.");
+                TextReader reader = MyAPIGateway.Utilities.ReadFileInLocalStorage(oldFilename, typeof(EconConfigStruct));
+                xmlText = reader.ReadToEnd();
+                reader.Close();
+
+                MyAPIGateway.Utilities.DeleteFileInLocalStorage(oldFilename, typeof(EconConfigStruct));
+
+                TextWriter writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(WorldStorageConfigFilename, typeof(EconConfigStruct));
+                writer.Write(xmlText);
+                writer.Flush();
+                writer.Close();
+            }
+            else
             {
                 config = InitConfig();
                 ValidateAndUpdateConfig(config);
                 return config;
             }
-
-            TextReader reader = MyAPIGateway.Utilities.ReadFileInLocalStorage(filename, typeof(EconConfigStruct));
-
-            var xmlText = reader.ReadToEnd();
-            reader.Close();
 
             if (string.IsNullOrWhiteSpace(xmlText))
             {
@@ -781,8 +802,7 @@
 
         public static void SaveConfig(EconConfigStruct config)
         {
-            string filename = GetConfigFilename();
-            TextWriter writer = MyAPIGateway.Utilities.WriteFileInLocalStorage(filename, typeof(EconConfigStruct));
+            TextWriter writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(WorldStorageConfigFilename, typeof(EconConfigStruct));
             writer.Write(MyAPIGateway.Utilities.SerializeToXML<EconConfigStruct>(config));
             writer.Flush();
             writer.Close();
@@ -792,28 +812,46 @@
 
         #region Load and save DATA
 
-        public static string GetDataFilename()
+        public static string GetOldDataFilename()
         {
             return string.Format("EconomyData_{0}.xml", Path.GetFileNameWithoutExtension(MyAPIGateway.Session.CurrentPath));
         }
 
         public static EconDataStruct LoadData(List<MarketItemStruct> defaultPrices)
         {
-            string filename = GetDataFilename();
-            EconDataStruct data = null;
+            string oldFilename = GetOldDataFilename(); // TODO: remove in a few months.
+            EconDataStruct data;
+            string xmlText;
 
-            if (!MyAPIGateway.Utilities.FileExistsInLocalStorage(filename, typeof(EconDataStruct)))
+            // new file name and location.
+            if (MyAPIGateway.Utilities.FileExistsInWorldStorage(WorldStorageDataFilename, typeof(EconDataStruct)))
+            {
+                TextReader reader = MyAPIGateway.Utilities.ReadFileInWorldStorage(WorldStorageDataFilename, typeof(EconDataStruct));
+                xmlText = reader.ReadToEnd();
+                reader.Close();
+            }
+            // old file name and location must be converted upon load to new name and location.
+            else if (MyAPIGateway.Utilities.FileExistsInLocalStorage(oldFilename, typeof(EconDataStruct)))
+            {
+                EconomyScript.Instance.ServerLogger.WriteInfo("Moving EconDataStruct file to new location.");
+                TextReader reader = MyAPIGateway.Utilities.ReadFileInLocalStorage(oldFilename, typeof(EconDataStruct));
+                xmlText = reader.ReadToEnd();
+                reader.Close();
+
+                MyAPIGateway.Utilities.DeleteFileInLocalStorage(oldFilename, typeof(EconDataStruct));
+
+                TextWriter writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(WorldStorageDataFilename, typeof(EconDataStruct));
+                writer.Write(xmlText);
+                writer.Flush();
+                writer.Close();
+            }
+            else
             {
                 data = InitData();
                 CheckDefaultMarket(data, defaultPrices);
                 ValidateAndUpdateData(data, defaultPrices);
                 return data;
             }
-
-            TextReader reader = MyAPIGateway.Utilities.ReadFileInLocalStorage(filename, typeof(EconDataStruct));
-
-            var xmlText = reader.ReadToEnd();
-            reader.Close();
 
             if (string.IsNullOrWhiteSpace(xmlText))
             {
@@ -1012,8 +1050,7 @@
 
         public static void SaveData(EconDataStruct data)
         {
-            string filename = GetDataFilename();
-            TextWriter writer = MyAPIGateway.Utilities.WriteFileInLocalStorage(filename, typeof(EconDataStruct));
+            TextWriter writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(WorldStorageDataFilename, typeof(EconDataStruct));
             writer.Write(MyAPIGateway.Utilities.SerializeToXML<EconDataStruct>(data));
             writer.Flush();
             writer.Close();
