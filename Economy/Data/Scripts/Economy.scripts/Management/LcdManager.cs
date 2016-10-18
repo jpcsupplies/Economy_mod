@@ -262,7 +262,7 @@
                     writer.AddPublicLeftTrim(buyColumn - 120, kvp.Value);
                     decimal showBuy = kvp.Key.BuyPrice;
                     decimal showSell = kvp.Key.SellPrice;
-                    if (EconomyConsts.PriceScaling)  {  //BUG this will need to check if it is a player or NPC market somehow!
+                    if ((EconomyConsts.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))  {  //BUG seems to work now need to test on DS
                         showBuy = ReactivePricing.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity);
                         showSell = ReactivePricing.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity); }
 
