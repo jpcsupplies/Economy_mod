@@ -51,6 +51,10 @@
         /// <remarks>This will still be the default value if a Admin does not configure a custom starting balance.</remarks>
         public const decimal NPCStartingBalance = 200000;
 
+        /// <summary>Should we have sliding price scales?</summary>
+        /// <remarks>This sets if prices should react to available supply.</remarks>
+        public const bool PriceScaling = true;  //default will be true - this should be set/saved in server config 
+        
         /// <summary>
         /// Should players be near each other to trade or should it be unlimited distance.
         /// </summary>
