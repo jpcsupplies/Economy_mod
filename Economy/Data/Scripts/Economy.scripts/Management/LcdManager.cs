@@ -278,15 +278,22 @@
                     if (startFrom == StartFrom.Line && line - startLine >= writer.WholeDisplayLines - 2)  // counts 2 lines of headers.
                         break; // truncate the display and don't display the text on the bottom edge of the display.
                     writer.AddPublicLeftTrim(buyColumn - 120, kvp.Value);
+                    
+                    decimal showBuy = kvp.Key.BuyPrice;
+                    decimal showSell = kvp.Key.SellPrice;
+                    if ((EconomyConsts.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))  {  //BUG seems to work now need to test on DS
+                        showBuy = ReactivePricing.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity);
+                        showSell = ReactivePricing.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity); }
+
                     if (showPrices && showStock)
                     {
-                        writer.AddPublicRightText(buyColumn, kvp.Key.BuyPrice.ToString("0.00", EconomyScript.ServerCulture));
-                        writer.AddPublicRightText(sellColumn, kvp.Key.SellPrice.ToString("0.00", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(buyColumn, showBuy.ToString("0.00", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(sellColumn, showSell.ToString("0.00", EconomyScript.ServerCulture));
 
                         // TODO: components and tools should be displayed as whole numbers. Will be hard to align with other values.
                         writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("0.000000", EconomyScript.ServerCulture)); // TODO: recheck number of decimal places.
                     }
-                    else if (showStock)
+                    else if (showStock) //does this ever actually run? seems to already be in the above?
                     {
                         // TODO: components and tools should be displayed as whole numbers. Will be hard to align with other values.
 
@@ -294,8 +301,8 @@
                     }
                     else if (showPrices)
                     {
-                        writer.AddPublicRightText(buyColumn, kvp.Key.BuyPrice.ToString("0.00", EconomyScript.ServerCulture));
-                        writer.AddPublicRightText(sellColumn, kvp.Key.SellPrice.ToString("0.00", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(buyColumn, showBuy.ToString("0.00", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(sellColumn, showSell.ToString("0.00", EconomyScript.ServerCulture));
                     }
                     writer.AddPublicLine();
                 }
