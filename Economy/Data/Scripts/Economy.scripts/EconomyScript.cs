@@ -944,7 +944,7 @@ namespace Economy.scripts
                     string itemName = match.Groups["item"].Value;
                     string sellerName = match.Groups["user"].Value;
                     decimal buyQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
-                    if (!decimal.TryParse(match.Groups["price"].Value, out buyPrice))
+                    if (!decimal.TryParse(match.Groups["price"].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out buyPrice))
                         // We will use the they price they set at which they will buy from the player.
                         useMarketSellPrice = true; // buyprice will be 0 because TryParse failed.
 
@@ -1130,7 +1130,7 @@ namespace Economy.scripts
                     sellAll = match.Groups["qtyall"].Value.Equals("all", StringComparison.InvariantCultureIgnoreCase);
                     if (!sellAll)
                         sellQuantity = Convert.ToDecimal(match.Groups["qty"].Value, CultureInfo.InvariantCulture);
-                    if (!decimal.TryParse(match.Groups["price"].Value, out sellPrice))
+                    if (!decimal.TryParse(match.Groups["price"].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out sellPrice))
                         // We will use the they price they set at which they will buy from the player.
                         useMarketBuyPrice = true;  // sellprice will be 0 because TryParse failed.
 
@@ -1405,7 +1405,7 @@ namespace Economy.scripts
                     if (content != null)
                     {
                         decimal amount;
-                        if (!decimal.TryParse(strAmount, out amount))
+                        if (!decimal.TryParse(strAmount, NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
                             amount = 1; // if it cannot parse it, assume it is 1. It may not have been specified.
 
                         if (amount < 0) // if a negative value is provided, make it 1.
@@ -1520,7 +1520,7 @@ namespace Economy.scripts
                         }
                         if (split.Length == 4)
                         {
-                            if (decimal.TryParse(split[3], out sizetest))
+                            if (decimal.TryParse(split[3], NumberStyles.Any, CultureInfo.InvariantCulture, out sizetest))
                             { //its a number, only 1 word in zone name /npczone addhere blah 1234
                                 MessageMarketManageNpc.SendAddMessage(split[2], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), sizetest, MarketZoneType.FixedSphere);
                                 return true;
@@ -1533,7 +1533,7 @@ namespace Economy.scripts
                         }
                         if (split.Length == 5)
                         {
-                            if (decimal.TryParse(split[4], out sizetest))
+                            if (decimal.TryParse(split[4], NumberStyles.Any, CultureInfo.InvariantCulture, out sizetest))
                             {
                                 //its a number, 2 words in zone name /npczone addhere blah blah 1234
                                 MessageMarketManageNpc.SendAddMessage(split[2] + " " + split[3], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), sizetest, MarketZoneType.FixedSphere);
@@ -1547,7 +1547,7 @@ namespace Economy.scripts
                         }
                         if (split.Length == 6)
                         {
-                            if (decimal.TryParse(split[5], out sizetest))
+                            if (decimal.TryParse(split[5], NumberStyles.Any, CultureInfo.InvariantCulture, out sizetest))
                             {
                                 //its a number, 3 words in zone name /npczone addhere blah blah blah 1234
                                 MessageMarketManageNpc.SendAddMessage(split[2] + " " + split[3] + " " + split[4], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), sizetest, MarketZoneType.FixedSphere);
@@ -1836,6 +1836,7 @@ namespace Economy.scripts
                                 "Tools      (displays all tool buy/sell prices)\r\n" +
                                 "ammo       (displays all ammunition buy/sell prices)\r\n" +
                                 "#y         (Display only items from line y - eg #10 is item 10 in list)\r\nAllows price lists to run onto more than one LCD\r\n" +
+                                "Px         (Display only items from page x - eg P3 is page 3 in list)\r\nAllows price lists to run onto more than one LCD\r\n" +
                                 "gas etc may also be supported in future\r\n" +
                                 "stock      (shows amount of stock on hand of above)\r\n";
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "keywords component, ore, ingot, tools, ammo, stock");

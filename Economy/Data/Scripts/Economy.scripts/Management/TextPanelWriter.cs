@@ -29,6 +29,7 @@
         private readonly StringBuilder _publicString;
         private readonly StringBuilder _privateString;
         private readonly bool _isWide;
+        private float _fontSize;
 
         // AdvanceWidth is defined as Byte in VRageRender.MyFont.
         private static readonly Dictionary<char, byte> FontCharWidth = new Dictionary<char, byte>();
@@ -99,22 +100,33 @@
 
         #region properties
 
+        public long EntityId
+        {
+            get { return _panel.EntityId; }
+        }
+
         public bool IsWide
         {
             get { return _isWide; }
         }
+         
+        public float WidthModifier { get; private set; }
 
-        public float WidthModifier
+        public int DisplayLines { get; private set; }
+
+        public int WholeDisplayLines { get; private set; }
+
+        public float FontSize
         {
-            get { return (_isWide ? 2f : 1f) / FontSize; }
+            get { return _fontSize; }
+            private set
+            {
+                _fontSize = value;
+                WidthModifier = (_isWide ? 2f : 1f) / FontSize;
+                DisplayLines = (int)Math.Round(17.6f / FontSize);
+                WholeDisplayLines = (int)Math.Truncate(17.6f / FontSize);
+            }
         }
-
-        public int DisplayLines
-        {
-            get { return (int)Math.Round(17.6f / FontSize); }
-        }
-
-        public float FontSize { get; private set; }
 
         public DateTime LastUpdate { get; private set; }
 

@@ -60,14 +60,14 @@
 
             foreach (var entity in entities)
             {
-                var cubeGrid = (IMyCubeGrid) entity;
+                var cubeGrid = (IMyCubeGrid)entity;
                 if (cubeGrid.Physics == null)
                     continue;
 
                 var blocks = new List<IMySlimBlock>();
                 cubeGrid.GetBlocks(blocks, block => block != null && block.FatBlock != null &&
-                    block.FatBlock.BlockDefinition.TypeId == typeof (MyObjectBuilder_TextPanel) &&
-                    EconomyConsts.LCDTags.Any(tag => ((IMyTerminalBlock) block.FatBlock).CustomName.IndexOf(tag, StringComparison.InvariantCultureIgnoreCase) >= 0));
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_TextPanel) &&
+                    EconomyConsts.LCDTags.Any(tag => ((IMyTerminalBlock)block.FatBlock).CustomName.IndexOf(tag, StringComparison.InvariantCultureIgnoreCase) >= 0));
 
                 foreach (var block in blocks)
                 {
@@ -78,11 +78,13 @@
             }
         }
 
+        private enum StartFrom { None, Line, Page };
+
         private static void ProcessLcdBlock(IMyTextPanel textPanel)
         {
-            //counter++;
+        //counter++;
 
-            var checkArray = (textPanel.GetPublicTitle() + " " + textPanel.GetPrivateTitle()).Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        var checkArray = (textPanel.GetPublicTitle() + " " + textPanel.GetPrivateTitle()).Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             var showAll = false;
             bool showOre = false;
             bool showIngot = false;
@@ -94,8 +96,9 @@
             bool showPrices = true;
             bool showTest1 = false;
             bool showTest2 = false;
-            bool startFrom = false; //if # is specified eg #20  then run the start line logic
+            StartFrom startFrom = StartFrom.None; //if # is specified eg #20  then run the start line logic
             int startLine = 0; //this is where our start line placeholder sits
+            int pageNo = 1;
 
             // removed Linq, to reduce the looping through the array. This should only have to do one loop through all items in the array.
             foreach (var str in checkArray)
@@ -104,11 +107,17 @@
                     showStock = true;
                 if (str.Contains("#"))
                 {
-                    string[] lineNo = str.Split(new Char[] { '#' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (lineNo.Length != 0 && int.TryParse(lineNo[0], out startLine)) { 
+                    string[] lineNo = str.Split(new char[] { '#' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (lineNo.Length != 0 && int.TryParse(lineNo[0], out startLine))
+                    {
                         //this only runs if they put a number in
-                        startFrom = true;
+                        startFrom = StartFrom.Line;
                     }
+                }
+                if (str.StartsWith("P", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    if (int.TryParse(str.Substring(1), out pageNo))
+                        startFrom = StartFrom.Page;
                 }
                 if (str.Equals("*", StringComparison.InvariantCultureIgnoreCase))
                     showAll = true;
@@ -200,10 +209,21 @@
 
                 writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, market.DisplayName);
 
+                if (startFrom == StartFrom.Page)
+                {
+                    // convert the page to lines required.
+                    if (pageNo < 1)
+                        pageNo = 1;
+                    startLine = ((writer.DisplayLines - 2) * (pageNo - 1));
+                    startFrom = StartFrom.Line;
+                }
+
                 string fromLine = " (From item #" + startLine + ".)";
                 writer.AddPublicText("« Market List");
-                if (startLine >=1) writer.AddPublicText(fromLine);
-                
+                if (startLine >= 1)
+                    writer.AddPublicText(fromLine);
+                else
+                    startLine = 1; // needed for truncating end line.
 
                 if (showPrices && showStock)
                 {
@@ -219,14 +239,10 @@
                     writer.AddPublicRightLine(sellColumn, "Sell »");
                 }
 
-                //somewhere here is probably were a start at line # logic would need to be added to split prices between lcds..
-               
                 foreach (var marketItem in market.MarketItems)
                 {
-
                     if (marketItem.IsBlacklisted)
                         continue;
-
 
                     MyObjectBuilderType result;
                     if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
@@ -253,12 +269,14 @@
                         }
                     }
                 }
- int line = 0;
+                int line = 0;
                 foreach (var kvp in list.OrderBy(k => k.Value))
-                {                    
-                    line++;                   
-                    if (startFrom && line < startLine) //if we have a start line specified skip all lines up to that
+                {
+                    line++;
+                    if (startFrom == StartFrom.Line && line < startLine) //if we have a start line specified skip all lines up to that
                         continue;
+                    if (startFrom == StartFrom.Line && line - startLine >= writer.WholeDisplayLines - 2)  // counts 2 lines of headers.
+                        break; // truncate the display and don't display the text on the bottom edge of the display.
                     writer.AddPublicLeftTrim(buyColumn - 120, kvp.Value);
                     if (showPrices && showStock)
                     {

@@ -337,7 +337,7 @@
                     else
                     {
                         decimal decimalTest;
-                        if (decimal.TryParse(Value, out decimalTest))
+                        if (decimal.TryParse(Value, NumberStyles.Any, CultureInfo.InvariantCulture, out decimalTest))
                         {
                             // TODO: perhaps we should truncate the value.
 
@@ -363,7 +363,7 @@
                     else
                     {
                         decimal decimalTest;
-                        if (decimal.TryParse(Value, out decimalTest))
+                        if (decimal.TryParse(Value, NumberStyles.Any, CultureInfo.InvariantCulture, out decimalTest))
                         {
                             // TODO: perhaps we should truncate the value.
 
@@ -395,7 +395,7 @@
                     else
                     {
                         decimal decimalTest;
-                        if (decimal.TryParse(Value, out decimalTest))
+                        if (decimal.TryParse(Value, NumberStyles.Any, CultureInfo.InvariantCulture, out decimalTest))
                         {
                             // TODO: perhaps we should truncate the value.
 
@@ -440,7 +440,7 @@
                         };
 
                         decimal decimalTest;
-                        if (decimal.TryParse(Value, out decimalTest))
+                        if (decimal.TryParse(Value, NumberStyles.Any, CultureInfo.InvariantCulture, out decimalTest))
                         {
                             // TODO: perhaps we should truncate the value.
 
