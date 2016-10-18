@@ -202,8 +202,8 @@
       <TypeId>MyObjectBuilder_Component</TypeId>
       <SubtypeName>MetalGrid</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>52.19</SellPrice>
-      <BuyPrice>58.72</BuyPrice>
+      <SellPrice>58.72</SellPrice>
+      <BuyPrice>52.19</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
