@@ -9,7 +9,7 @@
     using VRageMath;
     
     public static class ReactivePricing {
-        public static decimal PriceAdjust(decimal price, decimal onhand, char bias)
+        public static decimal PriceAdjust(decimal price, decimal onhand, string bias)
         {
             //
             // Summary:
