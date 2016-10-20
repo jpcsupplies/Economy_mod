@@ -51,16 +51,16 @@
 
             var x = 0;
             do {
-                if ((onhand > PricePoints[x]) && (PriceChange[x] <1)) 
+                if ((onhand > PricePoints[x]) && (PriceChange[x] <1))  //price goes down
                 {
-                    price = price * PriceChange[x];
+                    if (bias == "B") { price = price * (PriceChange[x]); } else { price = price * (PriceChange[x] / 2); } // Buy price bias, if sell dont reduce as much
                 }
                 else
                 {
-                        if ((onhand <= PricePoints[x]) && (PriceChange[x] > 1))
-                        {
-                            price = price * PriceChange[x];
-                        }
+                        if ((onhand <= PricePoints[x]) && (PriceChange[x] > 1)) //price goes up
+                    {
+                        if (bias == "S") { price = price * (PriceChange[x] -0.05m); } else { price = price * (PriceChange[x]); } //Sell price bias, if buy dont increase as much
+                    }
                 }
                 x++;
             } while (x < PricePoints.Length);
