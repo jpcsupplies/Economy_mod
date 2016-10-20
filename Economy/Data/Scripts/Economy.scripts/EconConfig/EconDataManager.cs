@@ -9,13 +9,14 @@
     using VRageMath;
     
     public static class ReactivePricing {
-        public static decimal PriceAdjust(decimal price, decimal onhand)
+        public static decimal PriceAdjust(decimal price, decimal onhand, char bias)
         {
             //
             // Summary:
             //     Takes specified price, and adjusts it based on given stock on hand using reactive price rules to
             //     give us a market buy or sell price that has reacted to overstocked or understocked goods.
             //     Can be called when buying(done), selling(done) or displaying prices on lcds(done) or /pricelist command(done) or /value(done) possibly /worth too (possible issues with performance)
+            //     Bias favours price changes on sell or buy
 
 
             /* desired logic:

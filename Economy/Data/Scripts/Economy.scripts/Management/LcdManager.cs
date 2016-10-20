@@ -282,8 +282,8 @@
                     decimal showBuy = kvp.Key.BuyPrice;
                     decimal showSell = kvp.Key.SellPrice;
                     if ((EconomyConsts.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))  {  //BUG seems to work now need to test on DS
-                        showBuy = ReactivePricing.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity);
-                        showSell = ReactivePricing.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity); }
+                        showBuy = ReactivePricing.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity,"B");
+                        showSell = ReactivePricing.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity,"S"); }
 
                     if (showPrices && showStock)
                     {

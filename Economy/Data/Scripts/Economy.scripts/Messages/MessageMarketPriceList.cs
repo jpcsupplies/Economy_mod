@@ -151,8 +151,8 @@
                         decimal showSell = kvp.Key.SellPrice;
                         if ((EconomyConsts.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))
                         {  
-                            showBuy = ReactivePricing.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity);
-                            showSell = ReactivePricing.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity);
+                            showBuy = ReactivePricing.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity, "B");
+                            showSell = ReactivePricing.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity, "S");
                         }
                         // TODO: formatting of numbers, and currency name.
                         str.AddLeftTrim(550, kvp.Value);
