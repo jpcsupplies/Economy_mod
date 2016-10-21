@@ -9,7 +9,7 @@
     using VRageMath;
     
     public static class ReactivePricing {
-        public static decimal PriceAdjust(decimal price, decimal onhand, string bias)
+        public static decimal PriceAdjust(decimal price, decimal onhand, char bias)
         {
             //
             // Summary:
@@ -46,20 +46,20 @@
             */
            
             //Hard coded table until implement a price table file load routine
-            int[] PricePoints = { 0, 10, 50, 1000, 15000, 50000, 100000, 200000 };
-            decimal[] PriceChange = { 1.3m, 1.2m, 1.1m, 1m, 0.9m, 0.5m, 0.25m, 0.10m }; //damn c# can be dumb - initing an array of decimals with decimals and it assumes are doubles pffft
+            int[] PricePoints = { 10, 50, 100, 1000, 5000, 10000, 50000, 100000, 200000 };
+            decimal[] PriceChange = { 1.1m, 1.1m, 1.05m, 1m, 0.95m, 0.9m, 0.5m, 0.25m, 0.10m }; //damn c# can be dumb - initing an array of decimals with decimals and it assumes are doubles pffft
 
             var x = 0;
             do {
                 if ((onhand > PricePoints[x]) && (PriceChange[x] <1))  //price goes down
                 {
-                    if (bias == "B") { price = price * (PriceChange[x]); } else { price = price * (PriceChange[x] / 2); } // Buy price bias, if sell dont reduce as much
+                    if (bias == 'S') { price = price * (PriceChange[x] + 0.05m); } else { price = price * (PriceChange[x]); } // Buy price bias, if sell price dont reduce as much
                 }
                 else
                 {
                         if ((onhand <= PricePoints[x]) && (PriceChange[x] > 1)) //price goes up
                     {
-                        if (bias == "S") { price = price * (PriceChange[x] -0.05m); } else { price = price * (PriceChange[x]); } //Sell price bias, if buy dont increase as much
+                        if (bias == 'B') { price = price * (PriceChange[x] -0.05m); } else { price = price * (PriceChange[x]); } //Sell price bias, if buy dont increase as much
                     }
                 }
                 x++;

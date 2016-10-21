@@ -281,28 +281,28 @@
                     
                     decimal showBuy = kvp.Key.BuyPrice;
                     decimal showSell = kvp.Key.SellPrice;
-                    if ((EconomyConsts.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))  {  //BUG seems to work now need to test on DS
-                        showBuy = ReactivePricing.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity,"B");
-                        showSell = ReactivePricing.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity,"S"); }
+                    if ((EconomyConsts.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))  { 
+                        showBuy = ReactivePricing.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity,'B');
+                        showSell = ReactivePricing.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity,'S'); }
 
                     if (showPrices && showStock)
                     {
-                        writer.AddPublicRightText(buyColumn, showBuy.ToString("0.00", EconomyScript.ServerCulture));
-                        writer.AddPublicRightText(sellColumn, showSell.ToString("0.00", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(buyColumn, showBuy.ToString("0.000", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(sellColumn, showSell.ToString("0.000", EconomyScript.ServerCulture));
 
                         // TODO: components and tools should be displayed as whole numbers. Will be hard to align with other values.
-                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("0.000000", EconomyScript.ServerCulture)); // TODO: recheck number of decimal places.
+                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("0.0000", EconomyScript.ServerCulture)); // TODO: recheck number of decimal places.
                     }
                     else if (showStock) //does this ever actually run? seems to already be in the above?
                     {
                         // TODO: components and tools should be displayed as whole numbers. Will be hard to align with other values.
 
-                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("0.000000", EconomyScript.ServerCulture)); // TODO: recheck number of decimal places.
+                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("0.0000", EconomyScript.ServerCulture)); // TODO: recheck number of decimal places.
                     }
                     else if (showPrices)
                     {
-                        writer.AddPublicRightText(buyColumn, showBuy.ToString("0.00", EconomyScript.ServerCulture));
-                        writer.AddPublicRightText(sellColumn, showSell.ToString("0.00", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(buyColumn, showBuy.ToString("0.000", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(sellColumn, showSell.ToString("0.000", EconomyScript.ServerCulture));
                     }
                     writer.AddPublicLine();
                 }

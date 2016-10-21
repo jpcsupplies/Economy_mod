@@ -82,13 +82,13 @@
                 if (Quantity == 1) {
                     // set reply to report back the current buy and sell price only since that is all we asked for
                     reply = String.Format("Player TRADE - You can buy each '{0}' for {1}, or sell it back for {2} each.", DisplayName, item.SellPrice, item.BuyPrice);
-                    reply += "\r\n" + String.Format("NPC TRADE - You can buy each '{0}' for {1}, or sell it back for {2} each.", DisplayName, ReactivePricing.PriceAdjust(item.SellPrice, item.Quantity,"S"), ReactivePricing.PriceAdjust(item.BuyPrice, item.Quantity,"B"));
+                    reply += "\r\n" + String.Format("NPC TRADE - You can buy each '{0}' for {1}, or sell it back for {2} each.", DisplayName, ReactivePricing.PriceAdjust(item.SellPrice, item.Quantity,'S'), ReactivePricing.PriceAdjust(item.BuyPrice, item.Quantity,'B'));
                 }
                 else {
                     // value BLAH 12 - we must want to know how much we make/pay for buying/selling 12
                     // set reply to current buy and sell price multiplied by the requested qty.
                     reply = String.Format("Player TRADE - You can buy {0} '{1}' for {2} or sell it back for {3} each.", Quantity, DisplayName, item.SellPrice * Quantity, item.BuyPrice * Quantity);
-                    reply += "\r\n" + String.Format("NPC TRADE - You can buy {0} '{1}' for {2} or sell it back for {3} each.", Quantity, DisplayName, ReactivePricing.PriceAdjust(item.SellPrice, item.Quantity,"S") * Quantity, ReactivePricing.PriceAdjust(item.BuyPrice, item.Quantity,"B") * Quantity);
+                    reply += "\r\n" + String.Format("NPC TRADE - You can buy {0} '{1}' for {2} or sell it back for {3} each.", Quantity, DisplayName, ReactivePricing.PriceAdjust(item.SellPrice, item.Quantity,'S') * Quantity, ReactivePricing.PriceAdjust(item.BuyPrice, item.Quantity,'B') * Quantity);
                 }
             }
             MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", reply);

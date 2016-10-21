@@ -228,7 +228,7 @@
 
                 if (UseBankSellPrice)
                     // The player is buying, but the *Market* will *sell* it to the player at this price.
-                    if (!EconomyConsts.PriceScaling) ItemPrice = marketItem.SellPrice; else ItemPrice = ReactivePricing.PriceAdjust(marketItem.SellPrice, marketItem.Quantity,"S");
+                    if (!EconomyConsts.PriceScaling) ItemPrice = marketItem.SellPrice; else ItemPrice = ReactivePricing.PriceAdjust(marketItem.SellPrice, marketItem.Quantity,'S');
                     // If price scaling is on, adjust item price (or check player for subsidy pricing)
             }
 
