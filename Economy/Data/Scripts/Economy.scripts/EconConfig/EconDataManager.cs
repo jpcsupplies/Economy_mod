@@ -11,44 +11,81 @@
     public static class ReactivePricing {
         public static decimal PriceAdjust(decimal price, decimal onhand, char bias)
         {
+
             //
             // Summary:
             //     Takes specified price, and adjusts it based on given stock on hand using reactive price rules to
             //     give us a market buy or sell price that has reacted to overstocked or understocked goods.
             //     Can be called when buying(done), selling(done) or displaying prices on lcds(done) or /pricelist command(done) or /value(done) possibly /worth too (possible issues with performance)
-            //     Bias favours price changes on sell or buy
-
+            //     Bias favours price changes on sell or buy (done), need to factor in transaction size or item price somehow to avoid exploiting price points
 
             /* desired logic:
         0: presumably we run this server side since the player is unlikely to have the price file, if no file found create one
         1: either load the price adjust table from the pricetable file OR use a list/array which already contains the table
-        2: compare the on hand value supplied with the values in the table if it matches a criteria adjust price
+        2: compare the on hand value supplied with the values in the table if it matches a criteria adjust price and any other bias/protection we add
         3: repeat this until all table entries have been checked and/or applied as appropriate to slide the price up or down
         4: return the calculated price for output to player price list or for buy/sell transactions
         *** We also apply transport tycoon style subsides in here too.
             */
 
-            /*  yes this works           
-            string text = "Test";
+            //Default table gets overwritten by file if it exists, or is the start data added to the file if it doesnt exist.
+            string userfile =
+@"Qty, Impact //Comment
+10,1.1 //Critical stock 10 or less 10% increase
+50,1.1 //Low Stock 11 to 50 10% increase
+100,1.05 // Could be better 51 to 100 5% increase
+1000,1 // About right 101 to 5000 no change
+5000,0.95 // Bit high  5001- 10000 drop price 5%
+10000,0.9 // Getting fuller 10001 to 50000 drop another 10%
+50000,0.5 // Way too much now drop another 50%
+100000,0.25 // Getting out of hand drop another 75%
+200000,0.10 // Ok we need to dump this stock now 90% price drop";
+
+            /*  yes this works   but disabled for now         
+            
             //wrapping in "using" supposedly removes the need for flush or close.. what implications this has on performance however..
-            using (TextWriter writer = MyAPIGateway.Utilities.WriteFileInGlobalStorage("test.txt")) 
+
+            // this presumably needs to check file exists, if not create it 
+            
+            // so if the file doesnt exist we run this bit
+            using (TextWriter writer = MyAPIGateway.Utilities.WriteFileInGlobalStorage("pricescale.txt")) 
             {
-                writer.WriteLine(text);
-                writer.Write(" another test");
-                writer.Write(writer.NewLine);
+                //writer.WriteLine(text); writer.Write(writer.NewLine);
+                writer.Write(userfile);
+
             }
 
-            using (TextReader reader = MyAPIGateway.Utilities.ReadFileInGlobalStorage("test.txt"))
+
+            // otherwise here is where we would normally LOAD the price file
+            using (TextReader reader = MyAPIGateway.Utilities.ReadFileInGlobalStorage("pricescale.txt"))
             {
-                text = reader.ReadToEnd();
-                MyAPIGateway.Utilities.ShowMissionScreen("test", "", "file operation", text, null, "Cool");
+                userfile = reader.ReadToEnd();
             }
             */
-           
-            //Hard coded table until implement a price table file load routine
-            int[] PricePoints = { 10, 50, 100, 1000, 5000, 10000, 50000, 100000, 200000 };
-            decimal[] PriceChange = { 1.1m, 1.1m, 1.05m, 1m, 0.95m, 0.9m, 0.5m, 0.25m, 0.10m }; //damn c# can be dumb - initing an array of decimals with decimals and it assumes are doubles pffft
 
+
+            //this entire populate routine should probably be moved to populate at server start and only refer to the lists (that already exist) here
+            //there is also probably a much tidier way to do this than I have used.
+            string[] lines = userfile.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries); //split into lines
+
+            List<int> PricePoints = new List<int>();
+            List<decimal> PriceChange = new List<decimal>();
+
+            for (var y = 1; y < lines.Length; y++) //yes start at 1 to skip the headings in 0
+            {
+               string[] pretable = lines[y].Split(new string[] {"//"}, StringSplitOptions.RemoveEmptyEntries); //Seperate the comments from the data
+               string[] predata = pretable[0].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries); //Lose the comments, get our data
+                int z=0; decimal zz = 0m;
+                if (int.TryParse(predata[0], out z)) PricePoints.Add(z); //fill our price point table data - probably needs an else for invalid data to notify admin
+                if (decimal.TryParse(predata[1], out zz)) PriceChange.Add(zz); //fill our price change amounts data - probably need an else for invalid data
+
+            }
+            
+
+            //int[] PricePoints = { 10, 50, 100, 1000, 5000, 10000, 50000, 100000, 200000 };
+            //decimal[] PriceChange = { 1.1m, 1.1m, 1.05m, 1m, 0.95m, 0.9m, 0.5m, 0.25m, 0.10m }; //damn c# can be dumb - initing an array of decimals with decimals and it assumes are doubles pffft
+
+            //here is the meat and bones of the reactive pricing.  Any logic we use to slide the price up or down goes here  
             var x = 0;
             do {
                 if ((onhand > PricePoints[x]) && (PriceChange[x] <1))  //price goes down
@@ -63,7 +100,7 @@
                     }
                 }
                 x++;
-            } while (x < PricePoints.Length);
+            } while (x < PricePoints.Count || x < PriceChange.Count); //Avoid out of bounds errors
             
             return price;
         }
