@@ -29,6 +29,10 @@
             */
 
             //Default table gets overwritten by file if it exists, or is the start data added to the file if it doesnt exist.
+            #region All this should be loaded at server start
+
+            // This entire section should instead load / create the list at server start so that nothing but simple maths is performed in reactive pricing so there is 
+            // negligable performance impact to lcds
             string userfile =
 @"Qty, Impact //Comment
 10,1.1 //Critical stock 10 or less 10% increase
@@ -49,6 +53,7 @@
             
             // so if the file doesnt exist we run this bit
             using (TextWriter writer = MyAPIGateway.Utilities.WriteFileInGlobalStorage("pricescale.txt")) 
+            using (TextWriter writer = MyAPIGateway.Utilities.WriteFileInWorldStorage("pricescale.txt",typeof(EconConfigStruct)))
             {
                 //writer.WriteLine(text); writer.Write(writer.NewLine);
                 writer.Write(userfile);
@@ -57,7 +62,7 @@
 
 
             // otherwise here is where we would normally LOAD the price file
-            using (TextReader reader = MyAPIGateway.Utilities.ReadFileInGlobalStorage("pricescale.txt"))
+            using (TextReader reader = MyAPIGateway.Utilities.ReadFileInWorldStorage("pricescale.txt",typeof(EconConfigStruct)))
             {
                 userfile = reader.ReadToEnd();
             }
@@ -80,12 +85,19 @@
                 if (decimal.TryParse(predata[1], out zz)) PriceChange.Add(zz); //fill our price change amounts data - probably need an else for invalid data
 
             }
-            
+
 
             //int[] PricePoints = { 10, 50, 100, 1000, 5000, 10000, 50000, 100000, 200000 };
             //decimal[] PriceChange = { 1.1m, 1.1m, 1.05m, 1m, 0.95m, 0.9m, 0.5m, 0.25m, 0.10m }; //damn c# can be dumb - initing an array of decimals with decimals and it assumes are doubles pffft
+            #endregion All this should be loaded at server start
+
 
             //here is the meat and bones of the reactive pricing.  Any logic we use to slide the price up or down goes here  
+            //Note: I need to increase the bias more, so that changes in buy and sell price are separated more preventing price point abuse.
+            //ie at the moment a player could buy up all the stock, this would increase the buy price above that of what they purchased it for and they could sell it back
+            //at a profit then buy it again and sell again until the NPC is out of money.
+            //This should instead prevent the sell (to player) price dropping below any possible reactive price change to the buy (from player) price
+            //Ths should be all this logic needs to be production server safe. 
             var x = 0;
             do {
                 if ((onhand > PricePoints[x]) && (PriceChange[x] <1))  //price goes down
