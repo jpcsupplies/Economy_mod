@@ -147,6 +147,7 @@ namespace Economy.scripts
         /// lacking other options it will triggers read on these events instead. bal/buy/sell/pay/join
         public EconDataStruct Data;
         public EconConfigStruct ServerConfig;
+        public ReactivePricingStruct ReactivePricing;
 
         /// <summary>
         /// This will temporarily store Client side details while the client is connected.
@@ -241,7 +242,7 @@ namespace Economy.scripts
             ServerLogger.WriteStart("Economy Server Log Started");
             ServerLogger.WriteInfo("Economy Server Version {0}", EconomyConsts.ModCommunicationVersion);
             if (ServerLogger.IsActive)
-                VRage.Utils.MyLog.Default.WriteLine(String.Format("##Mod## Economy Server Logging File: {0}", ServerLogger.LogFile));
+                VRage.Utils.MyLog.Default.WriteLine(string.Format("##Mod## Economy Server Logging File: {0}", ServerLogger.LogFile));
 
             ServerLogger.WriteStart("RegisterMessageHandler");
             MyAPIGateway.Multiplayer.RegisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
@@ -250,6 +251,7 @@ namespace Economy.scripts
 
             ServerConfig = EconDataManager.LoadConfig(); // Load config first.
             Data = EconDataManager.LoadData(ServerConfig.DefaultPrices);
+            ReactivePricing = EconDataManager.LoadReactivePricing();
 
             SetLanguage();
 
@@ -344,6 +346,7 @@ namespace Economy.scripts
                 ServerLogger.Terminate();
             }
 
+            TextPanelWriter.DisposeStaticCaches();
             base.UnloadData();
         }
 
@@ -366,6 +369,13 @@ namespace Economy.scripts
                     ServerLogger.WriteInfo("Save Config Started");
                     EconDataManager.SaveConfig(ServerConfig);
                     ServerLogger.WriteInfo("Save Config End");
+                }
+
+                if (ReactivePricing != null)
+                {
+                    ServerLogger.WriteInfo("Save Reactive Pricing Started");
+                    EconDataManager.SaveReactivePricing(ReactivePricing);
+                    ServerLogger.WriteInfo("Save Reactive Pricing End");
                 }
             }
 

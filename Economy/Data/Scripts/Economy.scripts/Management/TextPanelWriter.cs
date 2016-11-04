@@ -67,12 +67,18 @@
             Clear();
         }
 
-        ~TextPanelWriter()
+        // We need this Finalizer to properly clean up this instance of the _panel.
+        //~TextPanelWriter()
+        //{
+        //    //EconomyScript.Instance.ServerLogger.Write("Destroying TextPanelWriter");
+        //    if (TextPanelWriterCache.ContainsKey(_panel))
+        //        TextPanelWriterCache.Remove(_panel);
+        //    CleanupCache();
+        //}
+
+        public static void DisposeStaticCaches()
         {
-            //EconomyScript.Instance.ServerLogger.Write("Destroying TextPanelWriter");
-            if (TextPanelWriterCache.ContainsKey(_panel))
-                TextPanelWriterCache.Remove(_panel);
-            CleanupCache();
+            TextPanelWriterCache.Clear();
         }
 
         static TextPanelWriter()

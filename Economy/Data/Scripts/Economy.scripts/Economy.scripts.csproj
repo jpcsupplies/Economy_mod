@@ -113,6 +113,8 @@
     <Compile Include="EconomyConsts.cs" />
     <Compile Include="EconomyScript.cs" />
     <Compile Include="EconStructures\BankAccountStruct.cs" />
+    <Compile Include="EconStructures\PricingStruct.cs" />
+    <Compile Include="EconStructures\ReactivePricingStruct.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="EconConfig\NpcMerchantManager.cs" />
     <Compile Include="EconConfig\HudManager.cs" />

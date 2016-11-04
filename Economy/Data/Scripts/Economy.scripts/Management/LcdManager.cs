@@ -282,8 +282,8 @@
                     decimal showBuy = kvp.Key.BuyPrice;
                     decimal showSell = kvp.Key.SellPrice;
                     if ((EconomyConsts.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))  { 
-                        showBuy = ReactivePricing.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity,'B');
-                        showSell = ReactivePricing.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity,'S'); }
+                        showBuy = EconDataManager.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity, PricingBias.Buy);
+                        showSell = EconDataManager.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity, PricingBias.Sell); }
 
                     if (showPrices && showStock)
                     {

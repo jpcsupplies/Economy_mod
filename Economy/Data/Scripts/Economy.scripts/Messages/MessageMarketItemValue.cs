@@ -81,14 +81,14 @@
 
                 if (Quantity == 1) {
                     // set reply to report back the current buy and sell price only since that is all we asked for
-                    reply = String.Format("Player TRADE - You can buy each '{0}' for {1}, or sell it back for {2} each.", DisplayName, item.SellPrice, item.BuyPrice);
-                    reply += "\r\n" + String.Format("NPC TRADE - You can buy each '{0}' for {1}, or sell it back for {2} each.", DisplayName, ReactivePricing.PriceAdjust(item.SellPrice, item.Quantity,'S'), ReactivePricing.PriceAdjust(item.BuyPrice, item.Quantity,'B'));
+                    reply = string.Format("Player TRADE - You can buy each '{0}' for {1}, or sell it back for {2} each.", DisplayName, item.SellPrice, item.BuyPrice);
+                    reply += "\r\n" + string.Format("NPC TRADE - You can buy each '{0}' for {1}, or sell it back for {2} each.", DisplayName, EconDataManager.PriceAdjust(item.SellPrice, item.Quantity, PricingBias.Sell), EconDataManager.PriceAdjust(item.BuyPrice, item.Quantity, PricingBias.Buy));
                 }
                 else {
                     // value BLAH 12 - we must want to know how much we make/pay for buying/selling 12
                     // set reply to current buy and sell price multiplied by the requested qty.
-                    reply = String.Format("Player TRADE - You can buy {0} '{1}' for {2} or sell it back for {3} each.", Quantity, DisplayName, item.SellPrice * Quantity, item.BuyPrice * Quantity);
-                    reply += "\r\n" + String.Format("NPC TRADE - You can buy {0} '{1}' for {2} or sell it back for {3} each.", Quantity, DisplayName, ReactivePricing.PriceAdjust(item.SellPrice, item.Quantity,'S') * Quantity, ReactivePricing.PriceAdjust(item.BuyPrice, item.Quantity,'B') * Quantity);
+                    reply = string.Format("Player TRADE - You can buy {0} '{1}' for {2} or sell it back for {3} each.", Quantity, DisplayName, item.SellPrice * Quantity, item.BuyPrice * Quantity);
+                    reply += "\r\n" + string.Format("NPC TRADE - You can buy {0} '{1}' for {2} or sell it back for {3} each.", Quantity, DisplayName, EconDataManager.PriceAdjust(item.SellPrice, item.Quantity, PricingBias.Sell) * Quantity, EconDataManager.PriceAdjust(item.BuyPrice, item.Quantity, PricingBias.Buy) * Quantity);
                 }
             }
             MessageClientTextMessage.SendMessage(SenderSteamId, "VALUE", reply);

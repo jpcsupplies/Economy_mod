@@ -5,124 +5,15 @@
     using System.IO;
     using System.Linq;
     using Economy.scripts.EconStructures;
+    using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
     using VRageMath;
-    
-    public static class ReactivePricing {
-        public static decimal PriceAdjust(decimal price, decimal onhand, char bias)
-        {
 
-            //
-            // Summary:
-            //     Takes specified price, and adjusts it based on given stock on hand using reactive price rules to
-            //     give us a market buy or sell price that has reacted to overstocked or understocked goods.
-            //     Can be called when buying(done), selling(done) or displaying prices on lcds(done) or /pricelist command(done) or /value(done) possibly /worth too (possible issues with performance)
-            //     Bias favours price changes on sell or buy (done), need to factor in transaction size or item price somehow to avoid exploiting price points
-
-            /* desired logic:
-        0: presumably we run this server side since the player is unlikely to have the price file, if no file found create one
-        1: either load the price adjust table from the pricetable file OR use a list/array which already contains the table
-        2: compare the on hand value supplied with the values in the table if it matches a criteria adjust price and any other bias/protection we add
-        3: repeat this until all table entries have been checked and/or applied as appropriate to slide the price up or down
-        4: return the calculated price for output to player price list or for buy/sell transactions
-        *** We also apply transport tycoon style subsides in here too.
-            */
-
-            //Default table gets overwritten by file if it exists, or is the start data added to the file if it doesnt exist.
-            #region All this should be loaded at server start
-
-            // This entire section should instead load / create the list at server start so that nothing but simple maths is performed in reactive pricing so there is 
-            // negligable performance impact to lcds
-            string userfile =
-@"Qty, Impact //Comment
-10,1.1 //Critical stock 10 or less 10% increase
-50,1.1 //Low Stock 11 to 50 10% increase
-100,1.05 // Could be better 51 to 100 5% increase
-1000,1 // About right 101 to 5000 no change
-5000,0.95 // Bit high  5001- 10000 drop price 5%
-10000,0.9 // Getting fuller 10001 to 50000 drop another 10%
-50000,0.5 // Way too much now drop another 50%
-100000,0.25 // Getting out of hand drop another 75%
-200000,0.10 // Ok we need to dump this stock now 90% price drop";
-
-            /*  yes this works   but disabled for now         
-            
-            //wrapping in "using" supposedly removes the need for flush or close.. what implications this has on performance however..
-
-            // this presumably needs to check file exists, if not create it 
-            
-            // so if the file doesnt exist we run this bit
-            using (TextWriter writer = MyAPIGateway.Utilities.WriteFileInGlobalStorage("pricescale.txt")) 
-            using (TextWriter writer = MyAPIGateway.Utilities.WriteFileInWorldStorage("pricescale.txt",typeof(EconConfigStruct)))
-            {
-                //writer.WriteLine(text); writer.Write(writer.NewLine);
-                writer.Write(userfile);
-
-            }
-
-
-            // otherwise here is where we would normally LOAD the price file
-            using (TextReader reader = MyAPIGateway.Utilities.ReadFileInWorldStorage("pricescale.txt",typeof(EconConfigStruct)))
-            {
-                userfile = reader.ReadToEnd();
-            }
-            */
-
-
-            //this entire populate routine should probably be moved to populate at server start and only refer to the lists (that already exist) here
-            //there is also probably a much tidier way to do this than I have used.
-            string[] lines = userfile.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries); //split into lines
-
-            List<int> PricePoints = new List<int>();
-            List<decimal> PriceChange = new List<decimal>();
-
-            for (var y = 1; y < lines.Length; y++) //yes start at 1 to skip the headings in 0
-            {
-               string[] pretable = lines[y].Split(new string[] {"//"}, StringSplitOptions.RemoveEmptyEntries); //Seperate the comments from the data
-               string[] predata = pretable[0].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries); //Lose the comments, get our data
-                int z=0; decimal zz = 0m;
-                if (int.TryParse(predata[0], out z)) PricePoints.Add(z); //fill our price point table data - probably needs an else for invalid data to notify admin
-                if (decimal.TryParse(predata[1], out zz)) PriceChange.Add(zz); //fill our price change amounts data - probably need an else for invalid data
-
-            }
-
-
-            //int[] PricePoints = { 10, 50, 100, 1000, 5000, 10000, 50000, 100000, 200000 };
-            //decimal[] PriceChange = { 1.1m, 1.1m, 1.05m, 1m, 0.95m, 0.9m, 0.5m, 0.25m, 0.10m }; //damn c# can be dumb - initing an array of decimals with decimals and it assumes are doubles pffft
-            #endregion All this should be loaded at server start
-
-
-            //here is the meat and bones of the reactive pricing.  Any logic we use to slide the price up or down goes here  
-            //Note: I need to increase the bias more, so that changes in buy and sell price are separated more preventing price point abuse.
-            //ie at the moment a player could buy up all the stock, this would increase the buy price above that of what they purchased it for and they could sell it back
-            //at a profit then buy it again and sell again until the NPC is out of money.
-            //This should instead prevent the sell (to player) price dropping below any possible reactive price change to the buy (from player) price
-            //Ths should be all this logic needs to be production server safe. 
-            var x = 0;
-            do {
-                if ((onhand > PricePoints[x]) && (PriceChange[x] <1))  //price goes down
-                {
-                    if (bias == 'S') { price = price * (PriceChange[x] + 0.05m); } else { price = price * (PriceChange[x]); } // Buy price bias, if sell price dont reduce as much
-                }
-                else
-                {
-                        if ((onhand <= PricePoints[x]) && (PriceChange[x] > 1)) //price goes up
-                    {
-                        if (bias == 'B') { price = price * (PriceChange[x] -0.05m); } else { price = price * (PriceChange[x]); } //Sell price bias, if buy dont increase as much
-                    }
-                }
-                x++;
-            } while (x < PricePoints.Count || x < PriceChange.Count); //Avoid out of bounds errors
-            
-            return price;
-        }
-    }
-
-    
     public static class EconDataManager
     {
         private const string WorldStorageConfigFilename = "EconomyConfig.xml";
         private const string WorldStorageDataFilename = "EconomyData.xml";
+        private const string WorldStoragePricescaleFilename = "EconPriceScale.xml";
 
         #region Load and save CONFIG
 
@@ -1102,11 +993,11 @@
             switch (shape)
             {
                 case MarketZoneType.FixedSphere:
-                    market.MarketZoneSphere = new BoundingSphereD(new Vector3D((double) x, (double) y, (double) z), (double) size);
+                    market.MarketZoneSphere = new BoundingSphereD(new Vector3D((double)x, (double)y, (double)z), (double)size);
                     break;
                 case MarketZoneType.FixedBox:
                     var sz = (double)(size / 2);
-                    market.MarketZoneBox = new BoundingBoxD(new Vector3D((double) x - sz, (double) y - sz, (double) z - sz), new Vector3D((double) x + sz, (double) y + sz, (double) z + sz));
+                    market.MarketZoneBox = new BoundingBoxD(new Vector3D((double)x - sz, (double)y - sz, (double)z - sz), new Vector3D((double)x + sz, (double)y + sz, (double)z + sz));
                     break;
             }
         }
@@ -1165,6 +1056,127 @@
             writer.Write(MyAPIGateway.Utilities.SerializeToXML<EconDataStruct>(data));
             writer.Flush();
             writer.Close();
+        }
+
+        #endregion
+
+        #region Load and Save ReactivePricing
+
+        /// <summary>
+        /// Loads the Reactive Pricing data if it exists, or it creates a default table if data is empty (no rows).
+        /// </summary>
+        /// <returns></returns>
+        public static ReactivePricingStruct LoadReactivePricing()
+        {
+            ReactivePricingStruct pricingData;
+            string xmlText;
+
+            // new file name and location.
+            if (MyAPIGateway.Utilities.FileExistsInWorldStorage(WorldStoragePricescaleFilename, typeof(ReactivePricingStruct)))
+            {
+                TextReader reader = MyAPIGateway.Utilities.ReadFileInWorldStorage(WorldStoragePricescaleFilename, typeof(ReactivePricingStruct));
+                xmlText = reader.ReadToEnd();
+                reader.Close();
+            }
+            else
+            {
+                return InitPricing();
+            }
+
+            if (string.IsNullOrWhiteSpace(xmlText))
+            {
+                return InitPricing();
+            }
+
+            try
+            {
+                pricingData = MyAPIGateway.Utilities.SerializeFromXML<ReactivePricingStruct>(xmlText);
+                EconomyScript.Instance.ServerLogger.WriteInfo("Loading existing ReactivePricingStruct.");
+            }
+            catch
+            {
+                // config failed to deserialize.
+                EconomyScript.Instance.ServerLogger.WriteError("Failed to deserialize ReactivePricingStruct. Creating new ReactivePricingStruct.");
+                pricingData = InitPricing();
+            }
+
+            if (pricingData == null || pricingData.Prices == null || pricingData.Prices.Count == 0)
+                pricingData = InitPricing();
+
+            return pricingData;
+        }
+
+        private static ReactivePricingStruct InitPricing()
+        {
+            EconomyScript.Instance.ServerLogger.WriteInfo("Creating new ReactivePricingStruct.");
+            ReactivePricingStruct pricing = new ReactivePricingStruct();
+
+            // This entire section should instead load / create the list at server start so that nothing but simple maths is performed in reactive pricing so there is 
+            // negligable performance impact to lcds
+            pricing.Prices.Add(new PricingStruct(10, 1.1m, "Critical stock 10 or less 10% increase"));
+            pricing.Prices.Add(new PricingStruct(50, 1.1m, "Low Stock 11 to 50 10% increase"));
+            pricing.Prices.Add(new PricingStruct(100, 1.05m, "Could be better 51 to 100 5% increase"));
+            pricing.Prices.Add(new PricingStruct(1000, 1, "About right 101 to 5000 no change"));
+            pricing.Prices.Add(new PricingStruct(5000, 0.95m, "Bit high  5001- 10000 drop price 5%"));
+            pricing.Prices.Add(new PricingStruct(10000, 0.9m, "Getting fuller 10001 to 50000 drop another 10%"));
+            pricing.Prices.Add(new PricingStruct(50000, 0.5m, "Way too much now drop another 50%"));
+            pricing.Prices.Add(new PricingStruct(100000, 0.25m, "Getting out of hand drop another 75%"));
+            pricing.Prices.Add(new PricingStruct(200000, 0.10m, "Ok we need to dump this stock now 90% price drop"));
+            return pricing;
+        }
+
+        public static void SaveReactivePricing(ReactivePricingStruct pricingData)
+        {
+            TextWriter writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(WorldStoragePricescaleFilename, typeof(ReactivePricingStruct));
+            writer.Write(MyAPIGateway.Utilities.SerializeToXML<ReactivePricingStruct>(pricingData));
+            writer.Flush();
+            writer.Close();
+        }
+
+        public static decimal PriceAdjust(decimal price, decimal onhand, PricingBias bias)
+        {
+            //
+            // Summary:
+            //     Takes specified price, and adjusts it based on given stock on hand using reactive price rules to
+            //     give us a market buy or sell price that has reacted to overstocked or understocked goods.
+            //     Can be called when buying(done), selling(done) or displaying prices on lcds(done) or /pricelist command(done) or /value(done) possibly /worth too (possible issues with performance)
+            //     Bias favours price changes on sell or buy (done), need to factor in transaction size or item price somehow to avoid exploiting price points
+
+            /* desired logic:
+            0: presumably we run this server side since the player is unlikely to have the price file, if no file found create one
+            1: either load the price adjust table from the pricetable file OR use a list/array which already contains the table
+            2: compare the on hand value supplied with the values in the table if it matches a criteria adjust price and any other bias/protection we add
+            3: repeat this until all table entries have been checked and/or applied as appropriate to slide the price up or down
+            4: return the calculated price for output to player price list or for buy/sell transactions
+            *** We also apply transport tycoon style subsides in here too.
+            */
+
+
+
+            //here is the meat and bones of the reactive pricing.  Any logic we use to slide the price up or down goes here  
+            //Note: I need to increase the bias more, so that changes in buy and sell price are separated more preventing price point abuse.
+            //ie at the moment a player could buy up all the stock, this would increase the buy price above that of what they purchased it for and they could sell it back
+            //at a profit then buy it again and sell again until the NPC is out of money.
+            //This should instead prevent the sell (to player) price dropping below any possible reactive price change to the buy (from player) price
+            //Ths should be all this logic needs to be production server safe. 
+            var x = 0;
+            do
+            {
+                if ((onhand > EconomyScript.Instance.ReactivePricing.Prices[x].PricePoint) && (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange < 1))  //price goes down
+                {
+                    if (bias == PricingBias.Sell) { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange + 0.05m); } else { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange); } // Buy price bias, if sell price dont reduce as much
+                }
+                else
+                {
+                    if ((onhand <= EconomyScript.Instance.ReactivePricing.Prices[x].PricePoint) && (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange > 1)) //price goes up
+                    {
+                        if (bias == PricingBias.Buy) { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange - 0.05m); } else { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange); } //Sell price bias, if buy dont increase as much
+                    }
+                }
+                x++;
+            } while (x < EconomyScript.Instance.ReactivePricing.Prices.Count); //Avoid out of bounds errors
+
+            return price;
         }
 
         #endregion

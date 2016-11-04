@@ -338,4 +338,10 @@
         DestroyBlock,
         CaptureBlock,
     }
+
+    public enum PricingBias : byte
+    {
+        Buy,
+        Sell
+    }
 }

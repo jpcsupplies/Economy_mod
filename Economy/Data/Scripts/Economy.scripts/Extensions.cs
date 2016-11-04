@@ -7,7 +7,6 @@ namespace Economy.scripts
     using Sandbox.Definitions;
     using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
-    using SpaceEngineers.Game.ModAPI;
     using VRage;
     using VRage.Game;
     using VRage.Game.Entity;
@@ -15,7 +14,6 @@ namespace Economy.scripts
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
-    using IMyShipConnector = Sandbox.ModAPI.Ingame.IMyShipConnector; // There isn't a non-Ingame interface for IMyShipConnector at this time.
 
     public static class Extensions
     {
