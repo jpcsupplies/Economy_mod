@@ -14,7 +14,7 @@
             CurrencyName = EconomyConsts.CurrencyName;
             TradeNetworkName = EconomyConsts.TradeNetworkName;
             DefaultStartingBalance = EconomyConsts.DefaultStartingBalance;
-            LimitedRange = EconomyConsts.LimitedRange;
+            LimitedRange = EconomyConsts.DefaultLimitedRange;
             LimitedSupply = EconomyConsts.LimitedSupply;
             TradeTimeout = EconomyConsts.TradeTimeout;
             AccountExpiry = EconomyConsts.AccountExpiry;
@@ -32,6 +32,7 @@
             TradeZoneRelinkRatio = 0.5m;
             TradeZoneMinRadius = 1;
             TradeZoneMaxRadius = 5000;
+            PriceScaling = EconomyConsts.DefaultPriceScaling;
         }
 
         #region properties
@@ -134,10 +135,15 @@
         /// </summary>
         public bool EnablePlayerPayments;
 
-        /// <summary>
-        /// Indicates that Players can Trade with on another.
-        /// </summary>
+        ///// <summary>
+        ///// Indicates that Players can Trade with on another.
+        ///// </summary>
         //public bool EnablePlayerTrades;
+
+        /// <summary>
+        /// This sets if prices should react to available supply.
+        /// </summary>
+        public bool PriceScaling;
 
         #endregion
 

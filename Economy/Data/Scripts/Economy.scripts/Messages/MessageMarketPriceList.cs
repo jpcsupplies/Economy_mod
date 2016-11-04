@@ -149,7 +149,7 @@
                     {
                         decimal showBuy = kvp.Key.BuyPrice;
                         decimal showSell = kvp.Key.SellPrice;
-                        if ((EconomyConsts.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))
+                        if ((EconomyScript.Instance.ServerConfig.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))
                         {  
                             showBuy = EconDataManager.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity, PricingBias.Buy);
                             showSell = EconDataManager.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity, PricingBias.Sell);

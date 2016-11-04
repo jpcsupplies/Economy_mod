@@ -53,14 +53,13 @@
 
         /// <summary>Should we have sliding price scales?</summary>
         /// <remarks>This sets if prices should react to available supply.</remarks>
-        public const bool PriceScaling = true;  //default will be true - this should be set/saved in server config 
-        
+        public const bool DefaultPriceScaling = true;  //default will be true - this should be set/saved in server config 
+
         /// <summary>
         /// Should players be near each other to trade or should it be unlimited distance.
         /// </summary>
         /// <remarks>This sets if players (or traders) should be nearby before being allowed to trade or not</remarks>
-        public const bool LimitedRange = false; //default should be true; may be false for testing or gameplay reasons.
-
+        public const bool DefaultLimitedRange = false; //default should be true; may be false for testing or gameplay reasons.
 
         /// <summary>
         /// Default range of trade zones.

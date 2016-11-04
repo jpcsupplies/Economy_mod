@@ -493,6 +493,27 @@
 
                 #endregion
 
+                #region pricescaling
+
+                case "pricescaling":
+                    if (string.IsNullOrEmpty(Value))
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "PriceScaling: {0}", EconomyScript.Instance.ServerConfig.PriceScaling ? "On" : "Off");
+                    else
+                    {
+                        bool? boolTest = GetBool(Value);
+                        if (boolTest.HasValue)
+                        {
+                            EconomyScript.Instance.ServerConfig.PriceScaling = boolTest.Value;
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "PriceScaling updated to: {0}", EconomyScript.Instance.ServerConfig.PriceScaling ? "On" : "Off");
+                            return;
+                        }
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "PriceScaling: {0}", EconomyScript.Instance.ServerConfig.PriceScaling ? "On" : "Off");
+                    }
+                    break;
+
+                #endregion
+
                 #region default
 
                 default:
@@ -509,6 +530,7 @@
                     msg.AppendFormat("AccountExpiry: {0}  (days.hours:mins:secs)\r\n", EconomyScript.Instance.ServerConfig.AccountExpiry);
                     msg.AppendFormat("EnableLcds: {0}\r\n", EconomyScript.Instance.ServerConfig.EnableLcds ? "On" : "Off");
                     msg.AppendFormat("EnableNpcTradezones: {0}\r\n", EconomyScript.Instance.ServerConfig.EnableNpcTradezones ? "On" : "Off");
+                    msg.AppendFormat("PriceScaling: {0}\r\n", EconomyScript.Instance.ServerConfig.PriceScaling ? "On" : "Off");
                     msg.AppendLine();
                     msg.AppendLine("--- Player Tradezones ---");
                     msg.AppendFormat("EnablePlayerTradezones: {0}\r\n", EconomyScript.Instance.ServerConfig.EnablePlayerTradezones ? "On" : "Off");

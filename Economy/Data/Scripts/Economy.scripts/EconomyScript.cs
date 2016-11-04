@@ -93,7 +93,7 @@ namespace Economy.scripts
         /// <summary>
         /// pattern defines econfig commands.
         /// </summary>
-        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(LicenceMin)|(LicenceMax)|(RelinkRatio)|(MaximumPlayerZones)))(?:\s+(?<value>.+))?)?";
+        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(LicenceMin)|(LicenceMax)|(RelinkRatio)|(MaximumPlayerZones)|(PriceScaling)))(?:\s+(?<value>.+))?)?";
 
         /// <summary>
         /// pattern defines how to register a player trade zone.
@@ -1019,6 +1019,7 @@ namespace Economy.scripts
             // /econfig EnableNpcTradezones on - change Npc Trade zones on.
             // /econfig EnablePlayerTradezones on - change Player created Trade zones on.
             // /econfig EnablePlayerPayments on - change Player payments on.
+            // /econfig PriceScaling on - change PriceScaling on.
 
             #endregion econfig
 
@@ -1867,7 +1868,8 @@ namespace Economy.scripts
                                     "StartingBalance	How much money to give new players.\r\n" +
                                     "LicenceMin | LicenceMax	The minimum and maximum Trade License price.\r\n" +
                                     "RelinkRatio	The price ratio for relinking to a beacon.\r\n" +
-                                    "MaximumPlayerZones	Number of trade zones a player can own.\r\n";
+                                    "MaximumPlayerZones	Number of trade zones a player can own.\r\n" +
+                                    "PriceScaling  This sets if prices should react to available supply.";
                                     MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /econfig SETTING  VALUE");
                                     MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Economy Config", helpreply, null, "Close");
                                     return true;
