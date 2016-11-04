@@ -1116,12 +1116,12 @@
             pricing.Prices.Add(new PricingStruct(10, 1.1m, "Critical stock 10 or less 10% increase"));
             pricing.Prices.Add(new PricingStruct(50, 1.1m, "Low Stock 11 to 50 10% increase"));
             pricing.Prices.Add(new PricingStruct(100, 1.05m, "Could be better 51 to 100 5% increase"));
-            pricing.Prices.Add(new PricingStruct(1000, 1, "About right 101 to 5000 no change"));
+            pricing.Prices.Add(new PricingStruct(1000, 1m, "About right 101 to 5000 no change"));
             pricing.Prices.Add(new PricingStruct(5000, 0.95m, "Bit high  5001- 10000 drop price 5%"));
-            pricing.Prices.Add(new PricingStruct(10000, 0.9m, "Getting fuller 10001 to 50000 drop another 10%"));
-            pricing.Prices.Add(new PricingStruct(50000, 0.5m, "Way too much now drop another 50%"));
-            pricing.Prices.Add(new PricingStruct(100000, 0.25m, "Getting out of hand drop another 75%"));
-            pricing.Prices.Add(new PricingStruct(200000, 0.10m, "Ok we need to dump this stock now 90% price drop"));
+            pricing.Prices.Add(new PricingStruct(10000, 0.95m, "Getting fuller 10001 to 50000 drop another 5%"));
+            pricing.Prices.Add(new PricingStruct(50000, 0.90m, "Way too much now drop another 10%"));
+            pricing.Prices.Add(new PricingStruct(100000, 0.50m, "Getting out of hand drop another 50%"));
+            pricing.Prices.Add(new PricingStruct(200000, 0.25m, "Ok we need to dump this stock now 75% price drop"));
             return pricing;
         }
 
@@ -1154,23 +1154,22 @@
 
 
             //here is the meat and bones of the reactive pricing.  Any logic we use to slide the price up or down goes here  
-            //Note: I need to increase the bias more, so that changes in buy and sell price are separated more preventing price point abuse.
-            //ie at the moment a player could buy up all the stock, this would increase the buy price above that of what they purchased it for and they could sell it back
-            //at a profit then buy it again and sell again until the NPC is out of money.
-            //This should instead prevent the sell (to player) price dropping below any possible reactive price change to the buy (from player) price
+            //This should prevent the sell (to player) price dropping below any possible reactive price change to the buy (from player) price
             //Ths should be all this logic needs to be production server safe. 
             var x = 0;
             do
             {
                 if ((onhand > EconomyScript.Instance.ReactivePricing.Prices[x].PricePoint) && (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange < 1))  //price goes down
                 {
-                    if (bias == PricingBias.Sell) { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange + 0.05m); } else { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange); } // Buy price bias, if sell price dont reduce as much
+                    if (bias == PricingBias.Buy) { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange - 0.05m); } // Buy from player price bias too much stock
+                     //else { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange); } // Sell to player price disabled as this can potentially allow players to cheat
                 }
                 else
                 {
                     if ((onhand <= EconomyScript.Instance.ReactivePricing.Prices[x].PricePoint) && (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange > 1)) //price goes up
                     {
-                        if (bias == PricingBias.Buy) { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange - 0.05m); } else { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange); } //Sell price bias, if buy dont increase as much
+                        if (bias == PricingBias.Sell) { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange + 0.05m); } //Sell to player price bias low stock
+                        //else { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange); } // Buy from player price disabled as this can potentially allow players to cheat
                     }
                 }
                 x++;
