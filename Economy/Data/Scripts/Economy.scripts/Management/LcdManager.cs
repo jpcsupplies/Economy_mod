@@ -321,7 +321,9 @@
             //    writer.AddPublicCenterLine(TextPanelWriter.LcdLineWidth / 2f, "|");
             //return;
 
-            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "'{0}' '{1}' '{2}'", writer.FontSize, writer.WidthModifier, writer.DisplayLines));
+            writer.AddPublicLine("« Economy Test Screen 1 »");
+            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "{0:N}/{1:N4}/{2}/{3}", writer.FontSize, writer.WidthModifier, writer.DisplayLines, writer.WholeDisplayLines));
+            writer.AddPublicLine("FontSize / WidthModifier / Lines / Whole Lines");
 
             Testline1(writer, "                |");
             Testline1(writer, "!!!!!!!!!!!!!!!!|");
@@ -344,6 +346,7 @@
 
         private static void Test2(TextPanelWriter writer)
         {
+            writer.AddPublicLine("« Economy Test Screen 2 »");
             writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "Culture Ietf Tag: {0}", EconomyScript.ServerCulture.IetfLanguageTag));
             writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "Culture Name: {0}", EconomyScript.ServerCulture.DisplayName));
 
