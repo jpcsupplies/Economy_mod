@@ -17,7 +17,7 @@
         public static List<byte> ClientMessageCache = new List<byte>();
         public static Dictionary<ulong, List<byte>> ServerMessageCache = new Dictionary<ulong, List<byte>>();
 
-        private const int MAX_MESSAGE_SIZE = 4096; 
+        private const int MAX_MESSAGE_SIZE = 4096;
 
         #endregion
 
@@ -30,12 +30,17 @@
         public static void SendMessageToServer(MessageBase message)
         {
             message.Side = MessageSide.ServerSide;
-            message.SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
-            message.SenderDisplayName = MyAPIGateway.Session.Player.DisplayName;
+            if (MyAPIGateway.Multiplayer.IsServer)
+                message.SenderSteamId = MyAPIGateway.Multiplayer.ServerId;
+            if (MyAPIGateway.Session.Player != null)
+            {
+                message.SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
+                message.SenderDisplayName = MyAPIGateway.Session.Player.DisplayName;
+            }
             message.SenderLanguage = (int)MyAPIGateway.Session.Config.Language;
             try
             {
-                var xml = MyAPIGateway.Utilities.SerializeToXML<MessageContainer>(new MessageContainer() {Content = message});
+                var xml = MyAPIGateway.Utilities.SerializeToXML<MessageContainer>(new MessageContainer { Content = message });
                 byte[] byteData = System.Text.Encoding.Unicode.GetBytes(xml);
                 if (byteData.Length <= MAX_MESSAGE_SIZE)
                     MyAPIGateway.Multiplayer.SendMessageToServer(EconomyConsts.ConnectionId, byteData);
@@ -59,8 +64,13 @@
         /// <param name="message"></param>
         public static void SendMessageToAll(MessageBase message)
         {
-            message.SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
-            message.SenderDisplayName = MyAPIGateway.Session.Player.DisplayName;
+            if (MyAPIGateway.Multiplayer.IsServer)
+                message.SenderSteamId = MyAPIGateway.Multiplayer.ServerId;
+            if (MyAPIGateway.Session.Player != null)
+            {
+                message.SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
+                message.SenderDisplayName = MyAPIGateway.Session.Player.DisplayName;
+            }
             message.SenderLanguage = (int)MyAPIGateway.Session.Config.Language;
 
             if (!MyAPIGateway.Multiplayer.IsServer)
@@ -78,7 +88,7 @@
             message.Side = MessageSide.ClientSide;
             try
             {
-                var xml = MyAPIGateway.Utilities.SerializeToXML(new MessageContainer() {Content = message});
+                var xml = MyAPIGateway.Utilities.SerializeToXML(new MessageContainer() { Content = message });
                 byte[] byteData = System.Text.Encoding.Unicode.GetBytes(xml);
                 if (byteData.Length <= MAX_MESSAGE_SIZE)
                     MyAPIGateway.Multiplayer.SendMessageTo(EconomyConsts.ConnectionId, byteData, steamId);
@@ -179,8 +189,8 @@
             EconomyScript.Instance.ServerLogger.WriteVerbose(string.Format("FinalLength: {0}", finalLength));
             if (MAX_MESSAGE_SIZE >= finalLength)
                 return count;
-            else
-                throw new Exception(string.Format("Calculation failed. OneEntry: {0}, TwoEntries: {1}, Difference: {2}, FreeBytes: {3}, Count: {4}, FinalLength: {5}", oneEntry, twoEntries, difference, freeBytes, count, finalLength));
+
+            throw new Exception(string.Format("Calculation failed. OneEntry: {0}, TwoEntries: {1}, Difference: {2}, FreeBytes: {3}, Count: {4}, FinalLength: {5}", oneEntry, twoEntries, difference, freeBytes, count, finalLength));
         }
 
         private static void SendMessageParts(byte[] byteData, MessageSide side, ulong receiver = 0)
@@ -195,7 +205,7 @@
                 var messagePart = new MessageIncomingMessageParts()
                 {
                     Side = side,
-                    SenderSteamId = side == MessageSide.ServerSide ? MyAPIGateway.Session.Player.SteamUserId : 0,
+                    SenderSteamId = side == MessageSide.ServerSide ? MyAPIGateway.Session.Player.SteamUserId : MyAPIGateway.Multiplayer.ServerId, // The 'side' indicates where it's going to, so the SenderId is the reverse of that. 
                     SenderDisplayName = side == MessageSide.ServerSide ? MyAPIGateway.Session.Player.DisplayName : "",
                     SenderLanguage = side == MessageSide.ServerSide ? (int)MyAPIGateway.Session.Config.Language : 0,
                     LastPart = false,

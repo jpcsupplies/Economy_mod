@@ -3,6 +3,7 @@
     using System;
     using System.Xml.Serialization;
     using ProtoBuf;
+    using Sandbox.ModAPI;
 
     // ALL CLASSES DERIVED FROM MessageBase MUST BE ADDED HERE
     [XmlInclude(typeof(MessageIncomingMessageParts))]
@@ -52,6 +53,14 @@
         /// </summary>
         [ProtoMember(4)]
         public MessageSide Side;
+
+        public MessageBase()
+        {
+            if (MyAPIGateway.Multiplayer.IsServer)
+                SenderSteamId = MyAPIGateway.Multiplayer.ServerId;
+            if (MyAPIGateway.Session.Player != null)
+                SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
+        }
 
         /*
         [ProtoAfterDeserialization]
