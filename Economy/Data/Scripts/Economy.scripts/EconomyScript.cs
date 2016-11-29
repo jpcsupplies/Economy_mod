@@ -1496,6 +1496,81 @@ namespace Economy.scripts
             }
             #endregion
 
+
+            #region sellship
+           // sellship command
+            if (split[0].Equals("/sellship", StringComparison.InvariantCultureIgnoreCase))
+            {
+				var SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
+				var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
+				if (split.Length >= 2)
+				{
+                    decimal amount = 0;
+					if (!decimal.TryParse(split[1], NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
+						amount = 0;
+					amount = Convert.ToDecimal(amount, CultureInfo.InvariantCulture);
+					var selectedShip = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, true, false, false, false, false, false, false) as IMyCubeGrid;
+					if (selectedShip != null)
+					{
+						MessageShipSale.SendMessage(selectedShip.EntityId, "sell", amount);
+					}
+					else
+						MyAPIGateway.Utilities.ShowMessage("SHIPSALE", "You need to target a ship or station to sell.");
+				}
+				else
+				{
+					MyAPIGateway.Utilities.ShowMessage("SHIPSALE", "You need to specify a price");
+				}
+				return true;
+            }
+            #endregion
+
+            #region cancelsale
+           // cancelsale command
+            if (split[0].Equals("/cancelsale", StringComparison.InvariantCultureIgnoreCase))
+            {
+				var SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
+				var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
+				var selectedShip = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, true, false, false, false, false, false, false) as IMyCubeGrid;
+				if (selectedShip != null)
+				{
+					MessageShipSale.SendMessage(selectedShip.EntityId, "cancel", 0);
+				}
+				else
+					MyAPIGateway.Utilities.ShowMessage("SHIPSALE", "You need to target a ship or station to sell.");
+				return true;
+            }
+            #endregion
+
+            #region buyship
+            // buyship command
+            if (split[0].Equals("/buyship", StringComparison.InvariantCultureIgnoreCase))
+            {
+				var SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
+				var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
+				var selectedShip = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, true, false, false, false, false, false, false) as IMyCubeGrid;
+				if (selectedShip != null)
+				{
+					if (split.Length >= 2)
+					{
+						decimal amount = 0;
+						if (!decimal.TryParse(split[1], NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
+							amount = 0;
+						amount = Convert.ToDecimal(amount, CultureInfo.InvariantCulture);
+						MessageShipSale.SendMessage(selectedShip.EntityId, "buy", amount);
+						return true;
+					}
+					else
+					{
+						MessageWorth.SendMessage(selectedShip.EntityId);
+					}
+				}
+				else
+					MyAPIGateway.Utilities.ShowMessage("SHIPSALE", "You need to target a ship or station to buy.");
+				return true;
+            }
+            #endregion
+
             #region npc trade zones
 
             // npc command.  For Admins only.
