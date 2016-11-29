@@ -12,7 +12,7 @@ To use:
 
 Enter a command into the in game chat box, and it will perform an action.
 
-Enter "/help" for a list of current commands.
-Enter "/help #" for more information on that particular command.
+Enter "/ehelp" for a list of current commands.
+Enter "/ehelp #" for more information on that particular command.
 
 ======================
