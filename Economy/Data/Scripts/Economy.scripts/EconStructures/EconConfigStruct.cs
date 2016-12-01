@@ -27,7 +27,7 @@
             EnableNpcTradezones = true;
             EnablePlayerTradezones = true;
             MaximumPlayerTradeZones = 1;
-            TradeZoneLicenceCostMin = 2000;
+            TradeZoneLicenceCostMin = 20000;
             TradeZoneLicenceCostMax = 20000000;
             TradeZoneRelinkRatio = 0.5m;
             TradeZoneMinRadius = 1;
