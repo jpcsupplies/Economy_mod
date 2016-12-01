@@ -258,6 +258,7 @@
                     //}
 
                     //var prefix = string.Format("{0:#,##0.00000}", totalValue);
+					var shipSale = ShipManager.CheckSellOrder(selectedShip.EntityId.ToString());
 
                     str.AppendLine(marketDetail);
                     str.AppendFormat("{0}: {1}\r\n", selectedShip.IsStatic ? "Station" : selectedShip.GridSizeEnum.ToString() + " Ship", selectedShip.DisplayName);
@@ -266,7 +267,12 @@
                     str.AppendFormat("Ship Value: {0:#,##0.00000} {1}.\r\n", shipValue, EconomyScript.Instance.ServerConfig.CurrencyName);
                     str.AppendFormat("Inventory Value: {0:#,##0.00000} {1}.\r\n", inventoryValue, EconomyScript.Instance.ServerConfig.CurrencyName);
                     str.AppendFormat("Final Value: {0:#,##0.00000} {1}.\r\n", shipValue + inventoryValue, EconomyScript.Instance.ServerConfig.CurrencyName);
-                    MessageClientDialogMessage.SendMessage(SenderSteamId, "WORTH", selectedShip.DisplayName, str.ToString());
+					str.AppendLine("-----------------------------------");
+					if(shipSale != 0)
+						str.AppendFormat("Sale Price: {0:#,##0.00000} {1}.\r\n", shipSale, EconomyScript.Instance.ServerConfig.CurrencyName);
+					else
+						str.AppendLine("Sale Price: Not for Sale.\r\n");
+					MessageClientDialogMessage.SendMessage(SenderSteamId, "WORTH", selectedShip.DisplayName, str.ToString());
                 }
                 catch (Exception ex)
                 {

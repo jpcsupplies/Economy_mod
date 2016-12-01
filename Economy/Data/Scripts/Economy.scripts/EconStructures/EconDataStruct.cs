@@ -17,5 +17,7 @@
         public List<MarketStruct> Markets;
 
         public List<OrderBookStruct> OrderBook;
+
+        public List<ShipSaleStruct> ShipSale;
     }
 }

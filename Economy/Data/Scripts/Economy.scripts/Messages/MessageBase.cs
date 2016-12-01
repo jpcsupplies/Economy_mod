@@ -27,6 +27,7 @@
     [XmlInclude(typeof(MessageConfig))]
     [XmlInclude(typeof(MessageWorth))]
     [XmlInclude(typeof(MessageRewardAccount))]
+    [XmlInclude(typeof(MessageShipSale))]
     [ProtoContract]
     public abstract class MessageBase
     {

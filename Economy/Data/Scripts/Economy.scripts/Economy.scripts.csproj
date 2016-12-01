@@ -145,6 +145,7 @@
     <Compile Include="Messages\MessageResetAccount.cs" />
     <Compile Include="Messages\MessageWorth.cs" />
     <Compile Include="Messages\MessageSide.cs" />
+    <Compile Include="Messages\MessageShipSale.cs" />
     <Compile Include="Support.cs" />
     <Compile Include="TextLogger.cs" />
   </ItemGroup>
