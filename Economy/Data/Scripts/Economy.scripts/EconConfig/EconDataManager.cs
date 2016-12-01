@@ -1047,6 +1047,7 @@
             data.Accounts = new List<BankAccountStruct>();
             data.Markets = new List<MarketStruct>();
             data.OrderBook = new List<OrderBookStruct>();
+            data.ShipSale = new List<ShipSaleStruct>();
             return data;
         }
 
