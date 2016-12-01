@@ -136,14 +136,14 @@
 
 								try
 								{
-									if(owned > (terminalBlocks / 2))
+									if(owned > (terminalBlocks * (EconomyConsts.ShipOwned/100)))
 									{
 										ShipManager.CreateSellOrder(player.PlayerID, SenderSteamId, selectedShip.EntityId.ToString(), Amount);
 										MessageClientTextMessage.SendMessage(SenderSteamId, "SHIPSALE", "Ship put up for sale for "+Amount);
 									}
 									else
 									{
-										MessageClientTextMessage.SendMessage(SenderSteamId, "SHIPSALE", "You need to own more than 50% of the ship to sell it.");
+										MessageClientTextMessage.SendMessage(SenderSteamId, "SHIPSALE", "You need to own more than {0}% of the ship to sell it.",EconomyConsts.ShipOwned);
 									}
 								}
 								catch (Exception ex)

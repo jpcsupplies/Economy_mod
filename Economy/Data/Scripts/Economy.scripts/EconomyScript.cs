@@ -1,6 +1,8 @@
 ﻿/*
  *  Economy Mod <see cref="EconomyConsts.MajorVer"/>
- *  by PhoenixX (JPC Dev), Screaming Angels (Midspace), Tangentspy
+ *  by PhoenixX (JPC Dev) and Screaming Angels (Midspace), 
+ *  With code submissions from Tangentspy (Value Command), 
+ *  Temar96 (sellship buyship cancelsale ship trade commands)
  *  For use with Space Engineers Game
  *  Refer to github issues or steam/git dev guide/wiki or the team notes
  *  for direction what needs to be worked on next
@@ -1496,7 +1498,6 @@ namespace Economy.scripts
             }
             #endregion
 
-
             #region sellship
            // sellship command
             if (split[0].Equals("/sellship", StringComparison.InvariantCultureIgnoreCase))
@@ -1848,12 +1849,12 @@ namespace Economy.scripts
                 {
                     //did we just type ehelp? show what else they can get help on
                     //might be better to make a more detailed help reply here using mission window later on
-                    MyAPIGateway.Utilities.ShowMessage("ehelp", "Commands: ehelp, bal, pay, seen, buy, sell, value, ver, lcd, news, worth, pricelist");
+                    MyAPIGateway.Utilities.ShowMessage("ehelp", "Commands: ehelp, bal, pay, seen, buy, sell, value, ver, lcd, news, worth, pricelist, sellship, buyship, cancelsale");
                     if (MyAPIGateway.Session.Player.IsAdmin())
                     {
                         MyAPIGateway.Utilities.ShowMessage("Admin ehelp", "Commands: accounts, bal player, reset, set, npczone, global, pay player +/-any_amount");
                     }
-                    MyAPIGateway.Utilities.ShowMessage("ehelp", "Try '/ehelp command' for more informations about specific command");
+                    MyAPIGateway.Utilities.ShowMessage("ehelp", "Try '/ehelp command' for more information about a specific command");
                     return true;
                 }
                 else
@@ -1865,7 +1866,17 @@ namespace Economy.scripts
                         case "help":
                             MyAPIGateway.Utilities.ShowMessage("/ehelp #", "Displays help on the specified command [#].");
                             return true;
-                        // did we type /help buy etc
+                        // did we type /ehelp buy etc
+                        case "sellship":
+                            MyAPIGateway.Utilities.ShowMessage("/sellship #", "Puts a targeted ship up for sale for price #");
+                            return true;
+                        case "buyship":
+                            MyAPIGateway.Utilities.ShowMessage("/buyship #", "Attempts to buy targeted ship for price #");
+                            MyAPIGateway.Utilities.ShowMessage("/buyship", "Checks if targeted ship is for sale compared to its component value");
+                            return true;
+                        case "cancelsale":
+                            MyAPIGateway.Utilities.ShowMessage("/cancelsale", "Cancels selling your targeted ship");
+                            return true;
                         case "pay":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/pay X Y Z Pays player [x] amount [Y] [for reason Z]");
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /pay bob 100 being awesome");
@@ -1877,7 +1888,7 @@ namespace Economy.scripts
                             return true;
                         case "worth":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/worth  Tells you the value of the target object in relation to how much the components used to create it are worth.");
-                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Useful if you want to sell a ship or station and need a price. Example: /worth");
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Also displays if it is for sale. Useful if you want to buy/sell a ship or station and need a price. Example: /worth");
                             return true;
                         case "seen":
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/seen X Displays time and date that economy plugin last saw player X");
@@ -1918,7 +1929,7 @@ namespace Economy.scripts
                                 "Tools      (displays all tool buy/sell prices)\r\n" +
                                 "ammo       (displays all ammunition buy/sell prices)\r\n" +
                                 "#y         (Display only items from line y - eg #10 is item 10 in list)\r\nAllows price lists to run onto more than one LCD\r\n" +
-                                "Px         (Display only items from page x - eg P3 is page 3 in list)\r\nAllows price lists to run onto more than one LCD\r\n" +
+                                "Px         (Display only items from page x - eg P3 is page 3 in list)\r\nAllows price lists to run onto more than one LCD Automatically\r\n" +
                                 "gas etc may also be supported in future\r\n" +
                                 "stock      (shows amount of stock on hand of above)\r\n";
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "keywords component, ore, ingot, tools, ammo, stock");
