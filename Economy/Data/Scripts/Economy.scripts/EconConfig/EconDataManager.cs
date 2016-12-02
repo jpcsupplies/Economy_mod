@@ -5,7 +5,6 @@
     using System.IO;
     using System.Linq;
     using Economy.scripts.EconStructures;
-    using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
     using VRageMath;
 
@@ -1047,6 +1046,7 @@
             data.Accounts = new List<BankAccountStruct>();
             data.Markets = new List<MarketStruct>();
             data.OrderBook = new List<OrderBookStruct>();
+            data.ShipSale = new List<ShipSaleStruct>();
             return data;
         }
 

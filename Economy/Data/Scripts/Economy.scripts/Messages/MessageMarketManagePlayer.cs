@@ -15,7 +15,6 @@
     using VRage.Library.Utils;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
-    using IMyBeacon = Sandbox.ModAPI.Ingame.IMyBeacon;
 
     [ProtoContract]
     public class MessageMarketManagePlayer : MessageBase

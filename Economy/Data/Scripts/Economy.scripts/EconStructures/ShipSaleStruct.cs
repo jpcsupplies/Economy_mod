@@ -12,19 +12,19 @@
         public DateTime Created { get; set; }
 
         /// <summary>
-        /// SteamId of seller.
+        /// PlayerId of seller.
         /// </summary>
-        public decimal TraderId { get; set; }
+        public long TraderId { get; set; }
 
         /// <summary>
         /// SteamId of seller.
         /// </summary>
-        public ulong TraderSid { get; set; }
+        public ulong TraderSteamId { get; set; }
 
         /// <summary>
-        /// Ship ID.
+        /// Ship Entity Id.
         /// </summary>
-        public string ShipID { get; set; }
+        public long ShipId { get; set; }
 
         /// <summary>
         /// Sell price.

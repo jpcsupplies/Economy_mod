@@ -1,103 +1,66 @@
 ﻿namespace Economy.scripts.EconConfig
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using Economy.scripts.EconStructures;
-    using Messages;
-    using Sandbox.Definitions;
-    using Sandbox.ModAPI;
-    using VRage.Game;
-    using VRage.Game.ModAPI;
-    using VRage.ModAPI;
-    using VRageMath;
-    using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
-    using IMyBeacon = Sandbox.ModAPI.Ingame.IMyBeacon;
 
     public static class ShipManager
     {
         #region Market helpers
 
-        public static void CreateSellOrder(decimal sellerId, ulong sellerSid, string ShipID, decimal price)
+        public static void CreateSellOrder(long sellerId, ulong sellerSid, long shipId, decimal price)
         {
             var order = new ShipSaleStruct
             {
                 Created = DateTime.Now,
                 TraderId = sellerId,
-                TraderSid = sellerSid,
-                ShipID = ShipID,
+                TraderSteamId = sellerSid,
+                ShipId = shipId,
                 Price = price,
                 OptionalId = ""
             };
             EconomyScript.Instance.Data.ShipSale.Add(order);
         }
 
-        public static decimal CheckSellOrder(string ShipID)
+        public static decimal CheckSellOrder(long shipId)
         {
-            var ships = EconomyScript.Instance.Data.ShipSale.Where(s => s.ShipID == ShipID).ToArray();
+            var ship = EconomyScript.Instance.Data.ShipSale.FirstOrDefault(s => s.ShipId == shipId);
 
-            if (ships.Length == 0)
-            {
+            if (ship == null)
 				return 0;
-            }
 
-            foreach (var ship in ships)
-            {
-				return ship.Price;
-            }
-			return 0;
+            return ship.Price;
 		}
 
-        public static ulong GetOwner(string ShipID)
+        public static ulong GetOwner(long shipId)
         {
-            var ships = EconomyScript.Instance.Data.ShipSale.Where(s => s.ShipID == ShipID).ToArray();
+            var ship = EconomyScript.Instance.Data.ShipSale.FirstOrDefault(s => s.ShipId == shipId);
 
-            if (ships.Length == 0)
-            {
-				return 0;
-            }
+            if (ship == null)
+                return 0;
 
-            foreach (var ship in ships)
-            {
-				return ship.TraderSid;
-            }
-			return 0;
+			return ship.TraderSteamId;
 		}
 
-        public static decimal GetOwnerID(string ShipID)
+        public static decimal GetOwnerId(long shipId)
         {
-            var ships = EconomyScript.Instance.Data.ShipSale.Where(s => s.ShipID == ShipID).ToArray();
+            var ship = EconomyScript.Instance.Data.ShipSale.FirstOrDefault(s => s.ShipId == shipId);
 
-            if (ships.Length == 0)
-            {
-				return 0;
-            }
+            if (ship == null)
+                return 0;
 
-            foreach (var ship in ships)
-            {
-				return ship.TraderId;
-            }
-			return 0;
+			return ship.TraderId;
 		}
 
-        public static bool Remove(string ShipID, ulong sellerId)
+        public static bool Remove(long shipId, ulong sellerId)
         {
-            var ships = EconomyScript.Instance.Data.ShipSale.Where(s => s.ShipID == ShipID).ToArray();
+            var ship = EconomyScript.Instance.Data.ShipSale.FirstOrDefault(s => s.ShipId == shipId && s.TraderSteamId == sellerId);
 
-            if (ships.Length == 0)
-            {
-				return false;
-            }
+            if (ship == null)
+                return false;
 
-            foreach (var ship in ships)
-            {
-				if(ship.TraderSid == sellerId)
-				{
-					EconomyScript.Instance.Data.ShipSale.Remove(ship);
-					return true;
-				}
-            }
-			return false;
+			EconomyScript.Instance.Data.ShipSale.Remove(ship);
+			return true;
 		}
 
         #endregion

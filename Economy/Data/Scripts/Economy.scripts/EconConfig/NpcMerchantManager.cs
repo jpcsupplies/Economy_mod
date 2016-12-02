@@ -1,5 +1,6 @@
 ﻿namespace Economy.scripts.EconConfig
 {
+    using System.Collections.Generic;
     using System.Linq;
     using Economy.scripts.EconStructures;
 
@@ -31,6 +32,10 @@
             {
                 EconomyScript.Instance.ServerLogger.WriteInfo("Banker Account Exists.");
             }
+
+            // ShipSale was added recently, so this makes sure the list is created in existing data stores.
+            if (data.ShipSale == null)
+                data.ShipSale = new List<ShipSaleStruct>();
         }
     }
 }

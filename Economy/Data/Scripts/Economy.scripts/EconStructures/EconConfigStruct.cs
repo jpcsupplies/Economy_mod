@@ -33,6 +33,7 @@
             TradeZoneMinRadius = 1;
             TradeZoneMaxRadius = 5000;
             PriceScaling = EconomyConsts.DefaultPriceScaling;
+            ShipTrading = false;
         }
 
         #region properties
@@ -144,6 +145,11 @@
         /// This sets if prices should react to available supply.
         /// </summary>
         public bool PriceScaling;
+
+        /// <summary>
+        /// This sets if players can buy and sell ships.
+        /// </summary>
+        public bool ShipTrading;
 
         #endregion
 

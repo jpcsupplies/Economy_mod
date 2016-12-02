@@ -322,7 +322,7 @@
             //return;
 
             writer.AddPublicLine("« Economy Test Screen 1 »");
-            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "{0:N}/{1:N4}/{2}/{3}", writer.FontSize, writer.WidthModifier, writer.DisplayLines, writer.WholeDisplayLines));
+            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "{0:N1}/{1:N4}/{2}/{3}", writer.FontSize, writer.WidthModifier, writer.DisplayLines, writer.WholeDisplayLines));
             writer.AddPublicLine("FontSize / WidthModifier / Lines / Whole Lines");
 
             Testline1(writer, "                |");

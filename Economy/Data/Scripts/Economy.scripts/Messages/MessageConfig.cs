@@ -514,6 +514,27 @@
 
                 #endregion
 
+                #region shiptrading
+
+                case "shiptrading":
+                    if (string.IsNullOrEmpty(Value))
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "ShipTrading: {0}", EconomyScript.Instance.ServerConfig.ShipTrading ? "On" : "Off");
+                    else
+                    {
+                        bool? boolTest = GetBool(Value);
+                        if (boolTest.HasValue)
+                        {
+                            EconomyScript.Instance.ServerConfig.ShipTrading = boolTest.Value;
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "ShipTrading updated to: {0}", EconomyScript.Instance.ServerConfig.ShipTrading ? "On" : "Off");
+                            return;
+                        }
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "ShipTrading: {0}", EconomyScript.Instance.ServerConfig.ShipTrading ? "On" : "Off");
+                    }
+                    break;
+
+                #endregion
+
                 #region default
 
                 default:
@@ -531,6 +552,7 @@
                     msg.AppendFormat("EnableLcds: {0}\r\n", EconomyScript.Instance.ServerConfig.EnableLcds ? "On" : "Off");
                     msg.AppendFormat("EnableNpcTradezones: {0}\r\n", EconomyScript.Instance.ServerConfig.EnableNpcTradezones ? "On" : "Off");
                     msg.AppendFormat("PriceScaling: {0}\r\n", EconomyScript.Instance.ServerConfig.PriceScaling ? "On" : "Off");
+                    msg.AppendFormat("ShipTrading: {0}\r\n", EconomyScript.Instance.ServerConfig.ShipTrading ? "On" : "Off");
                     msg.AppendLine();
                     msg.AppendLine("--- Player Tradezones ---");
                     msg.AppendFormat("EnablePlayerTradezones: {0}\r\n", EconomyScript.Instance.ServerConfig.EnablePlayerTradezones ? "On" : "Off");

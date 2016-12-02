@@ -5,7 +5,6 @@
     using System.Collections.Generic;
     using System.Text;
     using Sandbox.ModAPI;
-    using Sandbox.ModAPI.Ingame;
     using Sandbox.ModAPI.Interfaces;
 
     public class SeTextBuilder

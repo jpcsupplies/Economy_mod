@@ -11,8 +11,6 @@
     using VRage.Game.ModAPI;
     using VRage.ModAPI;
     using VRageMath;
-    using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
-    using IMyBeacon = Sandbox.ModAPI.Ingame.IMyBeacon;
 
     public static class MarketManager
     {

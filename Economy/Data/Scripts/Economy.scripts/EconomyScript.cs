@@ -37,9 +37,6 @@ namespace Economy.scripts
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
     using VRageMath;
-    using IMyCargoContainer = Sandbox.ModAPI.Ingame.IMyCargoContainer;
-    using IMyOxygenTank = Sandbox.ModAPI.Ingame.IMyOxygenTank;
-    using IMyTerminalBlock = Sandbox.ModAPI.Ingame.IMyTerminalBlock;
 
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     public class EconomyScript : MySessionComponentBase
@@ -95,7 +92,7 @@ namespace Economy.scripts
         /// <summary>
         /// pattern defines econfig commands.
         /// </summary>
-        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(LicenceMin)|(LicenceMax)|(RelinkRatio)|(MaximumPlayerZones)|(PriceScaling)))(?:\s+(?<value>.+))?)?";
+        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(LicenceMin)|(LicenceMax)|(RelinkRatio)|(MaximumPlayerZones)|(PriceScaling)|(ShipTrading)))(?:\s+(?<value>.+))?)?";
 
         /// <summary>
         /// pattern defines how to register a player trade zone.
@@ -1022,6 +1019,7 @@ namespace Economy.scripts
             // /econfig EnablePlayerTradezones on - change Player created Trade zones on.
             // /econfig EnablePlayerPayments on - change Player payments on.
             // /econfig PriceScaling on - change PriceScaling on.
+            // /econfig ShipTrading on - change ShipTrading on.
 
             #endregion econfig
 
@@ -1499,47 +1497,43 @@ namespace Economy.scripts
             #endregion
 
             #region sellship
-           // sellship command
+            // sellship command
             if (split[0].Equals("/sellship", StringComparison.InvariantCultureIgnoreCase))
             {
-				var SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
-				var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
-				if (split.Length >= 2)
-				{
-                    decimal amount = 0;
-					if (!decimal.TryParse(split[1], NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
-						amount = 0;
-					amount = Convert.ToDecimal(amount, CultureInfo.InvariantCulture);
-					var selectedShip = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, true, false, false, false, false, false, false) as IMyCubeGrid;
-					if (selectedShip != null)
-					{
-						MessageShipSale.SendMessage(selectedShip.EntityId, "sell", amount);
-					}
-					else
-						MyAPIGateway.Utilities.ShowMessage("SHIPSALE", "You need to target a ship or station to sell.");
-				}
-				else
-				{
-					MyAPIGateway.Utilities.ShowMessage("SHIPSALE", "You need to specify a price");
-				}
-				return true;
+                if (split.Length >= 2)
+                {
+                    decimal amount;
+                    if (!decimal.TryParse(split[1], NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
+                        amount = 0;
+                    amount = Convert.ToDecimal(amount, CultureInfo.InvariantCulture);
+                    var selectedShip = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, true, false, false, false, false, false, false) as IMyCubeGrid;
+                    if (selectedShip != null)
+                    {
+                        MessageShipSale.SendMessage(selectedShip.EntityId, "sell", amount);
+                    }
+                    else
+                        MyAPIGateway.Utilities.ShowMessage("SHIPSALE", "You need to target a ship or station to sell.");
+                }
+                else
+                {
+                    MyAPIGateway.Utilities.ShowMessage("SHIPSALE", "You need to specify a price");
+                }
+                return true;
             }
             #endregion
 
             #region cancelsale
-           // cancelsale command
+            // cancelsale command
             if (split[0].Equals("/cancelsale", StringComparison.InvariantCultureIgnoreCase))
             {
-				var SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
-				var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
-				var selectedShip = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, true, false, false, false, false, false, false) as IMyCubeGrid;
-				if (selectedShip != null)
-				{
-					MessageShipSale.SendMessage(selectedShip.EntityId, "cancel", 0);
-				}
-				else
-					MyAPIGateway.Utilities.ShowMessage("SHIPSALE", "You need to target a ship or station to sell.");
-				return true;
+                var selectedShip = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, true, false, false, false, false, false, false) as IMyCubeGrid;
+                if (selectedShip != null)
+                {
+                    MessageShipSale.SendMessage(selectedShip.EntityId, "cancel", 0);
+                }
+                else
+                    MyAPIGateway.Utilities.ShowMessage("SHIPSALE", "You need to target a ship or station to sell.");
+                return true;
             }
             #endregion
 
@@ -1547,28 +1541,24 @@ namespace Economy.scripts
             // buyship command
             if (split[0].Equals("/buyship", StringComparison.InvariantCultureIgnoreCase))
             {
-				var SenderSteamId = MyAPIGateway.Session.Player.SteamUserId;
-				var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
-				var selectedShip = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, true, false, false, false, false, false, false) as IMyCubeGrid;
-				if (selectedShip != null)
-				{
-					if (split.Length >= 2)
-					{
-						decimal amount = 0;
-						if (!decimal.TryParse(split[1], NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
-							amount = 0;
-						amount = Convert.ToDecimal(amount, CultureInfo.InvariantCulture);
-						MessageShipSale.SendMessage(selectedShip.EntityId, "buy", amount);
-						return true;
-					}
-					else
-					{
-						MessageWorth.SendMessage(selectedShip.EntityId);
-					}
-				}
-				else
-					MyAPIGateway.Utilities.ShowMessage("SHIPSALE", "You need to target a ship or station to buy.");
-				return true;
+                var selectedShip = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, true, false, false, false, false, false, false) as IMyCubeGrid;
+                if (selectedShip != null)
+                {
+                    if (split.Length >= 2)
+                    {
+                        decimal amount;
+                        if (!decimal.TryParse(split[1], NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
+                            amount = 0;
+                        amount = Convert.ToDecimal(amount, CultureInfo.InvariantCulture);
+                        MessageShipSale.SendMessage(selectedShip.EntityId, "buy", amount);
+                        return true;
+                    }
+                    
+                    MessageWorth.SendMessage(selectedShip.EntityId);
+                }
+                else
+                    MyAPIGateway.Utilities.ShowMessage("SHIPSALE", "You need to target a ship or station to buy.");
+                return true;
             }
             #endregion
 
@@ -1955,7 +1945,8 @@ namespace Economy.scripts
                                     "LicenceMin | LicenceMax	The minimum and maximum Trade License price.\r\n" +
                                     "RelinkRatio	The price ratio for relinking to a beacon.\r\n" +
                                     "MaximumPlayerZones	Number of trade zones a player can own.\r\n" +
-                                    "PriceScaling  This sets if prices should react to available supply.";
+                                    "PriceScaling  This sets if prices should react to available supply.\r\n" +
+                                    "ShipTrading  This set if players can buy and sell ships.";
                                     MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /econfig SETTING  VALUE");
                                     MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Economy Config", helpreply, null, "Close");
                                     return true;

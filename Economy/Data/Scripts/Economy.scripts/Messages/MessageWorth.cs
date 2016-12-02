@@ -17,7 +17,6 @@
     using VRage.Game.ModAPI;
     using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
-    using IMyOxygenTank = Sandbox.ModAPI.Ingame.IMyOxygenTank;
 
     /// <summary>
     /// Will value a grid (ship or station), including attached rotor and piston parts.
@@ -258,7 +257,7 @@
                     //}
 
                     //var prefix = string.Format("{0:#,##0.00000}", totalValue);
-					var shipSale = ShipManager.CheckSellOrder(selectedShip.EntityId.ToString());
+					var shipSale = ShipManager.CheckSellOrder(selectedShip.EntityId);
 
                     str.AppendLine(marketDetail);
                     str.AppendFormat("{0}: {1}\r\n", selectedShip.IsStatic ? "Station" : selectedShip.GridSizeEnum.ToString() + " Ship", selectedShip.DisplayName);
