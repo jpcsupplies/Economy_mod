@@ -123,7 +123,7 @@
                 if (ItemQuantity != Math.Truncate(ItemQuantity))
                 {
                     MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You must provide a whole number for the quantity to buy that item.");
-                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- invalid qantity.", SenderSteamId);
+                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- invalid quantity.", SenderSteamId);
                     return;
                 }
                 //ItemQuantity = Math.Round(ItemQuantity, 0);  // Or do we just round the number?
@@ -132,7 +132,7 @@
             if (ItemQuantity <= 0)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You must provide a valid quantity to buy.");
-                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- invalid qantity.", SenderSteamId);
+                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- invalid quantity.", SenderSteamId);
                 return;
             }
 
