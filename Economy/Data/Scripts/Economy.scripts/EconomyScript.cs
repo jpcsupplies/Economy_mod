@@ -1905,8 +1905,20 @@ namespace Economy.scripts
                             }
                             return true;
                         case "buy":
-                            MyAPIGateway.Utilities.ShowMessage("eHelp", "/buy W X Y Z - Purchases a quantity [W] of item [X] [at price Y] [from player Z]");
-                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /buy 20 Ice ");
+                              helpreply = "Buy components, tools, weapons, ammo, ingots or ore from a trade zone.\r\n" +
+                                "Multi word item names should be enclosed in double quotes \"\"\r\n" +
+                                "Partial unique names are accepted, ie \"gold in\" for \"gold ingot\"\r\n" +
+                                "\r\nExamples:\r\n" +
+                                "/buy 20.54 Ice\r\n" +
+                                "/buy 10 \"gold ingot\"\r\n" +
+                                "/buy 40 \"silicon wafer\"\r\n" +
+                                "/buy 14.5 \"silicon ore\"\r\n" +
+                                "/buy 100 \"uranium in\" 20 \"Screaming Angels\"\r\n" +
+                                "/buy 1 steel\r\n" +
+                                "/buy 22 5.56\r\n" +
+                                "\r\n";
+                            MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /buy W X Y Z - Purchases a quantity [W] of item [X] [at price Y] [from player Z]");
+                            MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Buy", helpreply, null, "Close");
                             return true;
                         case "lcd":
                             helpreply = "Controls various LCD Information Feeds\r\n" +
