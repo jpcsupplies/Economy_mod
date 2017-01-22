@@ -88,6 +88,29 @@ namespace Economy.scripts
             MyAPIGateway.Players.GetAllIdentites(listIdentites, p => p.IdentityId == player.IdentityId);
             return listIdentites.FirstOrDefault();
         }
+        public static bool TryGetPlayer(this IMyPlayerCollection collection, ulong steamId, out IMyPlayer player)
+        {
+            var players = new List<IMyPlayer>();
+            collection.GetPlayers(players, p => p != null);
+
+            player = players.FirstOrDefault(p => p.SteamUserId == steamId);
+            if (player == null)
+                return false;
+
+            return true;
+        }
+
+        public static bool TryGetPlayer(this IMyPlayerCollection collection, long playerId, out IMyPlayer player)
+        {
+            var players = new List<IMyPlayer>();
+            collection.GetPlayers(players, p => p != null);
+
+            player = players.FirstOrDefault(p => p.PlayerID == playerId);
+            if (player == null)
+                return false;
+
+            return true;
+        }
 
         /// <summary>
         /// Used to find the Character Entity (which is the physical representation in game) from the Player (the network connected human).

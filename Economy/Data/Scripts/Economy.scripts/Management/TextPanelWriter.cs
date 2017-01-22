@@ -27,7 +27,6 @@
 
         private readonly IMyTextPanel _panel;
         private readonly StringBuilder _publicString;
-        private readonly StringBuilder _privateString;
         private readonly bool _isWide;
         private float _fontSize;
 
@@ -63,7 +62,6 @@
             _isWide = _panel.BlockDefinition.SubtypeName.IndexOf("Wide", StringComparison.InvariantCultureIgnoreCase) >= 0 
                 || _panel.BlockDefinition.SubtypeName == "SmallMonitor" || _panel.BlockDefinition.SubtypeName == "LargeMonitor"; // Support for Mod 403922024.
             _publicString = new StringBuilder();
-            _privateString = new StringBuilder();
             Clear();
         }
 
@@ -221,49 +219,6 @@
 
         #endregion
 
-        #region Set Private text
-
-        public void AddPrivateText(string text, params object[] args)
-        {
-            _privateString.AppendFormat(text, args);
-        }
-
-        public void AddPrivateLine(string text)
-        {
-            _privateString.AppendLine(text);
-        }
-
-        public void ClearPrivateText()
-        {
-            _privateString.Clear();
-        }
-
-        public string GetPrivateString()
-        {
-            return _privateString.ToString();
-        }
-
-        public void UpdatePrivate(bool show = false)
-        {
-            if (FontSize != _panel.GetValueFloat("FontSize"))
-                _panel.SetValueFloat("FontSize", FontSize);
-
-            // no need to update if the text has not changed.
-            if (_panel.GetPrivateText() != _privateString.ToString())
-            {
-                _panel.WritePrivateText(_privateString.ToString());
-
-                if (show)
-                {
-                    if (ForceRedraw)
-                        _panel.ShowTextureOnScreen();
-                    _panel.ShowPrivateTextOnScreen();
-                }
-            }
-        }
-
-        #endregion
-
         #region set image
 
         public void UpdateImage(float interval, List<string> images)
@@ -283,7 +238,6 @@
         {
             FontSize = _panel.GetValueFloat("FontSize");
             _publicString.Clear();
-            _privateString.Clear();
         }
 
         public void SetFontSize(float size)

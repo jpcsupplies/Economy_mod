@@ -103,8 +103,7 @@
             MyAPIGateway.Parallel.StartBackground(delegate ()
             // Background processing occurs within this block.
             {
-                TextLogger.WriteGameLog("## Econ ## Worth:background start");
-                //EconomyScript.Instance.ServerLogger.Write("Validating and Updating Config.");
+                EconomyScript.Instance.ServerLogger.WriteInfo("Worth:background start");
 
                 try
                 {
@@ -232,11 +231,11 @@
                     MessageClientTextMessage.SendMessage(SenderSteamId, "WORTH", "Failed and died. Please contact the administrator.");
                 }
 
-                TextLogger.WriteGameLog("## Econ ## Worth:background end");
+                EconomyScript.Instance.ServerLogger.WriteInfo("Worth:background end");
             }, delegate ()
             // when the background processing is finished, this block will run foreground.
             {
-                TextLogger.WriteGameLog("## Econ ## Worth:foreground");
+                EconomyScript.Instance.ServerLogger.WriteInfo("Worth:foreground");
 
                 try
                 {

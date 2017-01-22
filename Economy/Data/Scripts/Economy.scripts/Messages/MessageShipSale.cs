@@ -91,8 +91,7 @@
                             MyAPIGateway.Parallel.StartBackground(delegate ()
                             // Background processing occurs within this block.
                             {
-                                TextLogger.WriteGameLog("## Econ ## ShipSale:background start");
-                                //EconomyScript.Instance.ServerLogger.Write("Validating and Updating Config.");
+                                EconomyScript.Instance.ServerLogger.WriteInfo("ShipSale:background start");
 
                                 try
                                 {
@@ -129,11 +128,11 @@
                                     MessageClientTextMessage.SendMessage(SenderSteamId, "ShipSale", "Failed and died. Please contact the administrator.");
                                 }
 
-                                TextLogger.WriteGameLog("## Econ ## ShipSale:background end");
+                                EconomyScript.Instance.ServerLogger.WriteInfo("ShipSale:background end");
                             }, delegate ()
                             // when the background processing is finished, this block will run foreground.
                             {
-                                TextLogger.WriteGameLog("## Econ ## ShipSale:foreground");
+                                EconomyScript.Instance.ServerLogger.WriteInfo("ShipSale:foreground");
 
                                 try
                                 {
@@ -199,8 +198,7 @@
                         MyAPIGateway.Parallel.StartBackground(delegate ()
                         // Background processing occurs within this block.
                         {
-                            TextLogger.WriteGameLog("## Econ ## ShipSale:background start");
-                            //EconomyScript.Instance.ServerLogger.Write("Validating and Updating Config.");
+                            EconomyScript.Instance.ServerLogger.WriteInfo("ShipSale:background start");
 
                             try
                             {
@@ -293,11 +291,11 @@
                             // remove from sale
                             // remove money and give previous owner
 
-                            TextLogger.WriteGameLog("## Econ ## ShipSale:background end");
+                            EconomyScript.Instance.ServerLogger.WriteInfo("ShipSale:background end");
                         }, delegate ()
                         // when the background processing is finished, this block will run foreground.
                         {
-                            TextLogger.WriteGameLog("## Econ ## ShipSale:foreground");
+                            EconomyScript.Instance.ServerLogger.WriteInfo("ShipSale:foreground");
 
                             try
                             {
