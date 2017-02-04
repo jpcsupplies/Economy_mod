@@ -375,7 +375,7 @@
                     string faction = "Free agent";
                     IMyFaction plFaction;
                     
-                    plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.PlayerID);
+                    plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.IdentityId);
                     if (plFaction != null)
                     {
                         faction = plFaction.Name;  //should this show tag or full name? depends on screen size i suppose
@@ -454,7 +454,7 @@
                 string faction = "Free agent";
                 IMyFaction plFaction;
                 
-                plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.PlayerID);
+                plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.IdentityId);
                 if (plFaction != null)
                 {
                     faction = plFaction.Name;  //should this show tag or full name? depends on screen size i suppose

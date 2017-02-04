@@ -232,7 +232,7 @@
                             terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
                             cargoBlocks.AddRange(blocks.Cast<MyCubeBlock>());
 
-                            terminalsys.GetBlocksOfType<IMyOxygenTank>(blocks);
+                            terminalsys.GetBlocksOfType<IMyGasTank>(blocks);
                             tankBlocks.AddRange(blocks.Cast<MyCubeBlock>());
                         }
 
@@ -252,7 +252,7 @@
                                 if (gasTankDefintion == null || gasTankDefintion.StoredGasId != definition.Id)
                                     continue;
 
-                                var tankLevel = ((IMyOxygenTank)cubeBlock).GetOxygenLevel();
+                                var tankLevel = ((IMyGasTank)cubeBlock).FilledRatio;
                                 storedAmount += (MyFixedPoint)((decimal)tankLevel * (decimal)gasTankDefintion.Capacity);
                             }
                         }
@@ -775,11 +775,11 @@
                     if (gasTankDefintion == null || gasTankDefintion.StoredGasId != definitionId)
                         continue;
 
-                    var tank = ((IMyOxygenTank)cubeBlock);
+                    var tank = ((IMyGasTank)cubeBlock);
 
                     // TODO: Cannot set oxygen level of tank yet.
                     //tank.le
-                    //var tankLevel = ((IMyOxygenTank)cubeBlock).GetOxygenLevel();
+                    //var tankLevel = ((IMyGasTank)cubeBlock).FilledRatio;
                     //storedAmount += (MyFixedPoint)((decimal)tankLevel * (decimal)gasTankDefintion.Capacity);
                 }
             }

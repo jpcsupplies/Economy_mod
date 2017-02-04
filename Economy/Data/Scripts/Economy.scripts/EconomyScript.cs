@@ -1184,7 +1184,7 @@ namespace Economy.scripts
                             terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
                             cargoBlocks.AddRange(blocks.Cast<MyCubeBlock>());
 
-                            terminalsys.GetBlocksOfType<IMyOxygenTank>(blocks);
+                            terminalsys.GetBlocksOfType<IMyGasTank>(blocks);
                             tankBlocks.AddRange(blocks.Cast<MyCubeBlock>());
                         }
 
@@ -1208,7 +1208,7 @@ namespace Economy.scripts
                                 if (gasTankDefintion == null || gasTankDefintion.StoredGasId != definition.Id)
                                     continue;
 
-                                var tankLevel = ((IMyOxygenTank)cubeBlock).GetOxygenLevel();
+                                var tankLevel = ((IMyGasTank)cubeBlock).FilledRatio;
                                 sellQuantity += (decimal)tankLevel * (decimal)gasTankDefintion.Capacity;
 
                                 // Testing the component.

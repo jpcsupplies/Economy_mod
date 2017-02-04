@@ -115,7 +115,7 @@
                                                 if (block.FatBlock.OwnerId != 0)
                                                 {
                                                     terminalBlocks++;
-                                                    if (block.FatBlock.OwnerId == player.PlayerID)
+                                                    if (block.FatBlock.OwnerId == player.IdentityId)
                                                         owned++;
                                                 }
                                             }
@@ -138,7 +138,7 @@
                                 {
                                     if (owned > (terminalBlocks * (EconomyConsts.ShipOwned / 100)))
                                     {
-                                        ShipManager.CreateSellOrder(player.PlayerID, SenderSteamId, selectedShip.EntityId, Amount);
+                                        ShipManager.CreateSellOrder(player.IdentityId, SenderSteamId, selectedShip.EntityId, Amount);
                                         MessageClientTextMessage.SendMessage(SenderSteamId, "SHIPSALE", "Ship put up for sale for " + Amount);
                                     }
                                     else
@@ -247,7 +247,7 @@
 
                                         foreach (var grid in grids)
                                         {
-                                            grid.ChangeGridOwnership(player.PlayerID, MyOwnershipShareModeEnum.All);
+                                            grid.ChangeGridOwnership(player.IdentityId, MyOwnershipShareModeEnum.All);
                                             var blocks = new List<IMySlimBlock>();
                                             grid.GetBlocks(blocks);
 
@@ -264,7 +264,7 @@
                                                     terminalBlocks++;
                                                     blockDefintion = MyDefinitionManager.Static.GetCubeBlockDefinition(block.FatBlock.BlockDefinition);
                                                     (block.FatBlock as MyCubeBlock).ChangeOwner(0, MyOwnershipShareModeEnum.Faction);
-                                                    (block.FatBlock as MyCubeBlock).ChangeBlockOwnerRequest(player.PlayerID, MyOwnershipShareModeEnum.Faction);
+                                                    (block.FatBlock as MyCubeBlock).ChangeBlockOwnerRequest(player.IdentityId, MyOwnershipShareModeEnum.Faction);
                                                 }
                                             }
                                         }

@@ -78,7 +78,7 @@ namespace Economy.scripts
         public static IMyPlayer Player(this IMyIdentity identity)
         {
             var listPlayers = new List<IMyPlayer>();
-            MyAPIGateway.Players.GetPlayers(listPlayers, p => p.PlayerID == identity.PlayerId);
+            MyAPIGateway.Players.GetPlayers(listPlayers, p => p.IdentityId == identity.IdentityId);
             return listPlayers.FirstOrDefault();
         }
 
@@ -105,7 +105,7 @@ namespace Economy.scripts
             var players = new List<IMyPlayer>();
             collection.GetPlayers(players, p => p != null);
 
-            player = players.FirstOrDefault(p => p.PlayerID == playerId);
+            player = players.FirstOrDefault(p => p.IdentityId == playerId);
             if (player == null)
                 return false;
 
@@ -287,10 +287,10 @@ namespace Economy.scripts
                 {
                     // The MotorStator which inherits from MotorBase.
                     IMyMotorBase motorBase = block.FatBlock as IMyMotorBase;
-                    if (motorBase == null || motorBase.Rotor == null)
+                    if (motorBase == null || motorBase.Top == null)
                         continue;
 
-                    IMyCubeGrid entityParent = motorBase.RotorGrid;
+                    IMyCubeGrid entityParent = motorBase.TopGrid;
                     if (entityParent == null)
                         continue;
                     if (!results.Any(e => e.EntityId == entityParent.EntityId))
@@ -307,7 +307,7 @@ namespace Economy.scripts
                     // The Rotor Part.
                     IMyMotorRotor motorRotor = block.FatBlock as IMyMotorRotor;
                     IMyCubeGrid entityParent = null;
-                    if (motorRotor == null || motorRotor.Stator == null)
+                    if (motorRotor == null || motorRotor.Base == null)
                     {
                         // Wheels appear to not properly populate the Stator property.
                         IMyCubeBlock altBlock = Support.FindRotorBase(motorRotor.EntityId);
@@ -317,7 +317,7 @@ namespace Economy.scripts
                         entityParent = altBlock.CubeGrid;
                     }
                     else
-                        entityParent = motorRotor.Stator.CubeGrid;
+                        entityParent = motorRotor.Base.CubeGrid;
                     if (!results.Any(e => e.EntityId == entityParent.EntityId))
                     {
                         results.Add(entityParent);
@@ -358,7 +358,7 @@ namespace Economy.scripts
                 {
                     var connector = (IMyShipConnector)block.FatBlock;
 
-                    if (connector.IsConnected == false || connector.IsLocked == false || connector.OtherConnector == null)
+                    if (connector.Status != Sandbox.ModAPI.Ingame.MyShipConnectorStatus.Connected || connector.OtherConnector == null)
                         continue;
 
                     var otherGrid = (IMyCubeGrid)connector.OtherConnector.CubeGrid;

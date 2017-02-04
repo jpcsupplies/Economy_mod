@@ -208,7 +208,7 @@
                         // player will be null if the player is not online.
                         // I'm not sure if there is a way to may a steamId to a playerId without them been online.
                         var player = MyAPIGateway.Players.FindPlayerBySteamId(market.MarketId);
-                        if (player != null && beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                        if (player != null && beacon.GetUserRelationToOwner(player.IdentityId) != MyRelationsBetweenPlayerAndBlock.Owner)
                         {
                             // Close the market, because it's no longer owner by the player.
                             market.Open = false;
@@ -316,7 +316,7 @@
                 if (beacon == null)
                     continue;
 
-                if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                if (beacon.GetUserRelationToOwner(player.IdentityId) != MyRelationsBetweenPlayerAndBlock.Owner)
                 {
                     // Close the market, because it's no longer owner by the player.
                     market.Open = false;

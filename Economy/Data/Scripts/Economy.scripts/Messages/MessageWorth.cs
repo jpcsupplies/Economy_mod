@@ -159,12 +159,12 @@
 
                                 #region Go through Gasses for tanks and cockpits.
 
-                                var tank = cube as IMyOxygenTank;
+                                var tank = cube as IMyGasTank;
                                 var gasTankDefintion = blockDefintion as MyGasTankDefinition;
 
                                 if (gasTankDefintion != null && tank != null)
                                 {
-                                    decimal volume = (decimal)gasTankDefintion.Capacity * (decimal)tank.GetOxygenLevel();
+                                    decimal volume = (decimal)gasTankDefintion.Capacity * (decimal)tank.FilledRatio;
                                     if (!inventoryComponents.ContainsKey(gasTankDefintion.StoredGasId))
                                         inventoryComponents.Add(gasTankDefintion.StoredGasId, 0);
                                     inventoryComponents[gasTankDefintion.StoredGasId] += volume;
@@ -188,7 +188,7 @@
                                 #region Go through all other Inventories for components/items.
 
                                 // Inventory check based on normal game access.
-                                var relation = block.FatBlock.GetUserRelationToOwner(player.PlayerID);
+                                var relation = block.FatBlock.GetUserRelationToOwner(player.IdentityId);
                                 if (relation != MyRelationsBetweenPlayerAndBlock.Enemies
                                     && relation != MyRelationsBetweenPlayerAndBlock.Neutral)
                                 {

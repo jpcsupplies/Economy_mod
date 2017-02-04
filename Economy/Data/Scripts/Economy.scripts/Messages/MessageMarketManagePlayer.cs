@@ -263,7 +263,7 @@
                                 }
                                 else
                                 {
-                                    if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                                    if (beacon.GetUserRelationToOwner(player.IdentityId) != MyRelationsBetweenPlayerAndBlock.Owner)
                                     {
                                         msg.AppendFormat("{0}: '{1}' {2:N}m occupied.\r\n", counter, market.DisplayName, radius);
                                     }
@@ -324,7 +324,7 @@
                             return;
                         }
 
-                        if (beaconBlock.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                        if (beaconBlock.GetUserRelationToOwner(player.IdentityId) != MyRelationsBetweenPlayerAndBlock.Owner)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "You must own the beacon to register it as trade zone.");
                             return;
@@ -413,7 +413,7 @@
                             return;
                         }
 
-                        if (beaconBlock.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                        if (beaconBlock.GetUserRelationToOwner(player.IdentityId) != MyRelationsBetweenPlayerAndBlock.Owner)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "TZ RELINK", "You must own the beacon to register it as trade zone.");
                             return;
@@ -571,7 +571,7 @@
                             return;
                         }
 
-                        if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                        if (beacon.GetUserRelationToOwner(player.IdentityId) != MyRelationsBetweenPlayerAndBlock.Owner)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "TZ OPEN", "You cannot open that market you don't own the block anymore.");
                             return;
@@ -615,7 +615,7 @@
                             return;
                         }
 
-                        if (beacon.GetUserRelationToOwner(player.PlayerID) != MyRelationsBetweenPlayerAndBlock.Owner)
+                        if (beacon.GetUserRelationToOwner(player.IdentityId) != MyRelationsBetweenPlayerAndBlock.Owner)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "TZ CLOSE", "You cannot close that market you don't own the block anymore.");
                             return;
@@ -654,7 +654,7 @@
                             return;
                         }
 
-                        var relation = textBlock.GetUserRelationToOwner(player.PlayerID);
+                        var relation = textBlock.GetUserRelationToOwner(player.IdentityId);
                         if (relation != MyRelationsBetweenPlayerAndBlock.Owner && relation != MyRelationsBetweenPlayerAndBlock.NoOwnership)
                         {
                             MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LOAD", "You must own the Text Panel to load market data.");
@@ -808,7 +808,7 @@
 #   allies, neutral players and enemies.
 ");
 
-                        textBlock.WritePrivateText(msg.ToString(), false);
+                        textBlock.WritePublicText(msg.ToString(), false);
 
                         MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LOAD", "Text panel updated.");
                     }
