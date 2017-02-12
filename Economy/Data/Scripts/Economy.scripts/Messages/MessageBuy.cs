@@ -228,7 +228,7 @@
 
                 if (UseBankSellPrice)
                     // The player is buying, but the *Market* will *sell* it to the player at this price.
-                    if (!EconomyScript.Instance.ServerConfig.PriceScaling) ItemPrice = marketItem.SellPrice; else ItemPrice = EconDataManager.PriceAdjust(marketItem.SellPrice, marketItem.Quantity, PricingBias.Sell);
+                    if (!EconomyScript.Instance.ServerConfig.PriceScaling || !BuyFromMerchant) ItemPrice = marketItem.SellPrice; else ItemPrice = EconDataManager.PriceAdjust(marketItem.SellPrice, marketItem.Quantity, PricingBias.Sell);
                     // If price scaling is on, adjust item price (or check player for subsidy pricing)
             }
 
