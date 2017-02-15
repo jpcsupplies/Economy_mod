@@ -58,7 +58,7 @@
         public bool UseBankSellPrice;
 
         /// <summary>
-        /// We are selling to the Merchant.
+        /// We are trading with a player or npc merchant zone.
         /// </summary>
         [ProtoMember(7)]
         public bool BuyFromMerchant;
@@ -189,7 +189,7 @@
             if (BuyFromMerchant || UseBankSellPrice)
             {
                 var markets = MarketManager.FindMarketsFromLocation(position);
-                if (markets.Count == 0)
+                if (markets.Count == 0) //If this is more than 1 this is where best price logic probably needs to go..
                 {
                     MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, your are not in range of any markets!");
                     EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- no market in range.", SenderSteamId);
@@ -228,7 +228,8 @@
 
                 if (UseBankSellPrice)
                     // The player is buying, but the *Market* will *sell* it to the player at this price.
-                    if (!EconomyScript.Instance.ServerConfig.PriceScaling || !BuyFromMerchant) ItemPrice = marketItem.SellPrice; else ItemPrice = EconDataManager.PriceAdjust(marketItem.SellPrice, marketItem.Quantity, PricingBias.Sell);
+                    // if we are not using price scaling OR the market we are trading with isn't owned by the NPC ID, dont change price. Otherwise scale.
+                    if (!EconomyScript.Instance.ServerConfig.PriceScaling || accountToSell.SteamId != EconomyConsts.NpcMerchantId) ItemPrice = marketItem.SellPrice; else ItemPrice = EconDataManager.PriceAdjust(marketItem.SellPrice, marketItem.Quantity, PricingBias.Sell);
                     // If price scaling is on, adjust item price (or check player for subsidy pricing)
             }
 

@@ -67,7 +67,7 @@
         public bool UseBankBuyPrice;
 
         /// <summary>
-        /// We are selling to the Merchant.
+        /// We are trading with a (Player/NPC) Merchant market?.
         /// </summary>
         [ProtoMember(8)]
         public bool SellToMerchant;
@@ -286,7 +286,7 @@
                         if (SellToMerchant || UseBankBuyPrice)
                         {
                             var markets = MarketManager.FindMarketsFromLocation(position);
-                            if (markets.Count == 0)
+                            if (markets.Count == 0) //once again here is were we could put the multi market best price logic..
                             {
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, your are not in range of any markets!");
                                 EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- no market in range.", SenderSteamId);
@@ -323,7 +323,8 @@
 
                             if (UseBankBuyPrice)
                                 // The player is selling, but the *Market* will *buy* it from the player at this price.
-                                if (!EconomyScript.Instance.ServerConfig.PriceScaling || !SellToMerchant) ItemPrice = marketItem.BuyPrice; else ItemPrice = EconDataManager.PriceAdjust(marketItem.BuyPrice, marketItem.Quantity, PricingBias.Buy);
+                                // if we are not using price scaling OR the market we are trading with isn't owned by the NPC ID, dont change price. Otherwise scale.
+                                if (!EconomyScript.Instance.ServerConfig.PriceScaling || accountToBuy.SteamId != EconomyConsts.NpcMerchantId) ItemPrice = marketItem.BuyPrice; else ItemPrice = EconDataManager.PriceAdjust(marketItem.BuyPrice, marketItem.Quantity, PricingBias.Buy);
                                 // if we are using price scaling adjust the price before our NPC trade (or check player for subsidy pricing)
                         }
 
