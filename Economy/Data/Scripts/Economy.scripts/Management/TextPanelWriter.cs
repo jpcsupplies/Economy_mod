@@ -6,6 +6,7 @@
     using System.Text;
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Interfaces;
+    using VRage;
 
     public class TextPanelWriter
     {
@@ -34,6 +35,8 @@
         private static readonly Dictionary<char, byte> FontCharWidth = new Dictionary<char, byte>();
 
         private static readonly Dictionary<IMyTextPanel, TextPanelWriter> TextPanelWriterCache = new Dictionary<IMyTextPanel, TextPanelWriter>();
+
+        private const string UpdateCrashMessage = "This exception may indicate an error in the game or mod code. If this exception continues to appear, then please contact the game developers.";
 
         #endregion
 
@@ -199,8 +202,19 @@
         // TODO: display n to m lines.
         public void UpdatePublic(bool show = true)
         {
-            if (FontSize != _panel.GetValueFloat("FontSize"))
-                _panel.SetValueFloat("FontSize", FontSize);
+            try
+            {
+                if (FontSize != _panel.GetValueFloat("FontSize"))
+                    _panel.SetValueFloat("FontSize", FontSize);
+            }
+            catch (Exception ex)
+            {
+                // The game may generate an exception from the GetValueFloat(GetValue) call.
+                // We can safely ignore this if it doesn't work, but it may indicate a game issue.
+                EconomyScript.Instance.ServerLogger.WriteException(ex, UpdateCrashMessage);
+                EconomyScript.Instance.ClientLogger.WriteException(ex, UpdateCrashMessage);
+            }
+
             LastUpdate = DateTime.Now;
 
             // no need to update if the text has not changed.
