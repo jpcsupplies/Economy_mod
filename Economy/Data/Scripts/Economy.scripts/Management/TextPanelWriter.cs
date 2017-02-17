@@ -250,7 +250,18 @@
 
         public void Clear()
         {
-            FontSize = _panel.GetValueFloat("FontSize");
+            try
+            {
+                FontSize = _panel.GetValueFloat("FontSize");
+            }
+            catch (Exception ex)
+            {
+                // The game may generate an exception from the GetValueFloat(GetValue) call.
+                // We should be able to safely ignore this if it doesn't work, but it may indicate a game issue.
+                EconomyScript.Instance.ServerLogger.WriteException(ex, UpdateCrashMessage);
+                EconomyScript.Instance.ClientLogger.WriteException(ex, UpdateCrashMessage);
+            }
+
             _publicString.Clear();
         }
 
