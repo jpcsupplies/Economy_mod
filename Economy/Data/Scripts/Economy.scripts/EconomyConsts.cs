@@ -21,7 +21,7 @@
 
 
         //milestone level A=Alpha B=Beta, dev = development test version or Milestone eg 1.0A Milestone, 1.1A Dev etc
-        public const string MajorVer = "Econ 3.39A Temar Ship Sell+Bug Fixes";
+        public const string MajorVer = "Econ 3.395A Temar Ship Sell+Bug Fixes";
 
         //Name our money
         public const string CurrencyName = "Credits";

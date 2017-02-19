@@ -30,7 +30,7 @@
             TradeZoneLicenceCostMin = 20000;
             TradeZoneLicenceCostMax = 20000000;
             TradeZoneRelinkRatio = 0.5m;
-            TradeZoneMinRadius = 1;
+            TradeZoneMinRadius = 20;
             TradeZoneMaxRadius = 5000;
             PriceScaling = EconomyConsts.DefaultPriceScaling;
             ShipTrading = false;
