@@ -1186,13 +1186,14 @@
         /// Takes NPC market name checks for too much gravel, stone etc then randomly converts some back into NPC funds
         /// </summary>
         /// <returns>True if junk found and sold, false if not or something went wrong</returns>
+        /// <notes>This action could also be performed as the result of a go-to-waypoint mission by a player instead of an NPC</notes>
         public static bool SellJunk(string market) 
         {
-            //this is designed to run under an interval timer possibly even randomly.
+            //this is designed to run under an interval timer possibly even randomly. 
             if (!EconomyScript.Instance.ServerConfig.EnableNpcTradezones && !EconomyScript.Instance.ServerConfig.EnablePlayerTradezones || market == "") return false;
             else {
-                Random trade = new Random();
-                Console.WriteLine(trade.Next(5000));
+                //Random trade = new Random();
+                //Console.WriteLine(trade.Next(5000));
                 return true;
             }
         }

@@ -93,7 +93,7 @@
 
             // Get player steam ID
             var buyingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
-
+            
             MyDefinitionBase definition = null;
             MyObjectBuilderType result;
             if (MyObjectBuilderType.TryParse(ItemTypeId, out result))
@@ -138,7 +138,7 @@
 
             // Who are we buying from?
             BankAccountStruct accountToSell;
-            if (BuyFromMerchant)
+            if (BuyFromMerchant || FromUserName=="_Junking")
                 accountToSell = AccountManager.FindAccount(EconomyConsts.NpcMerchantId);
             else
                 accountToSell = AccountManager.FindAccount(FromUserName);
@@ -240,99 +240,104 @@
             if (!buyingPlayer.IsAdmin())
                 transactionAmount = Math.Abs(transactionAmount);
 
-            // TODO: admin check on ability to afford it? 
-            //[maybe later, our pay and reset commands let us steal money from npc anyway best to keep admin abuse features to minimum]
-            //[we could put an admin check on blacklist however, allow admins to spawn even blacklisted gear]
-            if (accountToBuy.BankBalance < transactionAmount && accountToBuy.SteamId != accountToSell.SteamId)
-            {
-                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you cannot afford {0} {1}!", transactionAmount, EconomyScript.Instance.ServerConfig.CurrencyName);
-                EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- not enough money.", SenderSteamId);
-                return;
-            }
-
-            if (BuyFromMerchant) // and supply is not exhausted, or unlimited mode is not on.   
-                                 //This is a quick fix, ideally it should do a partial buy of what is left and post a buy offer for remainder
-            {
-                // here we look up item price and transfer items and money as appropriate
-                if (marketItem.Quantity >= ItemQuantity
-                    || (!EconomyScript.Instance.ServerConfig.LimitedSupply && accountToBuy.SteamId != accountToSell.SteamId))
+      
+                // TODO: admin check on ability to afford it? 
+                //[maybe later, our pay and reset commands let us steal money from npc anyway best to keep admin abuse features to minimum]
+                //[we could put an admin check on blacklist however, allow admins to spawn even blacklisted gear]
+            if (accountToBuy.BankBalance < transactionAmount && accountToBuy.SteamId != accountToSell.SteamId && FromUserName != "_Junking")
                 {
-                    marketItem.Quantity -= ItemQuantity; // reduce Market content.
-                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy finalizing by Steam Id '{0}' -- adding to inventory.", SenderSteamId);
-                    var remainingToCollect = MessageSell.AddToInventories(buyingPlayer, ItemQuantity, definition.Id);
+                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you cannot afford {0} {1}!", transactionAmount, EconomyScript.Instance.ServerConfig.CurrencyName);
+                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- not enough money.", SenderSteamId);
+                    return;
+                }
 
-                    //EconomyScript.Instance.Config.LimitedSupply
-
-                    if (accountToBuy.SteamId != accountToSell.SteamId)
+                if (BuyFromMerchant || FromUserName == "_Junking") // and supply is not exhausted, or unlimited mode is not on.   or we are trashing junk
+                //This is a quick fix, ideally it should do a partial buy of what is left and post a buy offer for remainder
+                {
+                    // here we look up item price and transfer items and money as appropriate
+                    if (marketItem.Quantity >= ItemQuantity
+                        && (!EconomyScript.Instance.ServerConfig.LimitedSupply && accountToBuy.SteamId != accountToSell.SteamId))
                     {
-                        accountToSell.BankBalance += transactionAmount;
-                        accountToSell.Date = DateTime.Now;
+                        if (FromUserName == "_Junking" && marketItem.Quantity < 1000) { } else { marketItem.Quantity -= ItemQuantity; } // reduce Market content so long as we are not junking and below 1000 stock
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy finalizing by Steam Id '{0}' -- adding to inventory.", SenderSteamId);
+                        if (FromUserName != "_Junking") //make it dissapear if its being junked otherwise give to player
+                        {
+                            var remainingToCollect = MessageSell.AddToInventories(buyingPlayer, ItemQuantity, definition.Id);
+                            if (remainingToCollect > 0)
+                            {
+                                MarketManager.CreateStockHeld(buyingPlayer.SteamUserId, ItemTypeId, ItemSubTypeName, remainingToCollect, ItemPrice);
+                                // TODO: there should be a common command to collect items. Not use /sell.
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There are {0} remaining to collect. Use '/collect'", remainingToCollect);
+                            }
+                        }
+                        //EconomyScript.Instance.Config.LimitedSupply
 
-                        accountToBuy.BankBalance -= transactionAmount;
-                        accountToBuy.Date = DateTime.Now;
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0} {3}", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
+                        if (accountToBuy.SteamId != accountToSell.SteamId)
+                        {
+                            if (FromUserName == "_Junking" && marketItem.Quantity < 1000) { } else { accountToSell.BankBalance += transactionAmount; } //do nothing if we didnt remove stock
+                            accountToSell.Date = DateTime.Now;
 
-                        MessageUpdateClient.SendAccountMessage(accountToSell);
-                        MessageUpdateClient.SendAccountMessage(accountToBuy);
+                            if (FromUserName != "_Junking") { accountToBuy.BankBalance -= transactionAmount; } //we junked the item so its been converted to cash so we dont need to bill anyone
+                            accountToBuy.Date = DateTime.Now;
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just purchased {1} '{2}' for {0} {3}", transactionAmount, ItemQuantity, definition.GetDisplayName(), EconomyScript.Instance.ServerConfig.CurrencyName);
+
+                            MessageUpdateClient.SendAccountMessage(accountToSell);
+                            MessageUpdateClient.SendAccountMessage(accountToBuy);
+                        }
+                        else
+                        {
+                            accountToBuy.Date = DateTime.Now;
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just arranged transfer of {0} '{1}' into your inventory.", ItemQuantity, definition.GetDisplayName());
+                        }
+
+
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy complete by Steam Id '{0}' -- items bought.", SenderSteamId);
                     }
                     else
                     {
-                        accountToBuy.Date = DateTime.Now;
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "You just arranged transfer of {0} '{1}' into your inventory.", ItemQuantity, definition.GetDisplayName());
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There isn't '{0}' of {1} available to purchase! Only {2} available to buy!", ItemQuantity, definition.GetDisplayName(), marketItem.Quantity);
+                        EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- not enough stock.", SenderSteamId);
                     }
 
-                    if (remainingToCollect > 0)
+                    return;
+                }
+
+                else if (FindOnMarket)
+                {
+                    // TODO: Here we find the best offer on the zone market
+
+                    return;
+                }
+                else
+                {
+                    // is it a player then?             
+                    if (accountToSell.SteamId == buyingPlayer.SteamUserId)
                     {
-                        MarketManager.CreateStockHeld(buyingPlayer.SteamUserId, ItemTypeId, ItemSubTypeName, remainingToCollect, ItemPrice);
-                        // TODO: there should be a common command to collect items. Not use /sell.
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There are {0} remaining to collect. Use '/collect'", remainingToCollect);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you cannot buy from yourself!");
+                        return;
                     }
-                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy complete by Steam Id '{0}' -- items bought.", SenderSteamId);
+
+                    // check if selling player is online and in range?
+                    var payingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(accountToSell.SteamId);
+
+                    if (EconomyScript.Instance.ServerConfig.LimitedRange && !Support.RangeCheck(buyingPlayer, payingPlayer))
+                    {
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you are not in range of that player!");
+                        return;
+                    }
+
+                    if (payingPlayer == null)
+                    {
+                        // TODO: other player offline.
+
+                    }
+                    else
+                    {
+                        // TODO: other player is online.
+
+                    }
                 }
-                else
-                {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There isn't '{0}' of {1} available to purchase! Only {2} available to buy!", ItemQuantity, definition.GetDisplayName(), marketItem.Quantity);
-                    EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Buy aborted by Steam Id '{0}' -- not enough stock.", SenderSteamId);
-                }
-
-                return;
-            }
-            else if (FindOnMarket)
-            {
-                // TODO: Here we find the best offer on the zone market
-
-                return;
-            }
-            else
-            {
-                // is it a player then?             
-                if (accountToSell.SteamId == buyingPlayer.SteamUserId)
-                {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you cannot buy from yourself!");
-                    return;
-                }
-
-                // check if selling player is online and in range?
-                var payingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(accountToSell.SteamId);
-
-                if (EconomyScript.Instance.ServerConfig.LimitedRange && !Support.RangeCheck(buyingPlayer, payingPlayer))
-                {
-                    MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Sorry, you are not in range of that player!");
-                    return;
-                }
-
-                if (payingPlayer == null)
-                {
-                    // TODO: other player offline.
-
-                }
-                else
-                {
-                    // TODO: other player is online.
-
-                }
-            }
-
+            
             // this is a fall through from the above conditions not yet complete.
             MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "Not yet complete.");
         }

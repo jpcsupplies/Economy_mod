@@ -613,9 +613,111 @@ namespace Economy.scripts
             //used to test whatever crazy stuff im trying to work out
             if (split[0].Equals("/debug", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
+                //Sample logic for "fake" sales to convert junk items back into their monetary value to keep NPC cash reserves liquid.  This promotes players selling junk ore off instead of leaving them floating.
+                //Ideally should be run on a random interval timer (eg between 5 and 60 mins) server side.  Ideally it should cycle between all NPC markets too.
+                //Junking logic: gen a random number, check the junk on hand is above a certain level eg 1000, then reduce npc market stock by that random sale amount and increace npc bank balance by destroyed stock value
+                
+                //Thoughts For later:
+                //The same logic could also be used for a "take out the trash" mission target GPS arrival trigger if we wanted.
+                //Thus the players location could be used to establish which market has the "trash collected"
+                //Although having a trade mission involving collecting trash does take realism a bit far LOL! Example Mission logic: player arrives at station.  Station triggers junk clean up.
+                //player then has to travel to remote location..  at which point they are paid for "dumping trash" and mission is complete. No actual dumping is required; just going to location is.
+                               
+                //if (EconDataManager.SellJunk(split[1])) { }  <-- was originally planning on it living in here or similar
+                if (!EconomyScript.Instance.ServerConfig.EnableNpcTradezones && !EconomyScript.Instance.ServerConfig.EnablePlayerTradezones)  MyAPIGateway.Utilities.ShowMessage("Options ", "Would prevent running");
+                else
+                {
+                    Random trade = new Random(); //yes it is not entirely random but for junk cleanouts doesnt really matter
+                    int qty = trade.Next(5000);
+                    string reply = " " + qty;
+                    MyAPIGateway.Utilities.ShowMessage("Options ", reply);
+
+
+                        //ok what item are we setting?
+                        MyObjectBuilder_Base content;
+                        Dictionary<string, MyDefinitionBase> options;
+                        string itemName = " "; //item to junk placeholder
+
+                        if (split.Length == 2) //you want to junk a specified item ?
+                        {
+                            itemName = split[1];
+                            qty = trade.Next(5000);
+
+
+                            // Search for the item and find one match only, either by exact name or partial name.
+                            if (!Support.FindPhysicalParts(itemName, out content, out options))
+                            {
+                                if (options.Count == 0)
+                                    MyAPIGateway.Utilities.ShowMessage("Option", "Item name not found.");
+                                else if (options.Count > 10)
+                                    MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options.Keys) + " ?", null, "OK");
+                                else
+                                    MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options.Keys) + " ?");
+                                MyAPIGateway.Utilities.ShowMessage("Options ", "Fail");
+                                return true;
+                            }
+                            //ok the random number and item name is valid
+                            //we should send a request to our junk selling module probably under messagebuy or a similar logic set
+                            //sell the stock, but NPC gets paid for it.  Maybe we need a "take out the trash" type mission? 
+
+                            MessageBuy.SendMessage("_Junking", qty, content.TypeId.ToString(), content.SubtypeName, 0, true, true, false); //this is a really messy way to do it.. we really should check the stock first
+                        }
+                        else
+                        {
+                            if (qty > 2500) //randomly choose to junk gravel or stone 
+                            {   //lets make a fake sale of gravel then
+                                itemName = "Gravel";
+                                qty = trade.Next(5000);
+
+
+                                // Search for the item and find one match only, either by exact name or partial name.
+                                if (!Support.FindPhysicalParts(itemName, out content, out options))
+                                {
+                                    if (options.Count == 0)
+                                        MyAPIGateway.Utilities.ShowMessage("Option", "Item name not found.");
+                                    else if (options.Count > 10)
+                                        MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options.Keys) + " ?", null, "OK");
+                                    else
+                                        MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options.Keys) + " ?");
+                                    return true;
+                                }
+                                //ok the random number and item name is valid
+                                //we should send a request to our junk selling module probably under messagebuy or a similar logic set
+                                //sell the stock, but NPC gets paid for it.  Maybe we need a "take out the trash" type mission? 
+
+                                MessageBuy.SendMessage("_Junking", qty, content.TypeId.ToString(), content.SubtypeName, 0, true, true, false); //this is a really messy way to do it.. we really should check the stock first
+
+                            }
+                            else
+                            {   //fake stone sale it is then
+                                qty = trade.Next(5000);
+                                itemName = "Stone"; //or stone or scrap or whatever is commonly dumped into
+
+                                // Search for the item and find one match only, either by exact name or partial name.
+                                if (!Support.FindPhysicalParts(itemName, out content, out options))
+                                {
+                                    if (options.Count == 0)
+                                        MyAPIGateway.Utilities.ShowMessage("Option", "Item name not found.");
+                                    else if (options.Count > 10)
+                                        MyAPIGateway.Utilities.ShowMissionScreen("Item not found", itemName, " ", "Did you mean:\r\n" + String.Join(", ", options.Keys) + " ?", null, "OK");
+                                    else
+                                        MyAPIGateway.Utilities.ShowMessage("Item not found. Did you mean", String.Join(", ", options.Keys) + " ?");
+                                    return true;
+                                }
+                                //ok the random number and item name is valid
+                                //we should send a request to our junk selling module probably under messagebuy or a similar logic set
+                                //sell the stock, but NPC gets paid for it.  Maybe we need a "take out the trash" type mission? 
+
+                                MessageBuy.SendMessage("_Junking", qty, content.TypeId.ToString(), content.SubtypeName, 0, true, true, false); //this is a really messy way to do it.. we really should check the stock first
+                            }
+                        }
+                    MyAPIGateway.Utilities.ShowMessage("Options ", "Sucess");
+                    
+                    return true;
+                }
 
                 //test throwing a connection to a foreign server from server ie in lobby worlds or we have moved worlds
-                MyAPIGateway.Multiplayer.JoinServer("221.121.159.238:27270");
+                //MyAPIGateway.Multiplayer.JoinServer("221.121.159.238:27270");
 
                 //converting sample data  -- when used for encoding fund transfers the final version should prevent admins using this command
                 //that way players cannot simply run a local version of economy, pay themself a million then generate a fund transfer
