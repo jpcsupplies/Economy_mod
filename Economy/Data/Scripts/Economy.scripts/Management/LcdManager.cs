@@ -93,7 +93,7 @@
             float interval;
             try
             {
-                interval = Math.Max(1f, textPanel.GetValueFloat("ChangeIntervalSlider"));
+                interval = Math.Max((float)EconomyScript.Instance.ServerConfig.MinimumLcdDisplayInterval, textPanel.GetValueFloat("ChangeIntervalSlider"));
             }
             catch(Exception ex)
             {

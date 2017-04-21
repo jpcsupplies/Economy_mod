@@ -92,7 +92,7 @@ namespace Economy.scripts
         /// <summary>
         /// pattern defines econfig commands.
         /// </summary>
-        const string EconfigPattern = @"^(?<command>/econfig)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(LicenceMin)|(LicenceMax)|(RelinkRatio)|(MaximumPlayerZones)|(PriceScaling)|(ShipTrading)))(?:\s+(?<value>.+))?)?";
+        const string EconfigPattern = @"^(?<command>/econfig\b)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(LicenceMin)|(LicenceMax)|(RelinkRatio)|(MaximumPlayerZones)|(PriceScaling)|(ShipTrading)|(LcdDisplayInterval)))(?:\s+(?<value>.+))?)?";
 
         /// <summary>
         /// pattern defines how to register a player trade zone.
@@ -1958,8 +1958,9 @@ namespace Economy.scripts
                                     "RelinkRatio	The price ratio for relinking to a beacon.\r\n" +
                                     "MaximumPlayerZones	Number of trade zones a player can own.\r\n" +
                                     "PriceScaling  This sets if prices should react to available supply.\r\n" +
-                                    "ShipTrading  This set if players can buy and sell ships.";
-                                    MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /econfig SETTING  VALUE");
+                                    "ShipTrading  This set if players can buy and sell ships.\r\n" +
+                                    "LcdDisplayInterval  This restricts the minimum LCD display refresh interval.";
+                                MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /econfig SETTING  VALUE");
                                     MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Economy Config", helpreply, null, "Close");
                                     return true;
                                 }

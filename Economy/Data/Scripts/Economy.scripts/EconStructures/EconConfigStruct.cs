@@ -34,6 +34,7 @@
             TradeZoneMaxRadius = 5000;
             PriceScaling = EconomyConsts.DefaultPriceScaling;
             ShipTrading = false;
+            MinimumLcdDisplayInterval = 1;
         }
 
         #region properties
@@ -150,6 +151,13 @@
         /// This sets if players can buy and sell ships.
         /// </summary>
         public bool ShipTrading;
+
+        /// <summary>
+        /// Users can specify the LCD display refresh interval, but this will restrict
+        /// the minimum LCD display refresh server wide for all Economy tagged lcds.
+        /// This should never be set less than 1.
+        /// </summary>
+        public decimal MinimumLcdDisplayInterval;
 
         #endregion
 

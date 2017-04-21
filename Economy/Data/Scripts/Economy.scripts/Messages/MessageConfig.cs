@@ -535,6 +535,43 @@
 
                 #endregion
 
+                #region MinimumLcdDisplayInterval
+
+                case "lcddisplayinterval":
+                    if (string.IsNullOrEmpty(Value))
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LcdDisplayInterval: {0}", EconomyScript.Instance.ServerConfig.MinimumLcdDisplayInterval);
+                    else
+                    {
+                        decimal decimalTest;
+                        if (decimal.TryParse(Value, NumberStyles.Any, CultureInfo.InvariantCulture, out decimalTest))
+                        {
+                            // TODO: perhaps we should truncate the value.
+
+                            if (decimalTest >= 0)
+                            {
+                                if (decimalTest < 1)
+                                {
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LcdDisplayInterval cannot be less than 1 second.");
+                                    return;
+                                }
+                                if (decimalTest > 1000) // no particular reason for 1000, apart from it been a reasonable limit.
+                                {
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LcdDisplayInterval cannot be more than 1000 second.");
+                                    return;
+                                }
+
+                                EconomyScript.Instance.ServerConfig.MinimumLcdDisplayInterval = decimalTest;
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LcdDisplayInterval updated to: {0} seconds", EconomyScript.Instance.ServerConfig.MinimumLcdDisplayInterval);
+                                return;
+                            }
+                        }
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LcdDisplayInterval: {0} seconds", EconomyScript.Instance.ServerConfig.MinimumLcdDisplayInterval);
+                    }
+                    break;
+
+                #endregion
+
                 #region default
 
                 default:
@@ -553,6 +590,7 @@
                     msg.AppendFormat("EnableNpcTradezones: {0}\r\n", EconomyScript.Instance.ServerConfig.EnableNpcTradezones ? "On" : "Off");
                     msg.AppendFormat("PriceScaling: {0}\r\n", EconomyScript.Instance.ServerConfig.PriceScaling ? "On" : "Off");
                     msg.AppendFormat("ShipTrading: {0}\r\n", EconomyScript.Instance.ServerConfig.ShipTrading ? "On" : "Off");
+                    msg.AppendFormat("LcdDisplayInterval: {0:#,#.######} seconds\r\n", EconomyScript.Instance.ServerConfig.MinimumLcdDisplayInterval);
                     msg.AppendLine();
                     msg.AppendLine("--- Player Tradezones ---");
                     msg.AppendFormat("EnablePlayerTradezones: {0}\r\n", EconomyScript.Instance.ServerConfig.EnablePlayerTradezones ? "On" : "Off");
