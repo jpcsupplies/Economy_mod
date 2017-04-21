@@ -20,6 +20,8 @@
 
     public class LcdManager
     {
+        private const string UpdateCrashMessage = "This exception may indicate an error in the game or mod code. If this exception continues to appear, then please contact the game developers.";
+
         public static void UpdateLcds()
         {
             if (!EconomyScript.Instance.ServerConfig.EnableLcds)
@@ -82,9 +84,29 @@
 
         private static void ProcessLcdBlock(IMyTextPanel textPanel)
         {
-        //counter++;
+            //counter++;
 
-        var checkArray = textPanel.GetPublicTitle().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var writer = TextPanelWriter.Create(textPanel);
+
+            // Use the update interval on the LCD Panel to determine how often the display is updated.
+            // It can only go as fast as the timer calling this code is.
+            float interval;
+            try
+            {
+                interval = Math.Max(1f, textPanel.GetValueFloat("ChangeIntervalSlider"));
+            }
+            catch(Exception ex)
+            {
+                // The game may generate an exception from the GetValueFloat(GetValue) call.
+                EconomyScript.Instance.ServerLogger.WriteException(ex, UpdateCrashMessage);
+                EconomyScript.Instance.ClientLogger.WriteException(ex, UpdateCrashMessage);
+                // We can't safely ignore this one if it doesn't work, because this can affect the display timing.
+                return;
+            }
+            if (writer.LastUpdate > DateTime.Now.AddSeconds(-interval))
+                return;
+
+            var checkArray = textPanel.GetPublicTitle().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             var showAll = false;
             bool showOre = false;
             bool showIngot = false;
@@ -144,13 +166,7 @@
 
             bool showHelp = !showAll && !showOre && !showIngot && !showComponent && !showAmmo && !showTools && !showGasses;
 
-            var writer = TextPanelWriter.Create(textPanel);
-
-            // Use the update interval on the LCD Panel to determine how often the display is updated.
-            // It can only go as fast as the timer calling this code is.
-            var interval = Math.Max(1f, textPanel.GetValueFloat("ChangeIntervalSlider"));
-            if (writer.LastUpdate > DateTime.Now.AddSeconds(-interval))
-                return;
+       
 
             showPrices = !showStock || writer.IsWide;
 
