@@ -286,7 +286,7 @@
                         if (SellToMerchant || UseBankBuyPrice)
                         {
                             var markets = MarketManager.FindMarketsFromLocation(position);
-                            if (markets.Count == 0) //once again here is were we could put the multi market best price logic..
+                            if (markets.Count == 0)
                             {
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, your are not in range of any markets!");
                                 EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Create aborted by Steam Id '{0}' -- no market in range.", SenderSteamId);

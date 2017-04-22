@@ -54,7 +54,8 @@
                     CurrencyName = EconomyScript.Instance.ServerConfig.CurrencyName,
                     BankBalance = account.BankBalance,
                     OpenedDate = account.OpenedDate,
-                    NewAccount = newAccount
+                    NewAccount = newAccount,
+                    Missions = EconomyScript.Instance.Data.Missions.Where(m => m.PlayerId == SenderSteamId).ToList()
                 });
         }
 

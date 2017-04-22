@@ -17,6 +17,7 @@
     [XmlInclude(typeof(MessageMarketManageNpc))]
     [XmlInclude(typeof(MessageMarketManagePlayer))]
     [XmlInclude(typeof(MessageMarketPriceList))]
+    [XmlInclude(typeof(MessageMission))]
     [XmlInclude(typeof(MessageListAccounts))]
     [XmlInclude(typeof(MessageResetAccount))]
     [XmlInclude(typeof(MessageClientDialogMessage))]

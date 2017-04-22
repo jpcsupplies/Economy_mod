@@ -348,4 +348,48 @@
         Buy,
         Sell
     }
+
+    /// <summary>
+    /// Commands to be used when managing missions.
+    /// </summary>
+    public enum PlayerMissionManage : byte
+    {
+        Test,
+        AddSample,
+        AddMission,
+        SyncMission,
+        DeleteMission,
+        MissionComplete
+    }
+
+    public enum MissionAssignmentType : byte
+    {
+        /// <summary>
+        /// Anyone can pick up the mission and do it, including players not yet on server.
+        /// </summary>
+        Open,
+
+        /// <summary>
+        /// Only the assigned players can do the mission.
+        /// </summary>
+        AssignedPlayers,
+
+        /// <summary>
+        /// Only players in the assigned factions can do the mission.
+        /// </summary>
+        AssignedFactions
+    }
+
+    public enum MissionWinRule : byte
+    {
+        /// <summary>
+        /// All players can finish the mission and recieve the reward.
+        /// </summary>
+        AllPlayers,
+
+        /// <summary>
+        /// Only the first player will recieve the reward.
+        /// </summary>
+        FirstPlayer
+    }
 }

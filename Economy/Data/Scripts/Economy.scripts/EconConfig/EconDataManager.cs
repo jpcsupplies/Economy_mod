@@ -5,6 +5,7 @@
     using System.IO;
     using System.Linq;
     using Economy.scripts.EconStructures;
+    using MissionStructures;
     using Sandbox.ModAPI;
     using VRageMath;
 
@@ -1032,6 +1033,9 @@
                 }
             }
 
+            if (data.Missions == null)
+                data.Missions = new List<MissionBaseStruct>();
+
             // Buy/Sell - check we have our NPC banker ready
             NpcMerchantManager.VerifyAndCreate(data);
 
@@ -1047,6 +1051,7 @@
             data.Markets = new List<MarketStruct>();
             data.OrderBook = new List<OrderBookStruct>();
             data.ShipSale = new List<ShipSaleStruct>();
+            data.Missions = new List<MissionBaseStruct>();
             return data;
         }
 

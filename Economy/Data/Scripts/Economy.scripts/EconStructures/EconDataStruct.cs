@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Xml.Serialization;
+    using MissionStructures;
 
     [XmlType("EconData")]
     public class EconDataStruct
@@ -19,5 +20,7 @@
         public List<OrderBookStruct> OrderBook;
 
         public List<ShipSaleStruct> ShipSale;
+
+        public List<MissionBaseStruct> Missions;
     }
 }
