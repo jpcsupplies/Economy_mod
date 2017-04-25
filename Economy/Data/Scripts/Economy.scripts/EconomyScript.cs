@@ -1849,7 +1849,7 @@ namespace Economy.scripts
                     MyAPIGateway.Utilities.ShowMessage("ehelp", "Commands: ehelp, bal, pay, seen, buy, sell, value, ver, lcd, news, worth, pricelist, sellship, buyship, cancelsale");
                     if (MyAPIGateway.Session.Player.IsAdmin())
                     {
-                        MyAPIGateway.Utilities.ShowMessage("Admin ehelp", "Commands: accounts, bal player, reset, set, npczone, global, pay player +/-any_amount");
+                        MyAPIGateway.Utilities.ShowMessage("Admin ehelp", "Commands: accounts, bal player, reset, set, econfig, npczone, global, pay player +/-any_amount");
                     }
                     MyAPIGateway.Utilities.ShowMessage("ehelp", "Try '/ehelp command' for more information about a specific command");
                     return true;

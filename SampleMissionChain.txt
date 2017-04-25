@@ -1,0 +1,1 @@
+	//summary is also the message displayed if player types /mission again without completing it yet - or displayed in some TextAPI mission hud for active missions.

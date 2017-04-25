@@ -33,7 +33,7 @@
             TradeZoneMinRadius = 20;
             TradeZoneMaxRadius = 5000;
             PriceScaling = EconomyConsts.DefaultPriceScaling;
-            ShipTrading = false;
+            ShipTrading = true;
             MinimumLcdDisplayInterval = 1;
         }
 
