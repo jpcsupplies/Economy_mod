@@ -1,1 +1,164 @@
+//This is a sample mission definition file for the "Tutorial" mission chain.
+//The content more than the format is most important here since the final file will probably
+//be XML, and look nothing like this. Many fields might not be used or necessary.
+//We also need a way to record completed missions/progress (when they are chain/story missions)
+//Normal instance missions (for example bounties, investigate area (asteroids derelicts etc) 
+//X market is low on Y item pay extra for delivery contract etc) only really need to record if 
+//they are still active since they will occur "naturally" and will often be lost on disconnecting
+//Any time a player uses the /mission command it should check and enable the hud display if
+//it is not already turned on.
+//The idea is admins can add their own missions to a file like this, and this is simply a sample 
+//
+//MissionIDs in this represent the nextobjective() chain ID, not the mission TYPE id 
+//(i realise this is confusing thus why this is a sample not actual data to cater for)
+
+
+MissionID=0
+{
+//Placeholder Only  ID 0 will be used for most normal mission texts when chains are not in use.
+
+}
+MissionID=1
+{  
+	//Recruit player for missions system
+
+	Notification="Job Offer:", "Type /mission for details" //message displayed on screen to player once this mission is offered (in this case probably after the first time they connect to server or displayed in a mission hud via TextAPI)
+
+	Summary="Issue Requested Command: /bal" //this is simply the subtitle on the missionbox  Main title is mission, second title is mission id (eg 1, or diagnostic or whatever appropriate)
 	//summary is also the message displayed if player types /mission again without completing it yet - or displayed in some TextAPI mission hud for active missions.
+	Text="Welcome Recruit, to The Mission Network.
+	Firstly we need to test our network connection is valid..
+	Don't Worry the easiest way to do this is
+	simply run a basic system command.
+	The /bal command should do - this requests your bank balance.
+	After closing this window, Please Type /bal to proceed.." 
+	confirm="Yes Sir!" //caption on OK button.  If a player instead presses "x" to close the window, then the mission should not begin, and probably notifies the player next time they connect it is available
+
+	Mission {    //Mission Start Conditions to process when /mission typed and accepted.  Eg turn on hud,   spawn in some object, teleport player somewhere, play sound whatever.
+		EnableHud=1 //turn the economy/mission hud on
+		EnableHudContract=1 //Make sure the contract section is enabled
+		EnableHudBal=0 //Leave the balance read out disabled for now
+		EnableHudGPS=1 //Make sure GPS coord readout is enabled.
+		PlaySound"InitHud"  //local sound emitter playsound ID "InitHud" to player
+	}
+
+	//win conditions.  Probably should support multiple to allow for branching missions.  Eg Win{} Win1{} Win2{}
+	Win { 
+		Keyword="/bal" //mission win type ie keyword, Travel, minimumbalance etc
+		PayReward=10
+		PayItem=""
+		PayItemQty=0
+		Payprefab=""
+		Summary="Completed"
+		Text="Great work agent, looks like the network link is solid.
+		Reward Paid..
+		When you are ready /mission again to check for missions.."
+		confirm="Yes Sir!"
+		WinNotification="Objective: ","Completed! 10 reward paid. Type /mission to check for more missions" //Displayed in chat when the win condition triggers. it should probably just detect the rewards paid, and construct a message automatically. So this notification may not be needed.
+		EnableHudBal=1 //Turn on the balance read out
+		NextMission=2 //Mission ID to process next if a player types /mission again.
+ 	}
+	//fail mission conditions.  Probably should support multiple to allow for degrees of incompetance. Eg Fail{} Fail1{} Fail2{}
+	Fail {}
+}
+
+MissionID=2
+{
+	//Have player investigate default trade hub location
+
+	Notification="Mission:", "Received. Type /mission for details."
+
+	Summary="Investigate location. 0,0,0"
+	Text="We need you to investigate location 0,0,0!
+	Head on over and take a look around..
+	A GPS point has been created for you."
+	confirm="Yes Sir!"
+
+	Mission { 
+		CreateGPSForMission(0,0,0) //creates players objective gps point - should we allow specific text..  eg "unknown signal" etc too..?
+		}
+
+
+	Win {
+		Travel(0,0,0,50) //location of objective (this may seem reduandant, but for multiple win/lose conditions we could have "unlisted" locations too like this, and specify radius)
+		PayReward=100	
+		PayItem=""
+		PayItemQty=0
+		Payprefab=""
+		PlaySound"TZD"
+		Summary="Completed" 
+		Text="Excellent you have found the local Trading Node..."
+		EnableHudTradeZone=1
+		WinNotification="Objective:","Excellent.  100 reward paid"
+		NextMission=3
+	}
+	Fail {}
+}
+
+MissionID=3
+{
+	//Have player grab the current zone pricelist
+
+	Notification="Mission:", "Received. Type /mission for details."
+
+	Summary="Issue command /pricelist"
+	Text="We need you to inspect the local trade node price list.
+	Make sure you are in range of the Trade Region, and issue the 
+	command /pricelist"
+	confirm="Yes Sir!"
+
+	Mission { }
+
+
+	Win {
+		Travel(0,0,0,1000) 
+		Keyword="/pricelist"
+		PayReward=100	
+		PayItem=""
+		PayItemQty=0
+		Payprefab=""
+		Summary="Completed" 
+		Text="Interesting.  Thankyou recruit. 
+		This information will be very valuable to us.
+		Here is a reward for your assistance."
+		WinNotification="Objective:","Payment of 100 received"
+		Endchain
+	}
+	Fail {}
+}
+
+Keyword List:
+MissionID=#{} Number Identifying mission place in the nextobjective chain list, and placeholder for defining the mission
+Notification="" Text displayed in chat or TextAPI to players advising them a mission is available
+Summary=""  The 3rd line in the mission box, or the mission summary displayed to the player if they forget and check the current mission
+Text="" The contents of the main mission box text region
+Confirm="" the caption on the mission box on button
+EnableHud=# Turn on the mission/economy hud display
+EnableHudContract=#  Display the current contract details section in the hud.  Used for listing x of y (eg 2 of 3) objectives, special missions, chain progress etc
+EnableHudBal=# Display the players current bank balance in hud on or off
+EnableHudGPS=# Show the GPS (Galactic Positioning System) coordinates of the players current position
+PlaySound="" Play the selected sound ID to the player
+Teleport(#,#,#) remove all velocity and teleport player to this GPS position
+
+mission{} Tasks to complete when the player accepts the mission.  (eg make a gps point, play sound, spawn in an enemy ship, turn on ther hud etc)
+	CreateGPSforMission(#,#,#) Create a ^Current Objective^ GPS for the current mission on the players screen.  Optionally support text to append to GPS (eg Unknown Signal)
+
+win{} win1{} win2{}  Mission winning conditions, rewards, and other tasks to complete when beating a mission
+	Keyword=""  Command or keyword a payer needs to type in order to trigger a win condition
+	Travel(#,#,#,#) GPS position and radius from this position a player needs to be within to trigger this win condition
+	PayReward=#  how much money to pay the player for completing these win conditions, 0 if none
+	PayItem=""  The item ID of an item to give the player for completing these win conditions.  Empty if nothing
+	PayItemQty=#  How many of this item to give them
+	Payprefab=""  A ship prefab ID to spawn into the world as a reward for completing win conditions.  Needs to check there is enough room nearby first probably.
+	WinNotification="",""   the text to put in the chat or in textAPI when a player completes a mission, typically lists what reward they were paid. May be unnecessary if the reward routine tells them anyway
+	NextMission=#  The mission chain ID of the mission that it should change to next when they complete the mission	
+	Endchain  Indicates we have finished this  group of missions and should reset the mission hud back to the default no-mission  mission, or return to whatever mission they were doing prior to starting this chain of missions.
+Fail{} Mission failure conditions.  If any of the conditions here are specified, we assume the mission was a failure, works essentially the same as win{} but makes it more human friendly to read
+	BalanceMin=#  Triggers if the players bank balance goes below this amount
+	BalanceMax=# Triggers if the players bank balance goes above this anount
+	Leave(#,#,#,#)  triggers if a player travels more than this radius from this GPS location (as a win condition could be an "Escape from" mission, as a lose condition it is a "left area of" mission failure)
+
+
+We also need Keywords representing all the mission types - eg KilledPlayer="",  deactivateblocktype="" etc
+
+
