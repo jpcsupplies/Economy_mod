@@ -8,14 +8,13 @@
     using Economy.scripts;
     using Economy.scripts.EconStructures;
     using ProtoBuf;
-    using Sandbox.Definitions;
     using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
     using VRage.Game;
     using VRage.Game.ModAPI;
 
     /// <summary>
-    /// Will value a grid (ship or station), including attached rotor and piston parts.
+    /// Controls processing of buy and selling of a ship or station, including attached rotor and piston parts.
     /// Will not include landing gear or connector parts.
     /// </summary>
     [ProtoContract]
@@ -78,86 +77,79 @@
                 if (Amount > 0)
                 {
                     decimal amount = 0;
-                    if (selectedShip != null)
+                    var check = ShipManager.CheckSellOrder(selectedShip.EntityId);
+                    if (check == 0)
                     {
-                        var check = ShipManager.CheckSellOrder(selectedShip.EntityId);
-                        if (check == 0)
+                        int terminalBlocks = 0;
+                        int armorBlocks = 0;
+                        int gridCount = 0;
+                        int owned = 0;
+
+                        MyAPIGateway.Parallel.StartBackground(delegate ()
+                        // Background processing occurs within this block.
                         {
-                            int terminalBlocks = 0;
-                            int armorBlocks = 0;
-                            int gridCount = 0;
-                            int owned = 0;
+                            EconomyScript.Instance.ServerLogger.WriteInfo("ShipSale:background start");
 
-                            MyAPIGateway.Parallel.StartBackground(delegate ()
-                            // Background processing occurs within this block.
+                            try
                             {
-                                EconomyScript.Instance.ServerLogger.WriteInfo("ShipSale:background start");
-
-                                try
+                                var grids = selectedShip.GetAttachedGrids(AttachedGrids.Static);
+                                gridCount = grids.Count;
+                                foreach (var grid in grids)
                                 {
-                                    var grids = selectedShip.GetAttachedGrids(AttachedGrids.Static);
-                                    gridCount = grids.Count;
-                                    foreach (var grid in grids)
-                                    {
-                                        var blocks = new List<IMySlimBlock>();
-                                        grid.GetBlocks(blocks);
+                                    var blocks = new List<IMySlimBlock>();
+                                    grid.GetBlocks(blocks);
 
-                                        foreach (var block in blocks)
+                                    foreach (var block in blocks)
+                                    {
+                                        if (block.FatBlock == null)
                                         {
-                                            MyCubeBlockDefinition blockDefintion;
-                                            if (block.FatBlock == null)
+                                            armorBlocks++;
+                                        }
+                                        else
+                                        {
+                                            if (block.FatBlock.OwnerId != 0)
                                             {
-                                                armorBlocks++;
-                                                blockDefintion = MyDefinitionManager.Static.GetCubeBlockDefinition(block.GetObjectBuilder());
-                                            }
-                                            else
-                                            {
-                                                if (block.FatBlock.OwnerId != 0)
-                                                {
-                                                    terminalBlocks++;
-                                                    if (block.FatBlock.OwnerId == player.IdentityId)
-                                                        owned++;
-                                                }
+                                                terminalBlocks++;
+                                                if (block.FatBlock.OwnerId == player.IdentityId)
+                                                    owned++;
                                             }
                                         }
                                     }
                                 }
-                                catch (Exception ex)
-                                {
-                                    EconomyScript.Instance.ServerLogger.WriteException(ex);
-                                    MessageClientTextMessage.SendMessage(SenderSteamId, "ShipSale", "Failed and died. Please contact the administrator.");
-                                }
-
-                                EconomyScript.Instance.ServerLogger.WriteInfo("ShipSale:background end");
-                            }, delegate ()
-                            // when the background processing is finished, this block will run foreground.
+                            }
+                            catch (Exception ex)
                             {
-                                EconomyScript.Instance.ServerLogger.WriteInfo("ShipSale:foreground");
+                                EconomyScript.Instance.ServerLogger.WriteException(ex);
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "ShipSale", "Failed and died. Please contact the administrator.");
+                            }
 
-                                try
+                            EconomyScript.Instance.ServerLogger.WriteInfo("ShipSale:background end");
+                        }, delegate ()
+                        // when the background processing is finished, this block will run foreground.
+                        {
+                            EconomyScript.Instance.ServerLogger.WriteInfo("ShipSale:foreground");
+
+                            try
+                            {
+                                if (owned > (terminalBlocks * (EconomyConsts.ShipOwned / 100)))
                                 {
-                                    if (owned > (terminalBlocks * (EconomyConsts.ShipOwned / 100)))
-                                    {
-                                        ShipManager.CreateSellOrder(player.IdentityId, SenderSteamId, selectedShip.EntityId, Amount);
-                                        MessageClientTextMessage.SendMessage(SenderSteamId, "SHIPSALE", "Ship put up for sale for " + Amount);
-                                    }
-                                    else
-                                    {
-                                        MessageClientTextMessage.SendMessage(SenderSteamId, "SHIPSALE", "You need to own more than {0}% of the ship to sell it.", EconomyConsts.ShipOwned);
-                                    }
+                                    ShipManager.CreateSellOrder(player.IdentityId, SenderSteamId, selectedShip.EntityId, Amount);
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SHIPSALE", "Ship put up for sale for " + Amount);
                                 }
-                                catch (Exception ex)
+                                else
                                 {
-                                    EconomyScript.Instance.ServerLogger.WriteException(ex);
-                                    MessageClientTextMessage.SendMessage(SenderSteamId, "ShipSale", "Failed and died. Please contact the administrator.");
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SHIPSALE", "You need to own more than {0}% of the ship to sell it.", EconomyConsts.ShipOwned);
                                 }
-                            });
-                        }
-                        else
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "SHIPSALE", "Ship already for sale for " + check + ".");
+                            }
+                            catch (Exception ex)
+                            {
+                                EconomyScript.Instance.ServerLogger.WriteException(ex);
+                                MessageClientTextMessage.SendMessage(SenderSteamId, "ShipSale", "Failed and died. Please contact the administrator.");
+                            }
+                        });
                     }
                     else
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "SHIPSALE", "You need to target a ship or station to sell.");
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "SHIPSALE", "Ship already for sale for " + check + ".");
                 }
                 else
                 {
@@ -213,11 +205,9 @@
 
                                     foreach (var block in blocks)
                                     {
-                                        MyCubeBlockDefinition blockDefintion;
                                         if (block.FatBlock == null)
                                         {
                                             armorBlocks++;
-                                            blockDefintion = MyDefinitionManager.Static.GetCubeBlockDefinition(block.GetObjectBuilder());
                                         }
                                         else
                                         {
@@ -230,6 +220,8 @@
                                         }
                                     }
                                 }
+
+                                // this checks the ownership, to make sure the seller (still) owns more than half of the terminal blocks at the time of purchase by the new owner.
                                 if (owned > (terminalBlocks / 2))
                                 {
                                     var accountseller = AccountManager.FindAccount(owner);
@@ -245,26 +237,21 @@
                                         MessageUpdateClient.SendAccountMessage(accountbuyer);
                                         MessageUpdateClient.SendAccountMessage(accountseller);
 
+                                        // Using the identity list is a crap way, but since we don't have access to BuiltBy for non-functional blocks, this has to do.
+                                        var listIdentites = new List<IMyIdentity>();
+                                        MyAPIGateway.Players.GetAllIdentites(listIdentites);
+
                                         foreach (var grid in grids)
                                         {
-                                            grid.ChangeGridOwnership(player.IdentityId, MyOwnershipShareModeEnum.All);
-                                            var blocks = new List<IMySlimBlock>();
-                                            grid.GetBlocks(blocks);
+                                            grid.ChangeGridOwnership(player.IdentityId, MyOwnershipShareModeEnum.Faction);
 
-                                            foreach (var block in blocks)
+                                            foreach (IMyIdentity identity in listIdentites)
                                             {
-                                                MyCubeBlockDefinition blockDefintion;
-                                                if (block.FatBlock == null)
+                                                if (identity.IdentityId != player.IdentityId)
                                                 {
-                                                    armorBlocks++;
-                                                    blockDefintion = MyDefinitionManager.Static.GetCubeBlockDefinition(block.GetObjectBuilder());
-                                                }
-                                                else
-                                                {
-                                                    terminalBlocks++;
-                                                    blockDefintion = MyDefinitionManager.Static.GetCubeBlockDefinition(block.FatBlock.BlockDefinition);
-                                                    (block.FatBlock as MyCubeBlock).ChangeOwner(0, MyOwnershipShareModeEnum.Faction);
-                                                    (block.FatBlock as MyCubeBlock).ChangeBlockOwnerRequest(player.IdentityId, MyOwnershipShareModeEnum.Faction);
+                                                    // The current API doesn't allow the setting of the BuiltBy to anything but an existing Identity (player or NPC).
+                                                    // This also doesn't appear to sync to all clients, but it remains valid on the server.
+                                                    ((MyCubeGrid)grid).TransferBlocksBuiltByID(identity.IdentityId, player.IdentityId);
                                                 }
                                             }
                                         }
@@ -318,7 +305,8 @@
                                 //var prefix = string.Format("{0:#,##0.00000}", totalValue);
                                 var shipSale = ShipManager.CheckSellOrder(selectedShip.EntityId);
 
-                                str.AppendFormat("{0}: {1}\r\n", selectedShip.IsStatic ? "Station" : selectedShip.GridSizeEnum.ToString() + " Ship", selectedShip.DisplayName);
+                                // stations can be both large and small grids now.
+                                str.AppendFormat("{0}: {1}\r\n", selectedShip.GridSizeEnum + (selectedShip.IsStatic ? "Station" : " Ship"), selectedShip.DisplayName);
                                 str.AppendFormat("Grids={2}\r\nArmor Blocks={0}\r\nTerminal Blocks={1}\r\n", armorBlocks, terminalBlocks, gridCount);
                                 str.AppendLine("-----------------------------------");
                                 if (shipSale != 0)
