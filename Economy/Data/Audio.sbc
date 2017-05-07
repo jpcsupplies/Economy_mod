@@ -1,27 +1,15 @@
 <?xml version="1.0"?>
 <Definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <SoundCategories>
-    <SoundCategory>
-      <Id>
-        <TypeId>SoundCategoryDefinition</TypeId>
-        <SubtypeId>Economy</SubtypeId>
-      </Id>
-      <Sounds>
-        <SoundDesc Id="tradezonedet" SoundName="Trade_zone_detected" />
-        <SoundDesc Id="inithud" SoundName="Init_Hud" />
-      </Sounds>
-    </SoundCategory>
-  </SoundCategories>
  <Sounds>
     <Sound>
       <Id>
         <TypeId>MyObjectBuilder_AudioDefinition</TypeId>
-        <SubtypeId>tradezonedet</SubtypeId>
+        <SubtypeId>tradezonedetA</SubtypeId>
       </Id>
-      <Category>Sb</Category>
-      <MaxDistance>100</MaxDistance>
+      <MaxDistance>10</MaxDistance>
       <Volume>1.00</Volume>
       <Loopable>false</Loopable>
+      <Pitch>0</Pitch>
       <Waves>
         <Wave Type="D2">
           <Start>Audio\tzd.xwm</Start>
@@ -31,10 +19,13 @@
     <Sound>
       <Id>
         <TypeId>MyObjectBuilder_AudioDefinition</TypeId>
-        <SubtypeId>inithud</SubtypeId>
+        <SubtypeId>inithudA</SubtypeId>
       </Id>
-      <Category>Sb</Category>
-      <MaxDistance>100</MaxDistance>
+      <MaxDistance>1</MaxDistance>
+      <Volume>1.00</Volume>
+      <Loopable>false</Loopable>
+      <Pitch>0</Pitch>
+      <MaxDistance>10</MaxDistance>
       <Volume>1.00</Volume>
       <Loopable>false</Loopable>
       <Waves>
