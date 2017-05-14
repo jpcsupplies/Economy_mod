@@ -9,6 +9,7 @@
       <Sounds>
         <SoundDesc Id="tradezonedet" SoundName="Trade_zone_detected" />
         <SoundDesc Id="inithud" SoundName="Init_Hud" />
+        <SoundDesc Id="PR" SoundName="Pirate Radio Test" />
       </Sounds>
     </SoundCategory>
   </SoundCategories>
@@ -40,6 +41,21 @@
       <Waves>
         <Wave Type="D2">
           <Start>Audio\hud.xwm</Start>
+        </Wave>
+      </Waves>
+    </Sound>
+    <Sound>
+      <Id>
+        <TypeId>MyObjectBuilder_AudioDefinition</TypeId>
+        <SubtypeId>PR</SubtypeId>
+      </Id>
+      <Category>Sb</Category>
+      <MaxDistance>100</MaxDistance>
+      <Volume>1.00</Volume>
+      <Loopable>false</Loopable>
+      <Waves>
+        <Wave Type="D2">
+          <Start>..\PR.xwm</Start>
         </Wave>
       </Waves>
     </Sound>
