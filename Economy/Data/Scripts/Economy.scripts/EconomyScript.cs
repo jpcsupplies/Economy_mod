@@ -652,58 +652,55 @@ namespace Economy.scripts
 
                 //playing sounds locally
 
+                //Testing for pirate radio facility
+                //place a file in mods called PR.xwm  and it should play from Pirate Radio test in sound block
+                // OR plays any wave file located in %appdata%/SpaceEngineers/Storage/504209260.sbm_Economy.scripts/ named Test.wav with following code
+                var character = MyAPIGateway.Session?.Player?.Character;
 
-                // var emitter = new MyEntity3DSoundEmitter(null);  
-                // emitter.SetPosition(location);
-                // emitter.CustomVolume = 1.0f;
-                //  emitter.PlaySingleSound(new MySoundPair(soundname));
-                //string soundname = "tradezonedetA";
-                string soundname = "HudClick";
-                Vector3D location = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-                PlaySoundFrom(soundname,location); //PlaySound("HudClick");
-                MyAPIGateway.Utilities.ShowMessage("debug", " You tried to play: {0}", soundname);
+                if (character != null)
+                {
 
+                    var emitter = new MyEntity3DSoundEmitter((MyEntity)character);
+                   
+                    var reader = MyAPIGateway.Utilities.ReadBinaryFileInLocalStorage("Test.wav", typeof(EconomyScript));
 
-                //converting sample data  -- when used for encoding fund transfers the final version should prevent admins using this command
-                //that way players cannot simply run a local version of economy, pay themself a million then generate a fund transfer
-                //although the chance of that is low given the intention is to have a server side only passcode preventing transfers to
-                //non authorised servers.. can probably just use the reward system to give/take funds if code verifies
-                /*
-                 // Input string.
-                 string input1 = "123456789";
+                    if (reader != null)
+                    {
+                        const int hz = 92000; // I don't even?!
 
-                 // Invoke GetBytes method.
-                 // ... You can store this array as a field!
-                 byte[] array = Encoding.ASCII.GetBytes(input1);
-                 string output1=""; string output2="";
-                
-                 // Loop through contents of the array.
-                 foreach (byte element in array)
-                 {
-                     //Console.WriteLine("{0} = {1} - {2} + {3}", element, (char)element, output1, output2);
-                     output1+=element;  //raw ascii codes stuck together
-                     output2 += Convert.ToChar(element); //converting them back
-                 }
-                 */
+                        var bytes = reader.ReadBytes((int)reader.BaseStream.Length);
 
-                //advancing mission display test
-                //ClientConfig.MissionId++;  //yup that works nicely
+                        emitter.PlaySound(bytes, bytes.Length, hz, 0.8f, 99999);
 
-                //showing my x y z position test //yup that works too
-                //old way to test if on server or player dead (i think) probably doesnt work but will keep handy
-                //if(MyAPIGateway.Session.Player.Controller == null || MyAPIGateway.Session.Player.Controller.ControlledEntity == null || MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity == null)
-                //return true;
+                        reader.Close();
 
-                //var position = player.GetPosition(); // actually lets skip the middle man and grab the entire thing
-                //double, float position.X
-                /* 
-                Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-                double X = position.X; double Y = position.Y; double Z = position.Z;
-                string whereami = string.Format("[ X: {0:F0} Y: {1:F0} Z: {2:F0} ]",X, Y, Z);
-                MyAPIGateway.Utilities.ShowMessage("debug", "You are here: {0}",whereami);
-                */
-                //ok over it
-                return true;
+                        MyAPIGateway.Utilities.ShowNotification("Playback!");
+                    }
+                }
+           
+                        //string soundname = "tradezonedetA";
+                        //string soundname = "HudClick";
+                        //PlaySound("HudClick");
+                        //MyAPIGateway.Utilities.ShowMessage("debug", " You tried to play: {0}", soundname);
+
+                        //advancing mission display test
+                        //ClientConfig.MissionId++;  //yup that works nicely
+
+                        //showing my x y z position test //yup that works too
+                        //old way to test if on server or player dead (i think) probably doesnt work but will keep handy
+                        //if(MyAPIGateway.Session.Player.Controller == null || MyAPIGateway.Session.Player.Controller.ControlledEntity == null || MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity == null)
+                        //return true;
+
+                        //var position = player.GetPosition(); // actually lets skip the middle man and grab the entire thing
+                        //double, float position.X
+                        /* 
+                        Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                        double X = position.X; double Y = position.Y; double Z = position.Z;
+                        string whereami = string.Format("[ X: {0:F0} Y: {1:F0} Z: {2:F0} ]",X, Y, Z);
+                        MyAPIGateway.Utilities.ShowMessage("debug", "You are here: {0}",whereami);
+                        */
+                        //ok over it
+                        return true;
             }
             #endregion debug
 
