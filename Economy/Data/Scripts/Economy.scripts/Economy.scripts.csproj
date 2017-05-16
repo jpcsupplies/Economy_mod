@@ -40,7 +40,7 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <LangVersion>5</LangVersion>
+    <LangVersion>default</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
@@ -105,6 +105,7 @@
     <Compile Include="EconConfig\EconDataManager.cs" />
     <Compile Include="EconStructures\EconDataStruct.cs" />
     <Compile Include="EconConfig\MarketManager.cs" />
+    <Compile Include="Messages\MessageClientSound.cs" />
     <Compile Include="MissionStructures\BlockCaptureMission.cs" />
     <Compile Include="MissionStructures\BlockDestroyMission.cs" />
     <Compile Include="MissionStructures\BlockDeactivateMission.cs" />

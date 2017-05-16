@@ -499,29 +499,6 @@ namespace Economy.scripts
 
         #endregion
 
-        #region Audio System
-        //Code created with assistance of Digi.
-        public static void PlaySoundFrom(string name, Vector3D position, float volume = 1f) //Play sound from particular location. Example economy LCD when trade zone detected - not working yet 
-        {
-            var emitter = new MyEntity3DSoundEmitter(null);
-            emitter.SetPosition(position);
-            emitter.CustomVolume = volume;
-            emitter.CustomMaxDistance = 100;
-            emitter.PlaySingleSound(new MySoundPair(name));
-        }
-
-        public static void PlaySound(string soundName, float volume = 1.0f)   //Play sound to local player only
-        {
-            var controlled = MyAPIGateway.Session?.ControlledObject?.Entity;
-
-            if (controlled == null)
-                return; // don't continue if session is not ready or player does not control anything.
-
-            var emitter = new MyEntity3DSoundEmitter((MyEntity)controlled);
-            emitter.CustomVolume = volume;
-            emitter.PlaySingleSound(new MySoundPair(soundName));
-        }
-        #endregion Audio System
         #region command list
         private bool ProcessMessage(string messageText)
         {
@@ -542,14 +519,14 @@ namespace Economy.scripts
                 //ie /gps add
                 if (split.Length == 2 && split[1].Equals("add", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    PlaySound("HudClick");
+                    MessageClientSound.PlaySound("HudClick");
                     HudManager.GPS(location.X, location.Y, location.Z, playername, ("Quick GPS Point"+location.X + location.Y + location.Z), true);
                 }
 
                 //ie /gps add gold
                 if (split.Length == 3 && split[1].Equals("add", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    PlaySound("HudClick");
+                    MessageClientSound.PlaySound("HudClick");
                     HudManager.GPS(location.X, location.Y, location.Z, split[2], ("Quick GPS Point" + location.X + location.Y + location.Z), true);
                 }
                 //ie /gps del   - removes any gps at the current location or with the players name the same as the gps name
@@ -562,7 +539,7 @@ namespace Economy.scripts
                 //ie /gps del gold  removes any gps explicitly named gold or with the description gold, or at the players current location
                 if (split.Length == 3 && split[1].Equals("del", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    PlaySound("HudClick");
+                    MessageClientSound.PlaySound("HudClick");
                     HudManager.GPS(location.X, location.Y, location.Z, split[2], split[2], false);
                     //note this will delete ALL matching GPS points.. so if there is 20 gold gps's they all go..
                 }
@@ -646,6 +623,11 @@ namespace Economy.scripts
             //used to test whatever crazy stuff im trying to work out
             if (split[0].Equals("/debug", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
+    	        // Samples...
+                //MessageClientSound.SendMessage(MyAPIGateway.Session.Player.SteamUserId, "SoundBlockLightsOn");
+                //MessageClientSound.SendMessage(MyAPIGateway.Session.Player.SteamUserId, "tradezonedetA");
+                //MessageClientSound.PlaySoundFrom("tradezonedetA", Vector3D.Zero, 1);
+                MessageClientSound.PlaySound("tradezonedetA", 1);
 
                 //test throwing a connection to a foreign server from server ie in lobby worlds or we have moved worlds
                 //MyAPIGateway.Multiplayer.JoinServer("221.121.159.238:27270");
@@ -1371,8 +1353,8 @@ namespace Economy.scripts
                 }
                 if (split.Length == 2)
                 {
-                    if (split[1].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowHud = false; PlaySound("HudClick"); MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
-                    if (split[1].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowHud = true; PlaySound("inithudA"); MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
+                    if (split[1].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowHud = false; MessageClientSound.PlaySound("HudClick"); MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
+                    if (split[1].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowHud = true; MessageClientSound.PlaySound("inithudA"); MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
                 }
                 if (split.Length == 3)
                 {

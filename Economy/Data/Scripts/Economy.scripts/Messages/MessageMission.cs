@@ -152,6 +152,7 @@
                             myaccount.Date = DateTime.Now;
 
                             MessageUpdateClient.SendAccountMessage(myaccount);
+                            MessageClientSound.SendMessage(SenderSteamId, "SoundBlockObjectiveComplete");
                         }
 
                         RemoveMission(serverinstanceMission);
