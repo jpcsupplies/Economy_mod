@@ -633,56 +633,32 @@ namespace Economy.scripts
                 //MyAPIGateway.Multiplayer.JoinServer("221.121.159.238:27270");
 
                 //playing sounds locally
-
                 //Testing for pirate radio facility
-                //place a file in mods called PR.xwm  and it should play from Pirate Radio test in sound block
-                // OR plays any wave file located in %appdata%/SpaceEngineers/Storage/504209260.sbm_Economy.scripts/ named Test.wav with following code
-                var character = MyAPIGateway.Session?.Player?.Character;
+                MessageClientSound.PlaySoundFile("Test.wav");
 
-                if (character != null)
-                {
+                //string soundname = "tradezonedetA";
+                //string soundname = "HudClick";
+                //PlaySound("HudClick");
+                //MyAPIGateway.Utilities.ShowMessage("debug", " You tried to play: {0}", soundname);
 
-                    var emitter = new MyEntity3DSoundEmitter((MyEntity)character);
-                   
-                    var reader = MyAPIGateway.Utilities.ReadBinaryFileInLocalStorage("Test.wav", typeof(EconomyScript));
+                //advancing mission display test
+                //ClientConfig.MissionId++;  //yup that works nicely
 
-                    if (reader != null)
-                    {
-                        const int hz = 92000; // I don't even?!
+                //showing my x y z position test //yup that works too
+                //old way to test if on server or player dead (i think) probably doesnt work but will keep handy
+                //if(MyAPIGateway.Session.Player.Controller == null || MyAPIGateway.Session.Player.Controller.ControlledEntity == null || MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity == null)
+                //return true;
 
-                        var bytes = reader.ReadBytes((int)reader.BaseStream.Length);
-
-                        emitter.PlaySound(bytes, bytes.Length, hz, 0.8f, 99999);
-
-                        reader.Close();
-
-                        MyAPIGateway.Utilities.ShowNotification("Playback!");
-                    }
-                }
-           
-                        //string soundname = "tradezonedetA";
-                        //string soundname = "HudClick";
-                        //PlaySound("HudClick");
-                        //MyAPIGateway.Utilities.ShowMessage("debug", " You tried to play: {0}", soundname);
-
-                        //advancing mission display test
-                        //ClientConfig.MissionId++;  //yup that works nicely
-
-                        //showing my x y z position test //yup that works too
-                        //old way to test if on server or player dead (i think) probably doesnt work but will keep handy
-                        //if(MyAPIGateway.Session.Player.Controller == null || MyAPIGateway.Session.Player.Controller.ControlledEntity == null || MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity == null)
-                        //return true;
-
-                        //var position = player.GetPosition(); // actually lets skip the middle man and grab the entire thing
-                        //double, float position.X
-                        /* 
-                        Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-                        double X = position.X; double Y = position.Y; double Z = position.Z;
-                        string whereami = string.Format("[ X: {0:F0} Y: {1:F0} Z: {2:F0} ]",X, Y, Z);
-                        MyAPIGateway.Utilities.ShowMessage("debug", "You are here: {0}",whereami);
-                        */
-                        //ok over it
-                        return true;
+                //var position = player.GetPosition(); // actually lets skip the middle man and grab the entire thing
+                //double, float position.X
+                /* 
+                Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+                double X = position.X; double Y = position.Y; double Z = position.Z;
+                string whereami = string.Format("[ X: {0:F0} Y: {1:F0} Z: {2:F0} ]",X, Y, Z);
+                MyAPIGateway.Utilities.ShowMessage("debug", "You are here: {0}",whereami);
+                */
+                //ok over it
+                return true;
             }
             #endregion debug
 

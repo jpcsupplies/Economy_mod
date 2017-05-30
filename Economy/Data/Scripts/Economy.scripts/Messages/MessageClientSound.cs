@@ -1,5 +1,6 @@
 ﻿namespace Economy.scripts.Messages
 {
+    using System.IO;
     using ProtoBuf;
     using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
@@ -102,6 +103,33 @@
             //string entityName = Sandbox.Game.MyVisualScriptLogicProvider.GetEntityName(controlled.EntityId);
             //Sandbox.Game.MyVisualScriptLogicProvider.CreateSoundEmitterAtEntity("player", entityName);
             //Sandbox.Game.MyVisualScriptLogicProvider.PlaySound("player", soundName, false);
+        }
+
+        /// <summary>
+        /// place a file in mods called PR.xwm  and it should play from Pirate Radio test in sound block
+        /// OR plays any wave file located in %appdata%/SpaceEngineers/Storage/504209260.sbm_Economy.scripts/ named Test.wav with following code
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="volume"></param>
+        public static void PlaySoundFile(string filename, float volume = 1.0f)
+        {
+            var controlled = MyAPIGateway.Session?.ControlledObject?.Entity;
+
+            if (controlled == null)
+                return; // don't continue if session is not ready or player does not control anything.
+
+            if (!MyAPIGateway.Utilities.FileExistsInLocalStorage(filename, typeof(MessageClientSound)))
+                return; // File doesn't exist.
+
+            using (BinaryReader reader = MyAPIGateway.Utilities.ReadBinaryFileInLocalStorage(filename, typeof(EconomyScript)))
+            {
+                const int hz = 92000; // I don't even?!
+                var bytes = reader.ReadBytes((int)reader.BaseStream.Length);
+
+                var emitter = new MyEntity3DSoundEmitter((MyEntity)controlled) { CustomVolume = volume };
+                emitter.PlaySound(bytes, bytes.Length, hz, 0.8f, 99999);
+                emitter.Cleanup();
+            }
         }
     }
 }
