@@ -1329,23 +1329,23 @@ namespace Economy.scripts
                 }
                 if (split.Length == 2)
                 {
-                    if (split[1].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowHud = false; MessageClientSound.PlaySound("HudClick"); MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
-                    if (split[1].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowHud = true; MessageClientSound.PlaySound("inithudA"); MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
+                    if (split[1].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowHud = false; MessageClientSound.PlaySound("HudClick"); MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
+                    if (split[1].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowHud = true; MessageClientSound.PlaySound("inithudA"); MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
                 }
                 if (split.Length == 3)
                 {
-                    if (split[1].Equals("balance", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowBalance = true; }
-                    if (split[1].Equals("balance", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowBalance = false; }
-                    if (split[1].Equals("region", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowRegion = true; }
-                    if (split[1].Equals("region", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowRegion = false; }
-                    if (split[1].Equals("GPS", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowXYZ = true; }
-                    if (split[1].Equals("GPS", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowXYZ = false; }
-                    if (split[1].Equals("contracts", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowContractCount = true; }
-                    if (split[1].Equals("contracts", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowContractCount = false; }
-                    if (split[1].Equals("cargo", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowCargoSpace = true; }
-                    if (split[1].Equals("cargo", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowCargoSpace = false; }
-                    if (split[1].Equals("agency", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowFaction = true; }
-                    if (split[1].Equals("agency", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ShowFaction = false; }
+                    if (split[1].Equals("balance", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowBalance = true; }
+                    if (split[1].Equals("balance", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowBalance = false; }
+                    if (split[1].Equals("region", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowRegion = true; }
+                    if (split[1].Equals("region", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowRegion = false; }
+                    if (split[1].Equals("GPS", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowPosition = true; }
+                    if (split[1].Equals("GPS", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowPosition = false; }
+                    if (split[1].Equals("contracts", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowContractCount = true; }
+                    if (split[1].Equals("contracts", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowContractCount = false; }
+                    if (split[1].Equals("cargo", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowCargoSpace = true; }
+                    if (split[1].Equals("cargo", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowCargoSpace = false; }
+                    if (split[1].Equals("agency", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowFaction = true; }
+                    if (split[1].Equals("agency", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowFaction = false; }
                 }
                 // Update the hud after having made a change to the hud settings.
                 HudManager.UpdateHud();

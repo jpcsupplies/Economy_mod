@@ -54,7 +54,7 @@
             if (clientConfig == null)
                 return;
 
-            if (clientConfig.ShowHud)
+            if (clientConfig.ClientHudSettings.ShowHud)
             {
                 IMyHudObjectiveLine objective = MyAPIGateway.Utilities.GetObjectiveLine();
 
@@ -96,7 +96,7 @@
                     }
                 }
 
-                if (clientConfig.ShowFaction)
+                if (clientConfig.ClientHudSettings.ShowFaction)
                 {
                     if (objective.Objectives.Count < 1)
                         objective.Objectives.Add(clientConfig.HudObjective);
@@ -128,7 +128,7 @@
             if (clientConfig == null)
                 return true;
 
-            if (clientConfig.ShowHud)
+            if (clientConfig.ClientHudSettings.ShowHud)
             {
                 //Hud, displays users balance, trade network name, and optionally faction and free storage space (% or unit?) in cargo and/or inventory
                 //may also eventually be used to display info about completed objectives in missions/jobs/bounties/employment etc
@@ -151,7 +151,7 @@
 
                 //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
                 string readout = clientConfig.TradeNetworkName + ": ";
-                if (clientConfig.ShowBalance) readout += "{0:#,##0.0000} {1}";
+                if (clientConfig.ClientHudSettings.ShowBalance) readout += "{0:#,##0.0000} {1}";
 
                 string tradeZoneName = "Unknown";
                 if (MyAPIGateway.Session.Player.Controller != null
@@ -162,16 +162,16 @@
                     // TODO: Get tradezone from player current position.
                 }
 
-                if (clientConfig.ShowRegion) readout += " | Trade region: " + tradeZoneName;
+                if (clientConfig.ClientHudSettings.ShowRegion) readout += " | Trade region: " + tradeZoneName;
 
-                if (clientConfig.ShowXYZ)
+                if (clientConfig.ClientHudSettings.ShowPosition)
                     readout += " | " + "X: {2:F0} Y: {3:F0} Z: {4:F0}";
 
-                if (clientConfig.ShowContractCount)
+                if (clientConfig.ClientHudSettings.ShowContractCount)
                     readout += " | Tasks: " + (clientConfig.CompletedMissions-1) + " of 2";
-                if (clientConfig.ShowCargoSpace)
+                if (clientConfig.ClientHudSettings.ShowCargoSpace)
                     readout += " | Cargo ? of ?";
-                if (clientConfig.ShowFaction)
+                if (clientConfig.ClientHudSettings.ShowFaction)
                 {
                     string faction = "Free agent";
                     IMyFaction plFaction;
@@ -247,7 +247,7 @@
                 || MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity == null)
                 return;
 
-            if (clientConfig.ShowFaction)
+            if (clientConfig.ClientHudSettings.ShowFaction)
             {
                 Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
                 string faction = "Free agent";
@@ -300,8 +300,8 @@
                     //it will probably only be used for current mission "chain" tracking later on
                     if (clientConfig.CompletedMissions >= 3)
                     { //demo mission chain is over clean up unnecessary hud sections we added earlier
-                        clientConfig.ShowContractCount = false;
-                        clientConfig.ShowXYZ = false;
+                        clientConfig.ClientHudSettings.ShowContractCount = false;
+                        clientConfig.ClientHudSettings.ShowPosition = false;
                     }
 
                     MessageMission.SendMissionComplete(currentMission);

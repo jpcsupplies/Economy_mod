@@ -1,5 +1,6 @@
 ﻿namespace Economy.scripts.EconStructures
 {
+    using System;
     using System.Collections.Generic;
     using System.Xml.Serialization;
     using MissionStructures;
@@ -13,7 +14,10 @@
         /// </summary>
         public decimal CreditBalance;
 
+        //[Obsolete("Replaced with Clients")]
         public List<BankAccountStruct> Accounts;
+
+        public List<ClientAccountStruct> Clients;
 
         public List<MarketStruct> Markets;
 

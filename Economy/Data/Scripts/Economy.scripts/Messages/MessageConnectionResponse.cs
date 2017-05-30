@@ -58,9 +58,13 @@
                 return;
             }
 
+            // protection for new clients out of sync with older server net yet updated.
+            if (ClientConfig.ClientHudSettings == null)
+                ClientConfig.ClientHudSettings = new ClientHudSettingsStruct();
+
             EconomyScript.Instance.ClientConfig = ClientConfig;
 
-            EconomyScript.Instance.ClientLogger.WriteInfo("ClientConfig received: Opened {0}  Balance: {1}", ClientConfig.OpenedDate, ClientConfig.BankBalance);
+            EconomyScript.Instance.ClientLogger.WriteInfo("ClientConfig received: Opened {0}  Balance: {1}  Hud: {2}", ClientConfig.OpenedDate, ClientConfig.BankBalance, ClientConfig.ClientHudSettings.ShowHud);
 
             #region Initialise trade network hud
 
@@ -81,7 +85,7 @@
             // increment decrement not sure how MyAPIGateway.Utilities.GetObjectiveLine().Visible;
             // probably easier to clear() then repopulate, i cant see how to decriment properly 
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.add|remove etc
-            if (ClientConfig.ShowHud) { MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
+            if (ClientConfig.ClientHudSettings.ShowHud) { MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
 
             #endregion Initialise trade network hud
 

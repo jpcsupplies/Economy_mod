@@ -7,6 +7,7 @@
     using Economy.scripts.EconStructures;
     using MissionStructures;
     using Sandbox.ModAPI;
+    using VRage.Library.Collections;
     using VRageMath;
 
     public static class EconDataManager
@@ -1006,6 +1007,36 @@
         {
             EconomyScript.Instance.ServerLogger.WriteInfo("Validating and Updating Data.");
 
+            if (data.Accounts != null)
+            {
+                if (data.Accounts.Count != 0)
+                {
+                    if (data.Clients == null)
+                        data.Clients = new List<ClientAccountStruct>();
+                    foreach (BankAccountStruct account in data.Accounts)
+                    {
+                        data.Clients.Add(new ClientAccountStruct
+                        {
+                            SteamId = account.SteamId,
+                            BankBalance = account.BankBalance,
+                            Date = account.Date,
+                            OpenedDate = account.OpenedDate,
+                            MissionId = account.MissionId,
+                            Language = account.Language,
+                            NickName = account.NickName
+                        });
+
+                    }
+                }
+                data.Accounts = null;
+            }
+
+            foreach (ClientAccountStruct client in data.Clients)
+            {
+                if (client.ClientHudSettings == null)
+                    client.ClientHudSettings = new ClientHudSettingsStruct();
+            }
+
             // Add missing items that are covered by Default items.
             foreach (var defaultItem in defaultPrices)
             {
@@ -1047,7 +1078,7 @@
         {
             EconomyScript.Instance.ServerLogger.WriteInfo("Creating new EconDataStruct.");
             EconDataStruct data = new EconDataStruct();
-            data.Accounts = new List<BankAccountStruct>();
+            data.Clients = new List<ClientAccountStruct>();
             data.Markets = new List<MarketStruct>();
             data.OrderBook = new List<OrderBookStruct>();
             data.ShipSale = new List<ShipSaleStruct>();

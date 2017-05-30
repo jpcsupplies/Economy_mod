@@ -171,7 +171,7 @@
                         }
 
                         // Who are we selling to?
-                        BankAccountStruct accountToBuy;
+                        ClientAccountStruct accountToBuy;
                         if (SellToMerchant)
                             accountToBuy = AccountManager.FindAccount(EconomyConsts.NpcMerchantId);
                         else

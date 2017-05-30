@@ -100,6 +100,8 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="EconConfig\AccountManager.cs" />
     <Compile Include="EconConfig\ShipManager.cs" />
+    <Compile Include="EconStructures\ClientHudSettingsStruct.cs" />
+    <Compile Include="EconStructures\ClientAccountStruct.cs" />
     <Compile Include="EconStructures\ClientConfig.cs" />
     <Compile Include="EconStructures\EconConfigStruct.cs" />
     <Compile Include="EconConfig\EconDataManager.cs" />
@@ -126,7 +128,6 @@
     <Compile Include="MissionStructures\MissionBaseStruct.cs" />
     <Compile Include="EconStructures\OrderBookStruct.cs" />
     <Compile Include="EconStructures\MarketItemStruct.cs" />
-    <Compile Include="EconStructures\BankStruct.cs" />
     <Compile Include="EconStructures\MarketStruct.cs" />
     <Compile Include="ConnectionHelper.cs" />
     <Compile Include="EconomyConsts.cs" />

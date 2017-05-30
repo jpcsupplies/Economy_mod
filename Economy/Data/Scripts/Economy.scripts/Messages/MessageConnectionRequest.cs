@@ -26,7 +26,7 @@
                 // It's possible, if the Client has trouble downloading from Steam Community which can happen on occasion.
             }
 
-            var account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(
+            var account = EconomyScript.Instance.Data.Clients.FirstOrDefault(
                 a => a.SteamId == SenderSteamId);
 
             bool newAccount = false;
@@ -35,7 +35,7 @@
             {
                 EconomyScript.Instance.ServerLogger.WriteInfo("Creating new Bank Account for '{0}'", SenderDisplayName);
                 account = AccountManager.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
-                EconomyScript.Instance.Data.Accounts.Add(account);
+                EconomyScript.Instance.Data.Clients.Add(account);
                 EconomyScript.Instance.Data.CreditBalance -= account.BankBalance;
                 newAccount = true;
             }
@@ -55,6 +55,7 @@
                     BankBalance = account.BankBalance,
                     OpenedDate = account.OpenedDate,
                     NewAccount = newAccount,
+                    ClientHudSettings = account.ClientHudSettings,
                     Missions = EconomyScript.Instance.Data.Missions.Where(m => m.PlayerId == SenderSteamId).ToList()
                 });
         }

@@ -22,7 +22,7 @@
         [ProtoMember(9)]
         public string TradeNetworkName;
 
-        public static void SendAccountMessage(BankAccountStruct account)
+        public static void SendAccountMessage(ClientAccountStruct account)
         {
             ConnectionHelper.SendMessageToPlayer(account.SteamId, new MessageUpdateClient { ClientUpdateAction = ClientUpdateAction.Account, BankBalance = account.BankBalance, MissionId = account.MissionId });
         }

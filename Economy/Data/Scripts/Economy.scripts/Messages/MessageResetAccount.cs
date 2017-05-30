@@ -24,7 +24,7 @@
             if (player != null && player.IsAdmin()) // hold on there, are we an admin first?
             {
                 // we look up our bank record based on our Steam Id/
-                var myaccount = EconomyScript.Instance.Data.Accounts.FirstOrDefault(
+                var myaccount = EconomyScript.Instance.Data.Clients.FirstOrDefault(
                     a => a.SteamId == SenderSteamId);
                 // wait do we even have an account yet? Cant remove whats not there!
                 if (myaccount != null)
@@ -38,7 +38,7 @@
                     myaccount = AccountManager.CreateNewDefaultAccount(SenderSteamId, player.DisplayName, SenderLanguage);
 
                     //ok lets apply it
-                    EconomyScript.Instance.Data.Accounts.Add(myaccount);
+                    EconomyScript.Instance.Data.Clients.Add(myaccount);
                     EconomyScript.Instance.Data.CreditBalance -= myaccount.BankBalance;
                 }
 

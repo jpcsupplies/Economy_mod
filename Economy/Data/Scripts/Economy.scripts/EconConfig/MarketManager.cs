@@ -152,7 +152,7 @@
                         ulong tradePartner;
                         if (ulong.TryParse(order.OptionalId, out tradePartner))
                         {
-                            var sellingAccount = EconomyScript.Instance.Data.Accounts.FirstOrDefault(a => a.SteamId == order.TraderId);
+                            var sellingAccount = EconomyScript.Instance.Data.Clients.FirstOrDefault(a => a.SteamId == order.TraderId);
                             // If the account is null, then the account may have been cleaned up because it hasn't been used.
                             if (sellingAccount != null)
                                 MessageClientTextMessage.SendMessage(tradePartner, "SELL", "The offer from {0} has now expired.", sellingAccount.NickName);

@@ -3,9 +3,8 @@
     using System;
     using System.Xml.Serialization;
 
-    //[Obsolete("Replaced with ClientAccount")]
-    [XmlType("BankAccount")]
-    public class BankAccountStruct
+    [XmlType("ClientAccount")]
+    public class ClientAccountStruct
     {
         public ulong SteamId { get; set; }
 
@@ -41,5 +40,10 @@
         /// 0 will represent no current mission.
         /// </summary>
         public int MissionId { get; set; }
+
+        /// <summary>
+        /// Holds the client hud settings that the play has saved.
+        /// </summary>
+        public ClientHudSettingsStruct ClientHudSettings { get; set; }
     }
 }

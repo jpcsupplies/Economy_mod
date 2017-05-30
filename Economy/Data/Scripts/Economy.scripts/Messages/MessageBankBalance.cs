@@ -33,7 +33,7 @@
             {
                 // lets grab the current player data from our bankfile ready for next step
                 // we look up our Steam Id/
-                var account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(
+                var account = EconomyScript.Instance.Data.Clients.FirstOrDefault(
                     a => a.SteamId == SenderSteamId);
 
                 // check if we actually found it, add default if not
@@ -41,7 +41,7 @@
                 {
                     EconomyScript.Instance.ServerLogger.WriteInfo("Creating new Bank Account for '{0}'", SenderDisplayName);
                     account = AccountManager.CreateNewDefaultAccount(SenderSteamId, SenderDisplayName, SenderLanguage);
-                    EconomyScript.Instance.Data.Accounts.Add(account);
+                    EconomyScript.Instance.Data.Clients.Add(account);
                     EconomyScript.Instance.Data.CreditBalance -= account.BankBalance;
                 }
 
@@ -53,7 +53,7 @@
                 var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
                 if (player != null && player.IsAdmin()) // hold on there, are we an admin first?
                 {
-                    var account = EconomyScript.Instance.Data.Accounts.FirstOrDefault(
+                    var account = EconomyScript.Instance.Data.Clients.FirstOrDefault(
                         a => a.NickName.Equals(UserName, StringComparison.InvariantCultureIgnoreCase));
 
                     string reply;
