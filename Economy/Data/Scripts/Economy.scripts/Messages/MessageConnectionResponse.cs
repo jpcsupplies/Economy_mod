@@ -1,5 +1,6 @@
 ﻿namespace Economy.scripts.Messages
 {
+    using EconConfig;
     using EconStructures;
     using ProtoBuf;
     using Sandbox.ModAPI;
@@ -86,8 +87,8 @@
             // probably easier to clear() then repopulate, i cant see how to decriment properly 
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.add|remove etc
 
-            // TODO: this isn't working as expected when joining a server.
-            // This may have to be triggered by another event when the player is deemed ready.
+            // initilize and turn on hud as required.
+            HudManager.UpdateHud();
             if (ClientConfig.ClientHudSettings.ShowHud) { MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
 
             #endregion Initialise trade network hud

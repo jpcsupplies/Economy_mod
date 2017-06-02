@@ -1347,6 +1347,8 @@ namespace Economy.scripts
                     if (split[1].Equals("agency", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowFaction = true; }
                     if (split[1].Equals("agency", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowFaction = false; }
                 }
+
+                MessageHudUpdate.SendMessage(ClientConfig.ClientHudSettings);
                 // Update the hud after having made a change to the hud settings.
                 HudManager.UpdateHud();
                 return true;

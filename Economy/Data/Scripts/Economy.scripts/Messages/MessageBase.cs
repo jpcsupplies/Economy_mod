@@ -30,6 +30,7 @@
     [XmlInclude(typeof(MessageRewardAccount))]
     [XmlInclude(typeof(MessageShipSale))]
     [XmlInclude(typeof(MessageClientSound))]
+    [XmlInclude(typeof(MessageHudUpdate))]
     [ProtoContract]
     public abstract class MessageBase
     {
