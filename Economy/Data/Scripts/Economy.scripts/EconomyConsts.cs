@@ -40,6 +40,11 @@
         public const ushort ConnectionId = 46912;
 
         /// <summary>
+        /// This Id is used specifically for registering for inter Mod messageing, and is used to talk to the Economy Mod.
+        /// </summary>
+        public const long EconInterModId = 913846912;
+
+        /// <summary>
         /// The default % you need to own to sell a ship.
         /// </summary>
         public const decimal ShipOwned = 80;

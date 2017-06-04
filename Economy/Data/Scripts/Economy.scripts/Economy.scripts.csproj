@@ -56,6 +56,11 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
     <Reference Include="Sandbox.Common">
       <HintPath>C:\Program Files\Reference Assemblies\SpaceEngineers\Sandbox.Common.dll</HintPath>
       <Private>False</Private>
@@ -70,11 +75,6 @@
     <Reference Include="SpaceEngineers.ObjectBuilders">
       <HintPath>C:\Program Files\Reference Assemblies\SpaceEngineers\SpaceEngineers.ObjectBuilders.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="VRage">
       <HintPath>C:\Program Files\Reference Assemblies\SpaceEngineers\VRage.dll</HintPath>
     </Reference>
@@ -107,6 +107,10 @@
     <Compile Include="EconConfig\EconDataManager.cs" />
     <Compile Include="EconStructures\EconDataStruct.cs" />
     <Compile Include="EconConfig\MarketManager.cs" />
+    <Compile Include="InterModAPI\EconPayUser.cs" />
+    <Compile Include="InterModAPI\EconInterModBase.cs" />
+    <Compile Include="InterModAPI\EconMessageContainer.cs" />
+    <Compile Include="InterModAPI\EconPayUserResponse.cs" />
     <Compile Include="Messages\MessageClientSound.cs" />
     <Compile Include="Messages\MessageHudUpdate.cs" />
     <Compile Include="MissionStructures\BlockCaptureMission.cs" />

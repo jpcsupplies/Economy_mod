@@ -122,7 +122,7 @@
         public static void ProcessData(string dataString)
         {
             EconomyScript.Instance.ServerLogger.WriteStart("Start Message Serialization");
-            MessageContainer message = null;
+            MessageContainer message;
 
             try
             {
@@ -146,7 +146,6 @@
                 {
                     EconomyScript.Instance.ServerLogger.WriteError("Processing message exception. Side: {0}, Exception: {1}", message.Content.Side, e.ToString());
                 }
-                return;
             }
         }
 
@@ -154,6 +153,50 @@
         public static void ProcessData(byte[] rawData)
         {
             ProcessData(System.Text.Encoding.Unicode.GetString(rawData));
+        }
+
+        public static void ProcessInterModData(object data)
+        {
+            if (data == null)
+            {
+                EconomyScript.Instance.ServerLogger.WriteVerbose("Message is empty");
+                return;
+            }
+
+            string xml = data as string;
+            if (xml == null)
+            {
+                EconomyScript.Instance.ServerLogger.WriteVerbose("Message is invalid format");
+                return;
+            }
+
+            EconomyScript.Instance.ServerLogger.WriteStart("Start Message Serialization");
+            EconMessageContainer message;
+
+            try
+            {
+                message = MyAPIGateway.Utilities.SerializeFromXML<EconMessageContainer>(xml);
+                //message = MyAPIGateway.Utilities.SerializeFromBinary<MessageContainer>(rawData);
+            }
+            catch
+            {
+                EconomyScript.Instance.ServerLogger.WriteError("Message cannot Deserialize");
+                return;
+            }
+
+            EconomyScript.Instance.ServerLogger.WriteStop("End Message Serialization");
+
+            if (message != null && message.Content != null)
+            {
+                try
+                {
+                    message.Content.InvokeProcessing();
+                }
+                catch (Exception e)
+                {
+                    EconomyScript.Instance.ServerLogger.WriteError("Processing message exception. Exception: {0}", e.ToString());
+                }
+            }
         }
 
         #endregion

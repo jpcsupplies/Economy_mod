@@ -136,6 +136,8 @@ namespace Economy.scripts
 
         private readonly Action<byte[]> _messageHandler = new Action<byte[]>(HandleMessage);
 
+        private readonly Action<object> _interModMessageHandler = new Action<object>(InterModHandleMessage);
+
         public static EconomyScript Instance;
 
         public TextLogger ServerLogger = new TextLogger(); // This is a dummy logger until Init() is called.
@@ -222,6 +224,7 @@ namespace Economy.scripts
             {
                 ClientLogger.WriteStart("RegisterMessageHandler");
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
+                MyAPIGateway.Utilities.RegisterMessageHandler(EconomyConsts.EconInterModId, _interModMessageHandler);
             }
 
             DelayedConnectionRequestTimer = new Timer(10000);
@@ -245,6 +248,7 @@ namespace Economy.scripts
 
             ServerLogger.WriteStart("RegisterMessageHandler");
             MyAPIGateway.Multiplayer.RegisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
+            MyAPIGateway.Utilities.RegisterMessageHandler(EconomyConsts.EconInterModId, _interModMessageHandler);
 
             ServerLogger.WriteStart("LoadBankContent");
 
@@ -294,6 +298,8 @@ namespace Economy.scripts
                 {
                     ClientLogger.WriteStop("UnregisterMessageHandler");
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
+                    if (MyAPIGateway.Utilities != null)
+                        MyAPIGateway.Utilities.UnregisterMessageHandler(EconomyConsts.EconInterModId, _interModMessageHandler);
                 }
 
                 if (DelayedConnectionRequestTimer != null)
@@ -310,6 +316,8 @@ namespace Economy.scripts
             {
                 ServerLogger.WriteStop("UnregisterMessageHandler");
                 MyAPIGateway.Multiplayer.UnregisterMessageHandler(EconomyConsts.ConnectionId, _messageHandler);
+                if (MyAPIGateway.Utilities != null)
+                    MyAPIGateway.Utilities.UnregisterMessageHandler(EconomyConsts.EconInterModId, _interModMessageHandler);
 
                 if (_timer1Events != null)
                 {
@@ -405,6 +413,14 @@ namespace Economy.scripts
             EconomyScript.Instance.ClientLogger.WriteVerbose("HandleMessage");
             ConnectionHelper.ProcessData(message);
         }
+
+        private static void InterModHandleMessage(object message)
+        {
+            EconomyScript.Instance.ServerLogger.WriteVerbose("InterModHandleMessage");
+            EconomyScript.Instance.ClientLogger.WriteVerbose("InterModHandleMessage");
+            ConnectionHelper.ProcessInterModData(message);
+        }
+
         #endregion message handling
 
         #region timers

@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("PhoenixX")]
 [assembly: AssemblyProduct("Space Engineers")]
-[assembly: AssemblyCopyright("Copyright © PhoenixX 2015-2016")]
+[assembly: AssemblyCopyright("Copyright © PhoenixX 2015-2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
