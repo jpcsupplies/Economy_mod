@@ -11,7 +11,7 @@ EconPayUser
 
 
 Callback:
-To receive callbacks, the EconManagement must be substantiated, and Subscribe called with the preferred callback channel unieque to the mod caller.
+To receive callbacks, the EconManagement must be substantiated, and Subscribe called with the preferred callback channel unique to the mod caller.
 The same callback channel must be passed into the API utilised.
 
 readonly EconomyAPI.EconManagement econoManagement = new EconManagement();
