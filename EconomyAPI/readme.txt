@@ -28,3 +28,12 @@ protected override void UnloadData()
 
 // Test code
 EconomyAPI.EconPayUser.SendMessage(MyAPIGateway.Session.Player.SteamUserId, 1234, 55.4m, "test20", 55555, 123);
+
+Parameters are:
+(from Player Identity, to Player Identity, transaction Amount, reason, callback Mod Channel, transactionId)
+
+Player identities are /either/ their steam user id, OR the chosen NPC player ID in ulong format
+transaction amount is decimal format
+reason is string format
+callback is long format
+transactionid is long format and should be unique
