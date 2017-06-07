@@ -36,4 +36,4 @@ Player identities are /either/ their steam user id, OR the chosen NPC player ID 
 transaction amount is decimal format
 reason is string format
 callback is long format
-transactionid is long format and should be unique
+transactionid is long format and should be unique per transaction
