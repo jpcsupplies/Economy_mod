@@ -36,19 +36,23 @@ namespace Economy.scripts
                 return true;
             }
 
-            // determine if client is admin of Dedicated server.
-            var clients = MyAPIGateway.Session.GetCheckpoint("null").Clients;
-            if (clients != null)
-            {
-                var client = clients.FirstOrDefault(c => c.SteamId == player.SteamUserId && c.IsAdmin);
-                return client != null;
-                // If user is not in the list, automatically assume they are not an Admin.
-            }
+            return player.PromoteLevel == MyPromoteLevel.Owner ||  // 5 star
+                player.PromoteLevel == MyPromoteLevel.Admin ||     // 4 star
+                player.PromoteLevel == MyPromoteLevel.SpaceMaster; // 3 star
 
-            // clients is null when it's not a dedicated server.
-            // Otherwise Treat everyone as Normal Player.
+            //// determine if client is admin of Dedicated server.
+            //var clients = MyAPIGateway.Session.GetCheckpoint("null").Clients;
+            //if (clients != null)
+            //{
+            //    var client = clients.FirstOrDefault(c => c.SteamId == player.SteamUserId && c.IsAdmin);
+            //    return client != null;
+            //    // If user is not in the list, automatically assume they are not an Admin.
+            //}
 
-            return false;
+            //// clients is null when it's not a dedicated server.
+            //// Otherwise Treat everyone as Normal Player.
+
+            //return false;
         }
 
         public static void ShowMessage(this IMyUtilities utilities, string sender, string messageText, params object[] args)
