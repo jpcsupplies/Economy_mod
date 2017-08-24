@@ -64,7 +64,7 @@
                 case "language":
                     if (string.IsNullOrEmpty(Value))
                     {
-                        myLanguage = MyTexts.Languages[EconomyScript.Instance.ServerConfig.Language];
+                        myLanguage = MyTexts.Languages[(MyLanguagesEnum)EconomyScript.Instance.ServerConfig.Language];
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "Language: {0} ({1})", myLanguage.Name, myLanguage.FullCultureName);
                     }
                     else
@@ -72,11 +72,11 @@
                         int intTest;
                         if (int.TryParse(Value, out intTest))
                         {
-                            if (MyTexts.Languages.ContainsKey(intTest))
+                            if (MyTexts.Languages.ContainsKey((MyLanguagesEnum)intTest))
                             {
                                 EconomyScript.Instance.ServerConfig.Language = intTest;
                                 EconomyScript.Instance.SetLanguage();
-                                myLanguage = MyTexts.Languages[intTest];
+                                myLanguage = MyTexts.Languages[(MyLanguagesEnum)intTest];
                                 MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "Language updated to: {0} ({1})", myLanguage.Name, myLanguage.FullCultureName);
                                 return;
                             }
@@ -95,7 +95,7 @@
                             }
                         }
 
-                        myLanguage = MyTexts.Languages[EconomyScript.Instance.ServerConfig.Language];
+                        myLanguage = MyTexts.Languages[(MyLanguagesEnum)EconomyScript.Instance.ServerConfig.Language];
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "Language: {0} ({1})", myLanguage.Name, myLanguage.FullCultureName);
                     }
                     break;
@@ -577,7 +577,7 @@
                 default:
                     var msg = new StringBuilder();
 
-                    myLanguage = MyTexts.Languages[EconomyScript.Instance.ServerConfig.Language];
+                    myLanguage = MyTexts.Languages[(MyLanguagesEnum)EconomyScript.Instance.ServerConfig.Language];
                     msg.AppendFormat("Language: {0} ({1})\r\n", myLanguage.Name, myLanguage.FullCultureName);
                     msg.AppendFormat("TradenetworkName: \"{0}\"\r\n", EconomyScript.Instance.ServerConfig.TradeNetworkName);
                     msg.AppendFormat("LimitedRange: {0}\r\n", EconomyScript.Instance.ServerConfig.LimitedRange ? "On" : "Off");

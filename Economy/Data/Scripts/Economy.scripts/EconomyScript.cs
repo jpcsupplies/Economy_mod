@@ -2099,7 +2099,7 @@ namespace Economy.scripts
         /// </summary>
         internal void SetLanguage()
         {
-            MyTexts.LanguageDescription language = MyTexts.Languages.ContainsKey(ServerConfig.Language) ? MyTexts.Languages[ServerConfig.Language] : MyTexts.Languages[0];
+            MyTexts.LanguageDescription language = MyTexts.Languages.ContainsKey((MyLanguagesEnum)ServerConfig.Language) ? MyTexts.Languages[(MyLanguagesEnum)ServerConfig.Language] : MyTexts.Languages[0];
 
             // Make sure it's up-to-date with correct value.
             ServerConfig.Language = (int)language.Id;
