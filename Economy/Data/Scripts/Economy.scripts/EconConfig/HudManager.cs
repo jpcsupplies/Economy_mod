@@ -1,5 +1,6 @@
 ﻿namespace Economy.scripts.EconConfig
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using EconStructures;
@@ -87,12 +88,20 @@
                         && MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity != null)
                     {
                         Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-                        readout = string.Format(clientConfig.HudReadout,
-                            clientConfig.BankBalance,
-                            clientConfig.CurrencyName,
-                            position.X,
-                            position.Y,
-                            position.Z);
+
+                        try
+                        {
+                            readout = string.Format(clientConfig.HudReadout,
+                                clientConfig.BankBalance,
+                                clientConfig.CurrencyName,
+                                position.X,
+                                position.Y,
+                                position.Z);
+                        }
+                        catch (Exception ex)
+                        {
+                            EconomyScript.Instance.ClientLogger.WriteException(ex, "HudReadout = '" + clientConfig.HudReadout + "'");
+                        }
                     }
                 }
 
