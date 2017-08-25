@@ -89,19 +89,13 @@
                     {
                         Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
 
-                        try
-                        {
-                            readout = string.Format(clientConfig.HudReadout,
-                                clientConfig.BankBalance,
-                                clientConfig.CurrencyName,
-                                position.X,
-                                position.Y,
-                                position.Z);
-                        }
-                        catch (Exception ex)
-                        {
-                            EconomyScript.Instance.ClientLogger.WriteException(ex, "HudReadout = '" + clientConfig.HudReadout + "'");
-                        }
+                        readout = string.Format(clientConfig.HudReadout,
+                            clientConfig.BankBalance,
+                            clientConfig.CurrencyName,
+                            position.X,
+                            position.Y,
+                            position.Z,
+                            clientConfig.FactionName);
                     }
                 }
 
@@ -190,7 +184,9 @@
                     {
                         faction = plFaction.Name;  //should this show tag or full name? depends on screen size i suppose
                     }
-                    readout += " | Agency: " + faction;
+                    readout += " | Agency: {5}";
+
+                    clientConfig.FactionName = faction;
 
                     //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
                     clientConfig.HudObjective = clientConfig.LazyMissionText;

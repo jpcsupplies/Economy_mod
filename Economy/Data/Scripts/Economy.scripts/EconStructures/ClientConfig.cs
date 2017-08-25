@@ -59,6 +59,10 @@
         /// </summary>
         public string HudObjective { get; set; }
 
+        /// <summary>
+        /// String to hold the Hud Faction name.
+        /// </summary>
+        public string FactionName { get; set; }
 
 
 
