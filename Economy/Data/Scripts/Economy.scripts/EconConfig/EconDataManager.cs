@@ -781,6 +781,14 @@
       <BuyPrice>8.97</BuyPrice>
       <IsBlacklisted>true</IsBlacklisted>
     </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_Component</TypeId>
+      <SubtypeName>Canvas</SubtypeName>
+      <Quantity>1000</Quantity>
+      <SellPrice>152.91</SellPrice>
+      <BuyPrice>135.92</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
   </MarketItems>
 </Market>";
 
