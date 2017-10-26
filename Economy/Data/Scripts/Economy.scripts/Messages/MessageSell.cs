@@ -230,10 +230,42 @@
                             var terminalsys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(controllingCube.CubeGrid);
                             var blocks = new List<IMyTerminalBlock>();
                             terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
-                            cargoBlocks.AddRange(blocks.Cast<MyCubeBlock>());
+
+                            // Only select cargo blocks that the player has access to (Not enemy, or unshared faction).
+                            foreach (IMyTerminalBlock block in blocks)
+                            {
+                                MyCubeBlock cubeblock = block as MyCubeBlock;
+                                if (cubeblock != null)
+                                {
+                                    MyRelationsBetweenPlayerAndBlock relation = cubeblock.GetUserRelationToOwner(sellingPlayer.IdentityId);
+
+                                    if (relation == MyRelationsBetweenPlayerAndBlock.Owner ||
+                                        relation == MyRelationsBetweenPlayerAndBlock.NoOwnership ||
+                                        relation == MyRelationsBetweenPlayerAndBlock.FactionShare)
+                                    {
+                                        cargoBlocks.Add(cubeblock);
+                                    }
+                                }
+                            }
 
                             terminalsys.GetBlocksOfType<IMyGasTank>(blocks);
-                            tankBlocks.AddRange(blocks.Cast<MyCubeBlock>());
+
+                            // Only select gas tank blocks that the player has access to (Not enemy, or unshared faction).
+                            foreach (IMyTerminalBlock block in blocks)
+                            {
+                                MyCubeBlock cubeblock = block as MyCubeBlock;
+                                if (cubeblock != null)
+                                {
+                                    MyRelationsBetweenPlayerAndBlock relation = cubeblock.GetUserRelationToOwner(sellingPlayer.IdentityId);
+
+                                    if (relation == MyRelationsBetweenPlayerAndBlock.Owner ||
+                                        relation == MyRelationsBetweenPlayerAndBlock.NoOwnership ||
+                                        relation == MyRelationsBetweenPlayerAndBlock.FactionShare)
+                                    {
+                                        tankBlocks.Add(cubeblock);
+                                    }
+                                }
+                            }
                         }
 
                         EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- checking inventory.", SenderSteamId);
@@ -830,8 +862,25 @@
                 var terminalsys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(controllingCube.CubeGrid);
                 var blocks = new List<IMyTerminalBlock>();
                 terminalsys.GetBlocksOfType<IMyCargoContainer>(blocks);
-                foreach (var block in blocks)
-                    cargoBlocks.Add((MyEntity)block);
+
+                // Only select cargo blocks that the player has access to (Not enemy, or unshared faction).
+                foreach (IMyTerminalBlock block in blocks)
+                {
+                    MyCubeBlock cubeblock = block as MyCubeBlock;
+                    if (cubeblock != null)
+                    {
+                        MyRelationsBetweenPlayerAndBlock relation = cubeblock.GetUserRelationToOwner(collectingPlayer.IdentityId);
+
+                        if (relation == MyRelationsBetweenPlayerAndBlock.Owner ||
+                            relation == MyRelationsBetweenPlayerAndBlock.NoOwnership ||
+                            relation == MyRelationsBetweenPlayerAndBlock.FactionShare)
+                        {
+                            cargoBlocks.Add(cubeblock);
+                        }
+                    }
+                }
+
+
             }
 
             foreach (var cubeBlock in cargoBlocks)
