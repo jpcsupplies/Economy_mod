@@ -1,15 +1,15 @@
 ﻿namespace Economy.scripts.Messages
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Text;
     using EconConfig;
     using EconStructures;
     using ProtoBuf;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using System.Text;
     using VRage.Game;
     using VRage.Game.ModAPI;
     using VRage.Library.Utils;
@@ -21,61 +21,61 @@
     {
         #region Serialized fields
 
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public PlayerMarketManage CommandType;
 
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public string MarketName;
 
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public decimal Size;
 
-        [ProtoMember(4)]
+        [ProtoMember(204)]
         public long EntityId;
 
         /// <summary>
         /// item id we are setting
         /// </summary>
-        [ProtoMember(5)]
+        [ProtoMember(205)]
         public string ItemTypeId;
 
         /// <summary>
         /// item subid we are setting
         /// </summary>
-        [ProtoMember(6)]
+        [ProtoMember(206)]
         public string ItemSubTypeName;
 
         /// <summary>
         /// unit price to buy item at.
         /// </summary>
-        [ProtoMember(7)]
+        [ProtoMember(207)]
         public decimal ItemBuyPrice;
 
         /// <summary>
         /// unit price to sell item at.
         /// </summary>
-        [ProtoMember(8)]
+        [ProtoMember(208)]
         public decimal ItemSellPrice;
 
         /// <summary>
         /// Market quanity stock limit.
         /// </summary>
-        [ProtoMember(9)]
+        [ProtoMember(209)]
         public decimal ItemStockLimit;
 
         /// <summary>
         /// Looking for a specific market name.
         /// </summary>
-        [ProtoMember(10)]
+        [ProtoMember(210)]
         public string FindMarketName;
 
-        [ProtoMember(11)]
+        [ProtoMember(211)]
         public decimal LicenceCost;
 
-        [ProtoMember(12)]
+        [ProtoMember(212)]
         public long ConfirmCode;
 
-        [ProtoMember(13)]
+        [ProtoMember(213)]
         public bool ConfirmFlag;
 
         #endregion
@@ -178,14 +178,14 @@
                 case PlayerMarketManage.ConfirmRegister:
                     {
                         string msg = string.Format("Please confirm the registration of a new trade zone called '{0}', with a size of {1}m radius.\r\n" +
-                                                   "The full cost to register it is {2} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.CurrencyName);
+                                                   "The full cost to register it is {2} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.ServerConfig.CurrencyName);
                         MyAPIGateway.Utilities.ShowMissionScreen("Please confirm", " ", " ", msg, ConfirmRegisterResponse, "Accept");
                     }
                     break;
                 case PlayerMarketManage.ConfirmRelink:
                     {
                         string msg = string.Format("Please confirm the relink of the existing trade zone called '{0}', with a size of {1}m radius.\r\n" +
-                                                   "The cost to relink it is {2} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.CurrencyName);
+                                                   "The cost to relink it is {2} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.ServerConfig.CurrencyName);
                         MyAPIGateway.Utilities.ShowMissionScreen("Please confirm", " ", " ", msg, ConfirmRelinkResponse, "Accept");
                     }
                     break;

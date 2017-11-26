@@ -26,47 +26,47 @@
         /// <summary>
         /// person, NPC, offer or faction to submit an offer to buy from
         /// </summary>
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public string FromUserName;
 
         /// <summary>
         /// qty of item
         /// </summary>
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public decimal ItemQuantity;
 
         /// <summary>
         /// item name / id we are selling
         /// </summary>
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public string ItemTypeId;
 
-        [ProtoMember(4)]
+        [ProtoMember(204)]
         public string ItemSubTypeName;
 
         /// <summary>
         /// unit price of item
         /// </summary>
-        [ProtoMember(5)]
+        [ProtoMember(205)]
         public decimal ItemPrice;
 
         /// <summary>
         /// Use the Current Sell price to buy it at. The Player 
         /// will not have access to this information without fetching it first. This saves us the trouble.
         /// </summary>
-        [ProtoMember(6)]
+        [ProtoMember(206)]
         public bool UseBankSellPrice;
 
         /// <summary>
         /// We are trading with a player or npc merchant zone.
         /// </summary>
-        [ProtoMember(7)]
+        [ProtoMember(207)]
         public bool BuyFromMerchant;
 
         /// <summary>
         /// The Item is been put onto the market.
         /// </summary>
-        [ProtoMember(8)]
+        [ProtoMember(208)]
         public bool FindOnMarket;
 
         #endregion

@@ -20,13 +20,13 @@
     [ProtoContract]
     public class MessageShipSale : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public long EntityId;
 
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public string Ctype;
 
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public decimal Amount;
 
         public static void SendMessage(long entityId, string ctype, decimal amount)

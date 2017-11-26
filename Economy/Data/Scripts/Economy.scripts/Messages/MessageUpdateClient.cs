@@ -7,34 +7,26 @@
     [ProtoContract]
     public class MessageUpdateClient : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public ClientUpdateAction ClientUpdateAction;
 
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public decimal BankBalance;
 
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public int MissionId;
 
-        [ProtoMember(8)]
-        public string CurrencyName;
-
-        [ProtoMember(9)]
-        public string TradeNetworkName;
+        [ProtoMember(204)]
+        public ServerConfigUpdateStuct ServerConfig { get; set; }
 
         public static void SendAccountMessage(ClientAccountStruct account)
         {
             ConnectionHelper.SendMessageToPlayer(account.SteamId, new MessageUpdateClient { ClientUpdateAction = ClientUpdateAction.Account, BankBalance = account.BankBalance, MissionId = account.MissionId });
         }
 
-        public static void SendCurrencyName(ulong steamdid, string currencyName)
+        public static void SendServerConfig(ulong steamdId, EconConfigStruct serverConfig)
         {
-            ConnectionHelper.SendMessageToPlayer(steamdid, new MessageUpdateClient { ClientUpdateAction = ClientUpdateAction.CurrencyName, CurrencyName = currencyName });
-        }
-
-        public static void SendTradeNetworkName(ulong steamdid, string tradeNetworkName)
-        {
-            ConnectionHelper.SendMessageToPlayer(steamdid, new MessageUpdateClient { ClientUpdateAction = ClientUpdateAction.TradeNetworkName, TradeNetworkName = tradeNetworkName });
+            ConnectionHelper.SendMessageToPlayer(steamdId, new MessageUpdateClient { ClientUpdateAction = ClientUpdateAction.ServerConfig, ServerConfig = serverConfig });
         }
 
         public override void ProcessClient()
@@ -52,15 +44,11 @@
                     EconomyScript.Instance.ClientConfig.MissionId = MissionId;
                     break;
 
-                case ClientUpdateAction.CurrencyName:
-                    EconomyScript.Instance.ClientConfig.CurrencyName = CurrencyName;
+                case ClientUpdateAction.ServerConfig:
+                    EconomyScript.Instance.ClientConfig.ServerConfig = ServerConfig;
                     break;
 
-                case ClientUpdateAction.TradeNetworkName:
-                    EconomyScript.Instance.ClientConfig.TradeNetworkName = TradeNetworkName;
-                    break;
-
-                    case ClientUpdateAction.TradeZones:
+                case ClientUpdateAction.TradeZones:
                     // TODO: 
                     break;
             }

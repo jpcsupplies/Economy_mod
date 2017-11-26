@@ -10,19 +10,19 @@
     [ProtoContract]
     public class MessageMarketItemValue : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public string TypeId;
 
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public string SubtypeName;
 
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public decimal Quantity;
 
         /// <summary>
         /// The localized Display Name from the Client to be sent back if the processing succeeds.
         /// </summary>
-        [ProtoMember(4)]
+        [ProtoMember(204)]
         public string DisplayName;
 
         public override void ProcessClient()

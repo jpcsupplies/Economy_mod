@@ -30,7 +30,7 @@
     [ProtoContract]
     public class KillPlayerMission : MissionBaseStruct
     {
-        [ProtoMember(20)]
+        [ProtoMember(201)]
         private long _targetEntityId { get; set; }
 
         /// <summary>

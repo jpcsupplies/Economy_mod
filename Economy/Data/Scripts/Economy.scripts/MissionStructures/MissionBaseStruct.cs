@@ -4,6 +4,7 @@ namespace Economy.scripts.MissionStructures
     using System.Xml.Serialization;
     using ProtoBuf;
 
+    // for xml serialization to save/load disk by server.
     [XmlType("Mission")]
     [XmlInclude(typeof(BlockActivateMission))]
     [XmlInclude(typeof(BlockCaptureMission))]
@@ -22,25 +23,44 @@ namespace Economy.scripts.MissionStructures
     [XmlInclude(typeof(UseBuySellShipMission))]
     [XmlInclude(typeof(UseWorthMission))]
     [XmlInclude(typeof(WeldMission))]
+
     [ProtoContract]
+    // for binary serialization to send server->client
+    [ProtoInclude(1, typeof(BlockActivateMission))]
+    [ProtoInclude(2, typeof(BlockCaptureMission))]
+    [ProtoInclude(3, typeof(BlockDeactivateMission))]
+    [ProtoInclude(4, typeof(BlockDestroyMission))]
+    [ProtoInclude(5, typeof(BuySomethingMission))]
+    [ProtoInclude(6, typeof(DeliverItemToTradeZoneMission))]
+    [ProtoInclude(7, typeof(JoinFactionMission))]
+    [ProtoInclude(8, typeof(KillPlayerMission))]
+    [ProtoInclude(9, typeof(MineMission))]
+    [ProtoInclude(10, typeof(PayPlayerMission))]
+    [ProtoInclude(11, typeof(StayAliveMission))]
+    [ProtoInclude(12, typeof(TradeWithPlayerMission))]
+    [ProtoInclude(13, typeof(TravelMission))]
+    [ProtoInclude(14, typeof(UseAccountBalanceMission))]
+    [ProtoInclude(15, typeof(UseBuySellShipMission))]
+    [ProtoInclude(16, typeof(UseWorthMission))]
+    [ProtoInclude(17, typeof(WeldMission))]
     public abstract class MissionBaseStruct
     {
         /// <summary>
         /// Unique identifier of the mission.
         /// </summary>
-        [ProtoMember(1)]
+        [ProtoMember(101)]
         public int MissionId { get; set; }
 
         /// <summary>
         /// Indicates what sort of player/group the mission is assigned to.
         /// </summary>
-        [ProtoMember(2)]
+        [ProtoMember(102)]
         public MissionAssignmentType AssignmentType { get; set; }
 
         /// <summary>
         /// The player the mission is assigned to.
         /// </summary>
-        [ProtoMember(3)]
+        [ProtoMember(103)]
         public ulong PlayerId { get; set; }
 
         /// <summary>
@@ -48,37 +68,37 @@ namespace Economy.scripts.MissionStructures
         /// When one individual wins, some rule may be applied to the other missions.
         /// </summary>
         // Wish we could use System.Guid, except it is not allowed in ModAPI.
-        [ProtoMember(4)]
+        [ProtoMember(104)]
         public Int64 GroupMissionId { get; set; }
 
         /// <summary>
         /// Indicates who can complete the mission and recieve the reward out of the assigned players.
         /// </summary>
-        [ProtoMember(5)]
+        [ProtoMember(105)]
         public MissionWinRule WinRule { get; set; }
 
         /// <summary>
         /// How much credit is recieved when the mission is completed sucessfully.
         /// </summary>
-        [ProtoMember(6)]
+        [ProtoMember(106)]
         public decimal Reward { get; set; }
 
         /// <summary>
         /// When the Mission was created and listed.
         /// </summary>
-        [ProtoMember(7)]
+        [ProtoMember(107)]
         public DateTime OfferDate { get; set; }
 
         /// <summary>
         /// The Date/Time that a Mission will expire (if it expires).
         /// </summary>
-        [ProtoMember(8)]
+        [ProtoMember(108)]
         public DateTime? Expiration { get; set; }
 
         /// <summary>
         /// If the assigned player has been presented with the Briefing yet.
         /// </summary>
-        [ProtoMember(9)]
+        [ProtoMember(109)]
         public bool SeenBriefing { get; set; }
 
         /// <summary>

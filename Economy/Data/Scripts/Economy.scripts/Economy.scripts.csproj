@@ -107,9 +107,9 @@
     <Compile Include="EconConfig\EconDataManager.cs" />
     <Compile Include="EconStructures\EconDataStruct.cs" />
     <Compile Include="EconConfig\MarketManager.cs" />
+    <Compile Include="EconStructures\ServerConfigUpdateStuct.cs" />
     <Compile Include="InterModAPI\EconPayUser.cs" />
     <Compile Include="InterModAPI\EconInterModBase.cs" />
-    <Compile Include="InterModAPI\EconMessageContainer.cs" />
     <Compile Include="InterModAPI\EconPayUserResponse.cs" />
     <Compile Include="Messages\MessageClientSound.cs" />
     <Compile Include="Messages\MessageHudUpdate.cs" />
@@ -164,8 +164,6 @@
     <Compile Include="Messages\MessageClientTextMessage.cs" />
     <Compile Include="Messages\MessageConnectionResponse.cs" />
     <Compile Include="Messages\MessageConnectionRequest.cs" />
-    <Compile Include="Messages\MessageContainer.cs" />
-    <Compile Include="Messages\MessageIncomingMessageParts.cs" />
     <Compile Include="Messages\MessageListAccounts.cs" />
     <Compile Include="Messages\MessagePayUser.cs" />
     <Compile Include="Messages\MessagePlayerSeen.cs" />
@@ -173,6 +171,7 @@
     <Compile Include="Messages\MessageWorth.cs" />
     <Compile Include="Messages\MessageSide.cs" />
     <Compile Include="Messages\MessageShipSale.cs" />
+    <Compile Include="SerializableBoundingSphereD.cs" />
     <Compile Include="Support.cs" />
     <Compile Include="TextLogger.cs" />
   </ItemGroup>

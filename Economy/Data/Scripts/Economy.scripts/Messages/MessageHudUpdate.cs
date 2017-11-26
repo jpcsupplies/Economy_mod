@@ -7,9 +7,10 @@
     /// <summary>
     /// Used to send updated hud configuration back to the server for storage.
     /// </summary>
+    [ProtoContract]
     public class MessageHudUpdate : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public ClientHudSettingsStruct HudSettings;
 
         public static void SendMessage(ClientHudSettingsStruct hudSettings)

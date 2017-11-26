@@ -92,7 +92,7 @@ namespace Economy.scripts
         /// <summary>
         /// pattern defines econfig commands.
         /// </summary>
-        const string EconfigPattern = @"^(?<command>/econfig\b)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(LicenceMin)|(LicenceMax)|(RelinkRatio)|(MaximumPlayerZones)|(PriceScaling)|(ShipTrading)|(LcdDisplayInterval)))(?:\s+(?<value>.+))?)?";
+        const string EconfigPattern = @"^(?<command>/econfig\b)(?:\s+(?<config>((language)|(TradeNetworkName)|(CurrencyName)|(LimitedRange)|(LimitedSupply)|(EnableLcds)|(EnableNpcTradezones)|(EnablePlayerTradezones)|(EnablePlayerPayments)|(TradeTimeout)|(AccountExpiry)|(StartingBalance)|(LicenceMin)|(LicenceMax)|(RelinkRatio)|(MaximumPlayerZones)|(PriceScaling)|(ShipTrading)|(LcdDisplayInterval)|(EnableMissions)))(?:\s+(?<value>.+))?)?";
 
         /// <summary>
         /// pattern defines how to register a player trade zone.
@@ -520,7 +520,7 @@ namespace Economy.scripts
         {
             Match match; // used by the Regular Expression to test user input.
                          // this list is going to get messy since the help and commands themself tell user the same thing 
-            string[] split = messageText.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] split = messageText.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             // nothing useful was entered.
             if (split.Length == 0)
                 return false;
@@ -564,47 +564,50 @@ namespace Economy.scripts
             #endregion quick gps commands
 
             #region mission
-            //placeholder for testing mission success triggers without using a timer yet
-            if (split[0].Equals("/mission", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin() && split.Length >= 2)
+
+            if (ClientConfig.ServerConfig.EnableMissions)
             {
-                int mission;
-                if (split.Length >= 2 && int.TryParse(split[1], out mission))
+                //placeholder for testing mission success triggers without using a timer yet
+                if (split[0].Equals("/mission", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin() && split.Length >= 2)
                 {
-                    // TODO: this is to become a server call to create and assign the specifed mission.
-                    HudManager.FetchMission(mission);
-                    MyAPIGateway.Utilities.ShowMessage("debug", "Setting mission {0}", mission);
+                    int missionId;
+                    if (split.Length >= 2 && int.TryParse(split[1], out missionId))
+                    {
+                        // TODO: this is to become a server call to create and assign the specifed mission.
+                        HudManager.FetchMission(missionId);
+                        MyAPIGateway.Utilities.ShowMessage("debug", "Setting mission {0}", missionId);
+                    }
+                    MyAPIGateway.Utilities.ShowMessage("debug", "You are at mission: {0}", ClientConfig.MissionId);
+
+                    // Update the hud after having made a change to the selected mission.
+
+                    if (!HudManager.UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
+                    return true;
                 }
-                MyAPIGateway.Utilities.ShowMessage("debug", "You are at mission: {0}", ClientConfig.MissionId);
 
-                // Update the hud after having made a change to the selected mission.
+                if (split[0].Equals("/mission", StringComparison.InvariantCultureIgnoreCase) && split.Length == 1
+                         && MyAPIGateway.Session.Player.IsAdmin()) //added to disable until ready to release
+                {
+                    MessageMission.SendCreateSampleMissions(true);
 
-                if (!HudManager.UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
-                return true;
-            }
-            else if (split[0].Equals("/mission", StringComparison.InvariantCultureIgnoreCase) && split.Length == 1
-                && MyAPIGateway.Session.Player.IsAdmin()
-                && false) //added to disable until ready to release
-            {
-                MessageMission.SendCreateSampleMissions();
+                    //we are not an admin how about we start off a demo / tutorial mission chain then
+                    //this is only temp; ideally we should have some sort of mission menu system or something more fancy eg a mission LCD menu you navigate with chat commands
+                    //at some point we probably need a "new missions available" message somewhere too. 
+                    //looks like we need a persistent "completed missions" counter for each client to prevent repeating the same mission chains
+                    //for now tho we can just make sure they only run it once per session; and keep rewards tiny.
+                    //Chain: Suggest the /bal mission followed by the investigate 0,0,0 mission. Then mayby buy or sell or worth later.
+                    //really need a way to let us specify the investigate coords instead of hard coding then i can make random coords for random investigate missions
+                    //and of course being able to specify them in custom mission files admins create for their servers.
 
-                //we are not an admin how about we start off a demo / tutorial mission chain then
-                //this is only temp; ideally we should have some sort of mission menu system or something more fancy eg a mission LCD menu you navigate with chat commands
-                //at some point we probably need a "new missions available" message somewhere too. 
-                //looks like we need a persistent "completed missions" counter for each client to prevent repeating the same mission chains
-                //for now tho we can just make sure they only run it once per session; and keep rewards tiny.
-                //Chain: Suggest the /bal mission followed by the investigate 0,0,0 mission. Then mayby buy or sell or worth later.
-                //really need a way to let us specify the investigate coords instead of hard coding then i can make random coords for random investigate missions
-                //and of course being able to specify them in custom mission files admins create for their servers.
+                    //the existing logic here could be converted to a /tutorial command for new players once the real mission system is up
 
-                //the existing logic here could be converted to a /tutorial command for new players once the real mission system is up
+                    //footnote: we should probably check the current hud settings and save them for later..  so that the settings are returned to what they were?
+                    //or should we not bother to activate the ShowXYZ command to begin with..  just the contract read out?
+                    //for that then we need to know how many missions are in the current chain for the mission counter total?
+                    //or should we ditch the total and make it work like a game "score"  ? we still need something to show how many missions need to be done..
+                    //so if we add a score it should be a new read out again maybe..
 
-                //footnote: we should probably check the current hud settings and save them for later..  so that the settings are returned to what they were?
-                //or should we not bother to activate the ShowXYZ command to begin with..  just the contract read out?
-                //for that then we need to know how many missions are in the current chain for the mission counter total?
-                //or should we ditch the total and make it work like a game "score"  ? we still need something to show how many missions need to be done..
-                //so if we add a score it should be a new read out again maybe..
-
-                /*
+                    /*
                 if (ClientConfig.CompletedMissions == 0) { 
                     //ok we are doing a mission, lets boot up the hud and activate mission relevent read outs
                     ClientConfig.ShowHud = true;                
@@ -630,9 +633,11 @@ namespace Economy.scripts
 
                 if (!HudManager.UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
                 */
-                return true;
-            
-            } 
+                    return true;
+
+                }
+            }
+
             #endregion mission
 
             #region debug

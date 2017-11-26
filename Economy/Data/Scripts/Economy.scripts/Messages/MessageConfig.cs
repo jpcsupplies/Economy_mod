@@ -22,13 +22,13 @@
         /// <summary>
         /// The key config item to set.
         /// </summary>
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public string ConfigName;
 
         /// <summary>
         /// The value to set the config item to.
         /// </summary>
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public string Value;
 
         #endregion
@@ -106,18 +106,13 @@
 
                 case "tradenetworkname":
                     if (string.IsNullOrEmpty(Value))
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradenetworkName: {0}", EconomyScript.Instance.ServerConfig.TradeNetworkName);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeNetworkName: {0}", EconomyScript.Instance.ServerConfig.TradeNetworkName);
                     else
                     {
                         EconomyScript.Instance.ServerConfig.TradeNetworkName = Value;
-                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradenetworkName updated to: \"{0}\"", EconomyScript.Instance.ServerConfig.TradeNetworkName);
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeNetworkName updated to: \"{0}\"", EconomyScript.Instance.ServerConfig.TradeNetworkName);
 
-                        // push updates to all clients.
-                        var listPlayers = new List<IMyPlayer>();
-                        MyAPIGateway.Players.GetPlayers(listPlayers);
-
-                        foreach (var connectedPlayer in listPlayers)
-                            MessageUpdateClient.SendTradeNetworkName(connectedPlayer.SteamUserId, EconomyScript.Instance.ServerConfig.TradeNetworkName);
+                        UpdateClientsServerConfig();
                     }
                     break;
 
@@ -133,12 +128,7 @@
                         EconomyScript.Instance.ServerConfig.CurrencyName = Value;
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "CurrencyName updated to: \"{0}\"", EconomyScript.Instance.ServerConfig.CurrencyName);
 
-                        // push updates to all clients.
-                        var listPlayers = new List<IMyPlayer>();
-                        MyAPIGateway.Players.GetPlayers(listPlayers);
-
-                        foreach (var connectedPlayer in listPlayers)
-                            MessageUpdateClient.SendCurrencyName(connectedPlayer.SteamUserId, EconomyScript.Instance.ServerConfig.CurrencyName);
+                        UpdateClientsServerConfig();
                     }
                     break;
 
@@ -572,6 +562,30 @@
 
                 #endregion
 
+                #region EnableMissions
+
+                case "enablemissions":
+                    if (string.IsNullOrEmpty(Value))
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnableMissions: {0}", EconomyScript.Instance.ServerConfig.EnableMissions ? "On" : "Off");
+                    else
+                    {
+                        bool? boolTest = GetBool(Value);
+                        if (boolTest.HasValue)
+                        {
+                            var clearRefresh = EconomyScript.Instance.ServerConfig.EnableMissions && !boolTest.Value;
+                            EconomyScript.Instance.ServerConfig.EnableMissions = boolTest.Value;
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnableMissions updated to: {0}", EconomyScript.Instance.ServerConfig.EnableMissions ? "On" : "Off");
+
+                            UpdateClientsServerConfig();
+                            return;
+                        }
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnableMissions: {0}", EconomyScript.Instance.ServerConfig.EnableMissions ? "On" : "Off");
+                    }
+                    break;
+
+                #endregion
+
                 #region default
 
                 default:
@@ -579,7 +593,7 @@
 
                     myLanguage = MyTexts.Languages[(MyLanguagesEnum)EconomyScript.Instance.ServerConfig.Language];
                     msg.AppendFormat("Language: {0} ({1})\r\n", myLanguage.Name, myLanguage.FullCultureName);
-                    msg.AppendFormat("TradenetworkName: \"{0}\"\r\n", EconomyScript.Instance.ServerConfig.TradeNetworkName);
+                    msg.AppendFormat("TradeNetworkName: \"{0}\"\r\n", EconomyScript.Instance.ServerConfig.TradeNetworkName);
                     msg.AppendFormat("LimitedRange: {0}\r\n", EconomyScript.Instance.ServerConfig.LimitedRange ? "On" : "Off");
                     msg.AppendFormat("LimitedSupply: {0}\r\n", EconomyScript.Instance.ServerConfig.LimitedSupply ? "On" : "Off");
                     msg.AppendFormat("TradeTimeout: {0}  (days.hours:mins:secs)\r\n", EconomyScript.Instance.ServerConfig.TradeTimeout);
@@ -600,11 +614,24 @@
                     msg.AppendFormat("RelinkRatio: {0:P}\r\n", EconomyScript.Instance.ServerConfig.TradeZoneRelinkRatio);
                     msg.AppendFormat("MaximumPlayerZones: {0}\r\n", EconomyScript.Instance.ServerConfig.MaximumPlayerTradeZones);
 
+                    // Not yet ready for general use.
+                    //msg.AppendFormat("EnableMissions: {0}\r\n", EconomyScript.Instance.ServerConfig.EnableMissions ? "On" : "Off");
+
                     MessageClientDialogMessage.SendMessage(SenderSteamId, "ECONFIG", " ", msg.ToString());
                     break;
 
                     #endregion
             }
+        }
+
+        private void UpdateClientsServerConfig()
+        {
+            // push updates to all clients.
+            var listPlayers = new List<IMyPlayer>();
+            MyAPIGateway.Players.GetPlayers(listPlayers);
+
+            foreach (var connectedPlayer in listPlayers)
+                MessageUpdateClient.SendServerConfig(connectedPlayer.SteamUserId, EconomyScript.Instance.ServerConfig);
         }
 
         private bool? GetBool(string value)

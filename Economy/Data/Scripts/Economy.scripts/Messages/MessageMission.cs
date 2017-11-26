@@ -31,14 +31,17 @@
     {
         #region properties
 
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public PlayerMissionManage CommandType;
 
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public long MissionId;
 
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public MissionBaseStruct Mission;
+
+        [ProtoMember(204)]
+        public bool StartMission;
 
         #endregion
 
@@ -53,8 +56,11 @@
 
             string msg = mission.GetSuccessMessage();
             if (mission.Reward != 0)
-                msg += string.Format("\r\n{0} {1} Transferred to your account.", mission.Reward, EconomyScript.Instance.ClientConfig.CurrencyName);
-            MyAPIGateway.Utilities.ShowMissionScreen("Mission:" + mission.MissionId, "", "Completed", msg, null, "Okay");
+                msg += string.Format("\r\n{0} {1} Transferred to your account.", mission.Reward, EconomyScript.Instance.ClientConfig.ServerConfig.CurrencyName);
+            //MyAPIGateway.Utilities.ShowMissionScreen("Mission:" + mission.MissionId, "", "Completed", msg, null, "Okay");
+
+            Sandbox.Game.MyVisualScriptLogicProvider.ReplaceQuestlogDetail(0, msg);
+            Sandbox.Game.MyVisualScriptLogicProvider.SetQuestlogDetailCompleted(0, true);
         }
 
         public static void SendMessage(long missionId)
@@ -62,9 +68,9 @@
             ConnectionHelper.SendMessageToServer(new MessageMission { CommandType = PlayerMissionManage.Test, MissionId = missionId });
         }
 
-        public static void SendCreateSampleMissions()
+        public static void SendCreateSampleMissions(bool startMission)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMission { CommandType = PlayerMissionManage.AddSample });
+            ConnectionHelper.SendMessageToServer(new MessageMission { CommandType = PlayerMissionManage.AddSample, StartMission = startMission });
         } 
 
         #endregion
@@ -76,7 +82,16 @@
                 case PlayerMissionManage.AddMission:
                     EconomyScript.Instance.ClientConfig.Missions.Add(Mission);
                     Mission.AddGps();
-                    MyAPIGateway.Utilities.ShowMissionScreen("Mission", Mission.MissionId + " : ", Mission.GetName(), Mission.GetDescription(), null, "Yes Sir!");
+
+                    if (StartMission)
+                    {
+                        HudManager.FetchMission(Mission.MissionId);
+                    }
+                    else
+                    {
+                        MyAPIGateway.Utilities.ShowMissionScreen("Mission", Mission.MissionId + " : ", Mission.GetName(), Mission.GetDescription(), null, "Yes Sir!");
+                    }
+
                     Mission.SeenBriefing = true;
                     EconomyScript.Instance.ClientConfig.MissionId = Mission.MissionId;
                     EconomyScript.Instance.ClientConfig.LazyMissionText = Mission.GetName();
@@ -116,7 +131,7 @@
                             Reward = 100,
                         }, SenderSteamId);
 
-                        ConnectionHelper.SendMessageToPlayer(SenderSteamId, new MessageMission { CommandType = PlayerMissionManage.AddMission, Mission = newMission });
+                        ConnectionHelper.SendMessageToPlayer(SenderSteamId, new MessageMission { CommandType = PlayerMissionManage.AddMission, Mission = newMission, StartMission = StartMission});
                     }
                     break;
 

@@ -8,7 +8,7 @@
     [ProtoContract]
     public class MessageRewardAccount : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public decimal Reward;
 
         public static void SendMessage(decimal reward)

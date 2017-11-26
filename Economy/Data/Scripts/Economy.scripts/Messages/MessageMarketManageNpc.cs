@@ -10,28 +10,28 @@
     [ProtoContract]
     public class MessageMarketManageNpc : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public NpcMarketManage CommandType;
 
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public string MarketName;
 
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public decimal X;
 
-        [ProtoMember(4)]
+        [ProtoMember(204)]
         public decimal Y;
 
-        [ProtoMember(5)]
+        [ProtoMember(205)]
         public decimal Z;
 
-        [ProtoMember(6)]
+        [ProtoMember(206)]
         public decimal Size;
 
-        [ProtoMember(7)]
+        [ProtoMember(207)]
         public MarketZoneType Shape;
 
-        [ProtoMember(8)]
+        [ProtoMember(208)]
         public string OldMarketName;
 
         public static void SendAddMessage(string marketName, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)

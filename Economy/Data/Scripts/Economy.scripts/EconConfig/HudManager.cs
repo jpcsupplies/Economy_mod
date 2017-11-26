@@ -91,7 +91,7 @@
 
                         readout = string.Format(clientConfig.HudReadout,
                             clientConfig.BankBalance,
-                            clientConfig.CurrencyName,
+                            clientConfig.ServerConfig.CurrencyName,
                             position.X,
                             position.Y,
                             position.Z,
@@ -153,7 +153,7 @@
                 /* account.BankBalance.ToString("0.######"); */
 
                 //use title here that frees up mission line for actual missions - cargo should list total and used space or just empty space?
-                string readout = clientConfig.TradeNetworkName + ": ";
+                string readout = clientConfig.ServerConfig.TradeNetworkName + ": ";
                 if (clientConfig.ClientHudSettings.ShowBalance) readout += "{0:#,##0.0000} {1}";
 
                 string tradeZoneName = "Unknown";
@@ -189,7 +189,7 @@
                     clientConfig.FactionName = faction;
 
                     //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
-                    clientConfig.HudObjective = clientConfig.LazyMissionText;
+                    //clientConfig.HudObjective = clientConfig.LazyMissionText;
                     //MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add(reply);
                 }
 
@@ -203,11 +203,26 @@
         {
             EconomyScript.Instance.ClientConfig.MissionId++;
 
+            if (missionId < 0) // debug clear.
+            {
+                Sandbox.Game.MyVisualScriptLogicProvider.SetQuestlogVisible(false);
+            }
+
             MissionBaseStruct currentMission = EconomyScript.Instance.ClientConfig.Missions.FirstOrDefault(m => m.MissionId == missionId);
             if (currentMission == null)
                 missionId = -1;
             EconomyScript.Instance.ClientConfig.MissionId = missionId;
-            EconomyScript.Instance.ClientConfig.LazyMissionText = currentMission == null ? null : currentMission.GetName();
+            EconomyScript.Instance.ClientConfig.LazyMissionText = currentMission?.GetName();
+
+            if (currentMission == null)
+            {
+                //Sandbox.Game.MyVisualScriptLogicProvider.SetQuestlogVisible(false);
+            }
+            else
+            {
+                Sandbox.Game.MyVisualScriptLogicProvider.SetQuestlog(true, currentMission.GetName());
+                Sandbox.Game.MyVisualScriptLogicProvider.AddQuestlogDetail(currentMission.GetDescription());
+            }
         }
 
         public static void GPS(double x,double y, double z, string name, string description, bool create)
@@ -240,10 +255,13 @@
 
         public static void UpdateMission()
         {
+            if (!(EconomyScript.Instance.ClientConfig?.ServerConfig?.EnableMissions ?? false))
+                return;
+
             ClientConfig clientConfig = EconomyScript.Instance.ClientConfig;
 
             // client config has not been received from server yet.
-            if (clientConfig == null)
+            if (clientConfig?.Missions == null)
                 return;
 
             // if the player does not have a controlable body yet, no point continuing.
@@ -257,68 +275,68 @@
                 Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
                 string faction = "Free agent";
                 IMyFaction plFaction;
-                
+
                 plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.IdentityId);
                 if (plFaction != null)
                 {
-                    faction = plFaction.Name;  //should this show tag or full name? depends on screen size i suppose
+                    faction = plFaction.Name; //should this show tag or full name? depends on screen size i suppose
+                }
+            }
+
+            //mission system
+            /* 
+             Mission system will use a set of conditions which are set on commencement of mission. conditions not used are nul
+             * target location  eg 1000,1000,1000
+             * target player eg xphoenixxx
+             * target trade zone eg Trader
+             * target ship/station id? destruction or capture/rename would end the mission (much like beacons becoming unlinked on trade zones)
+             * target event eg buy/sell/pay/drop/collect/kill?/capture?
+             * target reward eg 1000 credits or 100 missile crates etc or a prefab id
+             * Lazy missiontext is only using mission hud id  0 or 1 at the moment and changing the text based on clientConfig.missionid and active conditions
+             * this allows us to use the internal hud mission ids with increment for more complex mission chains (eg patrol points multiple objectives etc)
+             * or skip it entirely for single objective missions (eg deliver x item to y location)
+             * on top of this we can use a pick-a-path or choose your own adventure style system where we substitute page number with missionID - 
+             * these style missions will be partially fixed by loading from a mission file allowing admins to design their own story missions
+             * hard coded missions could be the emergency restock contracts which trigger automatically/randomly as stock levels plummet contracts could work as a
+             * seperate system as hud space is limited. eg /contracts or we could work it in as a mission chain under main mission system
+             * this allows for very complicated missions to be assembled using quite simple code (i like simple i understand simple!)
+             * we need to save clientConfig.missionid client side so players can continue missions
+             * if conditions are encoded in hud mission text, we could save that too and restore on rejoin
+
+             Below are some sample example missions showing a few standard mission types which could be used in a tutorial chain - or auto generated - or created by
+             server admins from a custom mission file.
+             */
+            //int MissionPayment = 0;
+
+
+            MissionBaseStruct currentMission = EconomyScript.Instance.ClientConfig.Missions.FirstOrDefault(m => m.MissionId == clientConfig.MissionId);
+
+            // no mission currently selected. or no valid mission selected.
+            if (currentMission == null)
+                return;
+
+            bool success = currentMission.CheckMission();
+
+            if (success)
+            {
+                clientConfig.SeenBriefing = false; //reset the check that tests if player has seen briefing and/or had gps created already
+                clientConfig.CompletedMissions++; //increment the completed missions counter (note this is not intended to be 'current' mission just a counter)
+                                                  //it will probably only be used for current mission "chain" tracking later on
+                if (clientConfig.CompletedMissions >= 3)
+                { //demo mission chain is over clean up unnecessary hud sections we added earlier
+                    clientConfig.ClientHudSettings.ShowContractCount = false;
+                    clientConfig.ClientHudSettings.ShowPosition = false;
                 }
 
-                //mission system
-                /* 
-                 Mission system will use a set of conditions which are set on commencement of mission. conditions not used are nul
-                 * target location  eg 1000,1000,1000
-                 * target player eg xphoenixxx
-                 * target trade zone eg Trader
-                 * target ship/station id? destruction or capture/rename would end the mission (much like beacons becoming unlinked on trade zones)
-                 * target event eg buy/sell/pay/drop/collect/kill?/capture?
-                 * target reward eg 1000 credits or 100 missile crates etc or a prefab id
-                 * Lazy missiontext is only using mission hud id  0 or 1 at the moment and changing the text based on clientConfig.missionid and active conditions
-                 * this allows us to use the internal hud mission ids with increment for more complex mission chains (eg patrol points multiple objectives etc)
-                 * or skip it entirely for single objective missions (eg deliver x item to y location)
-                 * on top of this we can use a pick-a-path or choose your own adventure style system where we substitute page number with missionID - 
-                 * these style missions will be partially fixed by loading from a mission file allowing admins to design their own story missions
-                 * hard coded missions could be the emergency restock contracts which trigger automatically/randomly as stock levels plummet contracts could work as a
-                 * seperate system as hud space is limited. eg /contracts or we could work it in as a mission chain under main mission system
-                 * this allows for very complicated missions to be assembled using quite simple code (i like simple i understand simple!)
-                 * we need to save clientConfig.missionid client side so players can continue missions
-                 * if conditions are encoded in hud mission text, we could save that too and restore on rejoin
+                MessageMission.SendMissionComplete(currentMission);
 
-                 Below are some sample example missions showing a few standard mission types which could be used in a tutorial chain - or auto generated - or created by
-                 server admins from a custom mission file.
-                 */
-                //int MissionPayment = 0;
+                clientConfig.LazyMissionText = clientConfig.MissionId + " Mission: completed";
 
-
-                MissionBaseStruct currentMission = EconomyScript.Instance.ClientConfig.Missions.FirstOrDefault(m => m.MissionId == clientConfig.MissionId);
-
-                // no mission currently selected. or no valid mission selected.
-                if (currentMission == null)
-                    return;
-
-                bool success = currentMission.CheckMission();
-
-                if (success)
-                {
-                    clientConfig.SeenBriefing = false; //reset the check that tests if player has seen briefing and/or had gps created already
-                    clientConfig.CompletedMissions++; //increment the completed missions counter (note this is not intended to be 'current' mission just a counter)
-                    //it will probably only be used for current mission "chain" tracking later on
-                    if (clientConfig.CompletedMissions >= 3)
-                    { //demo mission chain is over clean up unnecessary hud sections we added earlier
-                        clientConfig.ClientHudSettings.ShowContractCount = false;
-                        clientConfig.ClientHudSettings.ShowPosition = false;
-                    }
-
-                    MessageMission.SendMissionComplete(currentMission);
-
-                    clientConfig.LazyMissionText = clientConfig.MissionId + " Mission: completed";
-
-                    // TODO: is a bad idea to increment. We need to fetch the next valid mission, or reset to blank.
-                    //FetchMission(-1); 
-                    FetchMission(0);
-                    //FetchMission(clientConfig.MissionId + 1);
-                    UpdateHud();
-                }
+                // TODO: is a bad idea to increment. We need to fetch the next valid mission, or reset to blank.
+                //FetchMission(-1); 
+                FetchMission(0);
+                //FetchMission(clientConfig.MissionId + 1);
+                UpdateHud();
             }
         }
 

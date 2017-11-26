@@ -8,7 +8,7 @@
     [ProtoContract]
     public class JoinFactionMission : MissionBaseStruct
     {
-        [ProtoMember(20)]
+        [ProtoMember(201)]
         public long FactionId { get; set; }
 
         public override string GetName()

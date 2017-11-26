@@ -18,27 +18,26 @@
     [ProtoContract]
     public class MessageMarketPriceList : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public bool ShowOre;
 
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public bool ShowIngot;
 
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public bool ShowComponent;
 
-        [ProtoMember(4)]
+        [ProtoMember(204)]
         public bool ShowAmmo;
 
-        [ProtoMember(5)]
+        [ProtoMember(205)]
         public bool ShowTools;
 
-        [ProtoMember(6)]
+        [ProtoMember(206)]
         public bool ShowGasses;
 
-        [ProtoMember(7)]
+        [ProtoMember(207)]
         public string FindMarket;
-
 
         public static void SendMessage(bool showOre, bool showIngot, bool showComponent, bool showAmmo, bool showTools, bool showGasses, string findMarket)
         {

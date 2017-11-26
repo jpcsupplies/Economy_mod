@@ -26,59 +26,59 @@
     {
         #region properties
 
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public SellAction SellAction;
 
         /// <summary>
         /// person, NPC, offer or faction to sell to
         /// </summary>
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public string ToUserName;
 
         /// <summary>
-        /// qty of item
+        /// Quantity of item
         /// </summary>
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public decimal ItemQuantity;
 
         /// <summary>
         /// item id we are selling
         /// </summary>
-        [ProtoMember(4)]
+        [ProtoMember(204)]
         public string ItemTypeId;
 
         /// <summary>
         /// item subid we are selling
         /// </summary>
-        [ProtoMember(5)]
+        [ProtoMember(205)]
         public string ItemSubTypeName;
 
         /// <summary>
         /// unit price of item
         /// </summary>
-        [ProtoMember(6)]
+        [ProtoMember(206)]
         public decimal ItemPrice;
 
         /// <summary>
         /// Use the Current Buy price to sell it at. The Player 
         /// will not have access to this information without fetching it first. This saves us the trouble.
         /// </summary>
-        [ProtoMember(7)]
+        [ProtoMember(207)]
         public bool UseBankBuyPrice;
 
         /// <summary>
         /// We are trading with a (Player/NPC) Merchant market?.
         /// </summary>
-        [ProtoMember(8)]
+        [ProtoMember(208)]
         public bool SellToMerchant;
 
         /// <summary>
         /// The Item is been put onto the market.
         /// </summary>
-        [ProtoMember(9)]
+        [ProtoMember(209)]
         public bool OfferToMarket;
 
-        //[ProtoMember(10)]
+        //[ProtoMember(120)]
         //public string zone; //used to identify market we are selling to ?? 
 
         #endregion

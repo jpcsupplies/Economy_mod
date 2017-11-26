@@ -17,7 +17,7 @@
         /// communications classes. A Player will connect to the server, and will automatically download version 2.
         /// We would now have a Client running newer communication classes trying to talk to the Server with older classes.
         /// </remarks>
-        public const int ModCommunicationVersion = 20161106; // This will be based on the date of update.
+        public const int ModCommunicationVersion = 20171126; // This will be based on the date of update.
 
 
         //milestone level A=Alpha B=Beta, dev = development test version or Milestone eg 1.0A Milestone, 1.1A Dev etc
@@ -143,27 +143,27 @@
         /// <summary>
         /// Creating the Sell order.
         /// </summary>
-        Create,
+        Create = 0,
 
         /// <summary>
         /// Accepting the sell order.
         /// </summary>
-        Accept,
+        Accept = 1,
 
         /// <summary>
         /// Seller has cancelled the sell order.
         /// </summary>
-        Cancel,
+        Cancel = 2,
 
         /// <summary>
         /// Buyer has rejected the sell order.
         /// </summary>
-        Deny,
+        Deny = 3,
 
         /// <summary>
         /// Items to be collected from the sell order (can be returned to the seller, or buyer).
         /// </summary>
-        Collect
+        Collect = 4
     }
 
     [Flags]
@@ -179,22 +179,22 @@
     /// Names need to be explicitly set, as they will be written to the Data file.
     /// Otherwise if we change the names, they will break.
     /// </summary>
-    public enum MarketZoneType
+    public enum MarketZoneType : byte
     {
         /// <summary>
         /// A fixed sphere shaped region in space that does not move or change size.
         /// </summary>
-        FixedSphere,
+        FixedSphere = 0,
 
         /// <summary>
         /// A fixed box shaped region in space that does not move or change size.
         /// </summary>
-        FixedBox,
+        FixedBox = 1,
 
         /// <summary>
         /// A sphere shaped region in space that is centered about an Entity. It does not change size.
         /// </summary>
-        EntitySphere,
+        EntitySphere = 2,
     }
 
     /// <summary>
@@ -202,11 +202,11 @@
     /// </summary>
     public enum NpcMarketManage : byte
     {
-        Add,
-        Delete,
-        List,
-        Rename,
-        Move
+        Add = 0,
+        Delete = 1,
+        List = 2,
+        Rename = 3,
+        Move = 4
     }
 
     /// <summary>
@@ -214,24 +214,24 @@
     /// </summary>
     public enum PlayerMarketManage : byte
     {
-        List,
-        Register,
-        ConfirmRegister,
-        Relink,
-        ConfirmRelink,
-        Unregister,
-        Open,
-        Close,
-        Load,
-        Save,
-        FactionMode,
-        BuyPrice,
-        SellPrice,
-        Stock,
-        Unstock,
-        Restrict,
-        Limit,
-        Blacklist,
+        List = 0,
+        Register = 1,
+        ConfirmRegister = 2,
+        Relink = 3,
+        ConfirmRelink = 4,
+        Unregister = 5,
+        Open = 6,
+        Close = 7,
+        Load = 8,
+        Save = 9,
+        FactionMode = 10,
+        BuyPrice = 11,
+        SellPrice = 12,
+        Stock = 13,
+        Unstock = 14,
+        Restrict = 15,
+        Limit = 16,
+        Blacklist = 17,
     }
 
     /// <summary>
@@ -317,10 +317,9 @@
 
     public enum ClientUpdateAction : byte
     {
-        Account,
-        CurrencyName,
-        TradeNetworkName,
-        TradeZones
+        Account = 0,
+        ServerConfig = 1,
+        TradeZones = 2
     }
 
     public enum MissionType : int
@@ -359,12 +358,12 @@
     /// </summary>
     public enum PlayerMissionManage : byte
     {
-        Test,
-        AddSample,
-        AddMission,
-        SyncMission,
-        DeleteMission,
-        MissionComplete
+        Test = 0,
+        AddSample = 1,
+        AddMission = 2,
+        SyncMission = 3,
+        DeleteMission = 4,
+        MissionComplete = 5
     }
 
     public enum MissionAssignmentType : byte
@@ -372,17 +371,17 @@
         /// <summary>
         /// Anyone can pick up the mission and do it, including players not yet on server.
         /// </summary>
-        Open,
+        Open = 0,
 
         /// <summary>
         /// Only the assigned players can do the mission.
         /// </summary>
-        AssignedPlayers,
+        AssignedPlayers = 1,
 
         /// <summary>
         /// Only players in the assigned factions can do the mission.
         /// </summary>
-        AssignedFactions
+        AssignedFactions = 2
     }
 
     public enum MissionWinRule : byte
@@ -390,11 +389,11 @@
         /// <summary>
         /// All players can finish the mission and recieve the reward.
         /// </summary>
-        AllPlayers,
+        AllPlayers = 0,
 
         /// <summary>
         /// Only the first player will recieve the reward.
         /// </summary>
-        FirstPlayer
+        FirstPlayer = 1
     }
 }

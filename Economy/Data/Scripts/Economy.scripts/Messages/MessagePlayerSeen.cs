@@ -8,7 +8,7 @@
     [ProtoContract]
     public class MessagePlayerSeen : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public string UserName;
 
         public override void ProcessClient()

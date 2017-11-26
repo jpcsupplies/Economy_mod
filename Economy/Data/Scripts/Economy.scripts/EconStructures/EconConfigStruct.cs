@@ -11,6 +11,8 @@
         public EconConfigStruct()
         {
             // Set defaults.
+            // If this class ever has to be serialized to Binary and use ProtoBuf,
+            // all these values will need to be set on the properties, and also have a DefaultValueAttribute of the same value.
             CurrencyName = EconomyConsts.CurrencyName;
             TradeNetworkName = EconomyConsts.TradeNetworkName;
             DefaultStartingBalance = EconomyConsts.DefaultStartingBalance;
@@ -35,129 +37,143 @@
             PriceScaling = EconomyConsts.DefaultPriceScaling;
             ShipTrading = true;
             MinimumLcdDisplayInterval = 1;
+            EnableMissions = false;
         }
+
+        ///// <summary>
+        ///// This will allow the serializer to automatically execute the Action in the same step as Deserialization.
+        ///// </summary>
+        //[ProtoAfterDeserialization] // not yet whitelisted.
+        //void AfterDeserialization() // is not invoked after deserialization from xml
+        //{
+        //}
 
         #region properties
 
         /// <summary>
         /// Name our money.  This is NOT the symbol (ie., $).
         /// </summary>
-        public string CurrencyName;
+        public string CurrencyName { get; set; }
 
         /// <summary>
         /// Name our Trading Network.
         /// </summary>
-        public string TradeNetworkName;
+        public string TradeNetworkName { get; set; }
 
         /// <summary>
         /// The starting balance for all new players.
         /// </summary>
-        public decimal DefaultStartingBalance;
+        public decimal DefaultStartingBalance { get; set; }
 
         /// <summary>
         /// The cost to create a Player trade zone when the zone size is at its Minimum allowed radius.
         /// </summary>
-        public decimal TradeZoneLicenceCostMin;
+        public decimal TradeZoneLicenceCostMin { get; set; }
 
         /// <summary>
         /// The cost to create a Player trade zone when the zone size is at its Maximum allowed radius.
         /// </summary>
-        public decimal TradeZoneLicenceCostMax;
+        public decimal TradeZoneLicenceCostMax { get; set; }
 
         /// <summary>
         /// The cost to create a Player trade zone Minimum allowed radius.
         /// </summary>
-        public decimal TradeZoneMinRadius;
+        public decimal TradeZoneMinRadius { get; set; }
 
         /// <summary>
         /// The cost to create a Player trade zone Maximum allowed radius.
         /// </summary>
-        public decimal TradeZoneMaxRadius;
+        public decimal TradeZoneMaxRadius { get; set; }
 
         /// <summary>
         /// The cost ratio for Relink/Reestablishing a broken trade zone.
         /// </summary>
-        public decimal TradeZoneRelinkRatio;
+        public decimal TradeZoneRelinkRatio { get; set; }
 
         /// <summary>
         /// The maximum number of trade zones a player an create.
         /// </summary>
-        public int MaximumPlayerTradeZones;
+        public int MaximumPlayerTradeZones { get; set; }
 
         /// <summary>
         /// Should players be near each other to trade or should it be unlimited distance.
         /// </summary>
-        public bool LimitedRange;
+        public bool LimitedRange { get; set; }
 
         /// <summary>
         /// Should the NPC market be limited or unlimited supply.
         /// </summary>
-        public bool LimitedSupply;
+        public bool LimitedSupply { get; set; }
 
         /// <summary>
         /// The starting balance for NPC Bankers.
         /// </summary>
-        public decimal NPCStartingBalance;
+        public decimal NPCStartingBalance { get; set; }
 
         /// <summary>
         /// The name that will used to identify the Merchant's server account.
         /// </summary>
-        public string NpcMerchantName;
+        public string NpcMerchantName { get; set; }
 
         /// <summary>
         /// Default range of trade zones.
         /// </summary>
-        public double DefaultTradeRange;
+        public double DefaultTradeRange { get; set; }
 
         /// <summary>
         /// Indicates what language the Servre uses for text in game.
         /// Mapped aginst: VRage.MyLanguagesEnum
         /// Typically retrieved via: MyAPIGateway.Session.Config.Language
         /// </summary>
-        public int Language;
+        public int Language { get; set; }
 
         /// <summary>
         /// Indicates the LCD panels can be used to display Trade zone information.
         /// </summary>
-        public bool EnableLcds;
+        public bool EnableLcds { get; set; }
 
         /// <summary>
         /// Indicates that Npc Tradezones can be used.
         /// They can still be created and managed by the Admin, allowing an admin to take the tradezones offline temporarily to fix any issue.
         /// </summary>
-        public bool EnableNpcTradezones;  // TODO: split buy and sell?  https://github.com/jpcsupplies/Economy_mod/issues/88
+        public bool EnableNpcTradezones { get; set; }  // TODO: split buy and sell?  https://github.com/jpcsupplies/Economy_mod/issues/88
 
         /// <summary>
         /// Indicates the Player Tradezone can be created and used.
         /// </summary>
-        public bool EnablePlayerTradezones;  // TODO: split buy and sell?  https://github.com/jpcsupplies/Economy_mod/issues/88
+        public bool EnablePlayerTradezones { get; set; }  // TODO: split buy and sell?  https://github.com/jpcsupplies/Economy_mod/issues/88
 
         /// <summary>
         /// Indicates that Players can send payments to one another.
         /// </summary>
-        public bool EnablePlayerPayments;
+        public bool EnablePlayerPayments { get; set; }
 
         ///// <summary>
         ///// Indicates that Players can Trade with on another.
         ///// </summary>
-        //public bool EnablePlayerTrades;
+        //public bool EnablePlayerTrades { get; set; }
 
         /// <summary>
         /// This sets if prices should react to available supply.
         /// </summary>
-        public bool PriceScaling;
+        public bool PriceScaling { get; set; }
 
         /// <summary>
         /// This sets if players can buy and sell ships.
         /// </summary>
-        public bool ShipTrading;
+        public bool ShipTrading { get; set; }
 
         /// <summary>
         /// Users can specify the LCD display refresh interval, but this will restrict
         /// the minimum LCD display refresh server wide for all Economy tagged lcds.
         /// This should never be set less than 1.
         /// </summary>
-        public decimal MinimumLcdDisplayInterval;
+        public decimal MinimumLcdDisplayInterval { get; set; }
+
+        /// <summary>
+        /// Indicates that missions can be used.
+        /// </summary>
+        public bool EnableMissions { get; set; }
 
         #endregion
 

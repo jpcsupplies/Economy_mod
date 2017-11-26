@@ -1,13 +1,12 @@
 ﻿namespace Economy.scripts.EconConfig
 {
+    using Economy.scripts.EconStructures;
+    using MissionStructures;
+    using Sandbox.ModAPI;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using Economy.scripts.EconStructures;
-    using MissionStructures;
-    using Sandbox.ModAPI;
-    using VRage.Library.Collections;
     using VRageMath;
 
     public static class EconDataManager

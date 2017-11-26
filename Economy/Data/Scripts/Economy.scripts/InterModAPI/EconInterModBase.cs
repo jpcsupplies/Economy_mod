@@ -1,24 +1,20 @@
 ﻿namespace Economy.scripts.Messages
 {
-    using System;
-    using System.Xml.Serialization;
+    using Economy.scripts;
     using ProtoBuf;
     using Sandbox.ModAPI;
+    using System;
 
     // ALL CLASSES DERIVED FROM MessageBase MUST BE ADDED HERE
-    [XmlInclude(typeof(EconPayUser))]
-    [XmlInclude(typeof(EconPayUserResponse))]
     [ProtoContract]
-    /*
-    // ALL CLASSES DERIVED FROM MessageBase MUST BE ADDED HERE
     [ProtoInclude(1, typeof(EconPayUser))]
-	//*/
+    [ProtoInclude(2, typeof(EconPayUserResponse))]
     public abstract class EconInterModBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(101)]
         public long CallbackModChannel;
 
-        [ProtoMember(2)]
+        [ProtoMember(102)]
         public long TransactionId;
 
         public void InvokeProcessing()
@@ -43,12 +39,8 @@
                 return;
 
             EconomyScript.Instance.ServerLogger.WriteStart("Sending Reponse: {0}, Channel={1}, Transaction={2}", this.GetType().Name, callbackModChannel, transactionId);
-            var xml = MyAPIGateway.Utilities.SerializeToXML(new EconMessageContainer { Content = this });
-            MyAPIGateway.Utilities.SendModMessage(callbackModChannel, xml);
-
-            // Not supported as yet.
-            //byte[] byteData = MyAPIGateway.Utilities.SerializeToBinary(econMessage);
-            //MyAPIGateway.Utilities.SendModMessage(EconInterModId, byteData);
+            byte[] byteData = MyAPIGateway.Utilities.SerializeToBinary(this);
+            MyAPIGateway.Utilities.SendModMessage(callbackModChannel, byteData);
         }
     }
 }

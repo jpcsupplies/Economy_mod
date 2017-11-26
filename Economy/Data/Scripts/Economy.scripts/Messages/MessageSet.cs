@@ -25,46 +25,46 @@
         /// <summary>
         /// The market to set prices in.
         /// </summary>
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public ulong MarketId;
 
         /// <summary>
         /// The market name to set prices in.
         /// </summary>
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public string MarketZone;
 
         /// <summary>
         /// item id we are setting
         /// </summary>
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public string ItemTypeId;
 
         /// <summary>
         /// item subid we are setting
         /// </summary>
-        [ProtoMember(4)]
+        [ProtoMember(204)]
         public string ItemSubTypeName;
 
-        [ProtoMember(5)]
+        [ProtoMember(205)]
         public SetMarketItemType SetType;
 
         /// <summary>
         /// qty of item
         /// </summary>
-        [ProtoMember(6)]
+        [ProtoMember(206)]
         public decimal ItemQuantity;
 
         /// <summary>
         /// unit price to buy item at.
         /// </summary>
-        [ProtoMember(7)]
+        [ProtoMember(207)]
         public decimal ItemBuyPrice;
 
         /// <summary>
         /// unit price to sell item at.
         /// </summary>
-        [ProtoMember(8)]
+        [ProtoMember(208)]
         public decimal ItemSellPrice;
 
         #endregion

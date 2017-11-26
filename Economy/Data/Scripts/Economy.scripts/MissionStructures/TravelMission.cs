@@ -2,6 +2,7 @@
 {
     using ProtoBuf;
     using Sandbox.ModAPI;
+    using VRage;
     using VRage.Game.ModAPI;
     using VRageMath;
 
@@ -24,22 +25,22 @@
         /// <summary>
         /// The location and size of a Spherical area.
         /// </summary>
-        [ProtoMember(20)]
-        public BoundingSphereD? AreaSphere { get; set; }
+        [ProtoMember(201)]
+        public SerializableBoundingSphereD AreaSphere { get; set; }
 
         /// <summary>
         /// The location and size of a Box area.
         /// </summary>
-        [ProtoMember(21)]
-        public BoundingBoxD? AreaBox { get; set; }
+        [ProtoMember(202)]
+        public SerializableBoundingBoxD? AreaBox { get; set; }
 
         public override string GetName()
         {
             Vector3D center = new Vector3D();
-            if (AreaSphere.HasValue)
-                center = AreaSphere.Value.Center;
+            if (AreaSphere != null)
+                center = AreaSphere.Center;
             else if (AreaBox.HasValue)
-                center = AreaBox.Value.Center;
+                center = ((BoundingBoxD)AreaBox.Value).Center;
 
             return string.Format("Investigate location {0:0},{1:0},{2:0}", center.X, center.Y, center.Z);
         }
@@ -47,10 +48,10 @@
         public override string GetDescription()
         {
             Vector3D center = new Vector3D();
-            if (AreaSphere.HasValue)
-                center = AreaSphere.Value.Center;
+            if (AreaSphere != null)
+                center = AreaSphere.Center;
             else if (AreaBox.HasValue)
-                center = AreaBox.Value.Center;
+                center = ((BoundingBoxD)AreaBox.Value).Center;
 
             return string.Format("We need you to investigate location {0:0},{1:0},{2:0}!\r\nHead on over and take a look around.\r\nA GPS point has been created for you.", center.X, center.Y, center.Z);
         }
@@ -66,8 +67,8 @@
             if (MyAPIGateway.Players.TryGetPlayer(PlayerId, out player))
             {
                 Vector3D position = player.GetPosition();
-                return ((AreaSphere.HasValue && AreaSphere.Value.Contains(position) == ContainmentType.Contains) ||
-                        (AreaBox.HasValue && AreaBox.Value.Contains(position) == ContainmentType.Contains));
+                return ((AreaSphere != null && ((BoundingSphereD)AreaSphere).Contains(position) == ContainmentType.Contains) ||
+                        (AreaBox.HasValue && ((BoundingBoxD)AreaBox.Value).Contains(position) == ContainmentType.Contains));
             }
 
             return false;
@@ -76,10 +77,10 @@
         public override void AddGps()
         {
             Vector3D center = new Vector3D();
-            if (AreaSphere.HasValue)
-                center = AreaSphere.Value.Center;
+            if (AreaSphere != null)
+                center = AreaSphere.Center;
             else if (AreaBox.HasValue)
-                center = AreaBox.Value.Center;
+                center = ((BoundingBoxD)AreaBox.Value).Center;
 
             EconConfig.HudManager.GPS(center.X, center.Y, center.Z, "Mission Objective^" + MissionId, GetName(), true);
         }
@@ -87,10 +88,10 @@
         public override void RemoveGps()
         {
             Vector3D center = new Vector3D();
-            if (AreaSphere.HasValue)
-                center = AreaSphere.Value.Center;
+            if (AreaSphere != null)
+                center = AreaSphere.Center;
             else if (AreaBox.HasValue)
-                center = AreaBox.Value.Center;
+                center = ((BoundingBoxD)AreaBox.Value).Center;
 
             EconConfig.HudManager.GPS(center.X, center.Y, center.Z, "Mission Objective^" + MissionId, GetName(), false);
         }

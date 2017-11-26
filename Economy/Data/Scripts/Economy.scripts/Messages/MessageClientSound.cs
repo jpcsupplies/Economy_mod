@@ -10,10 +10,10 @@
     [ProtoContract]
     public class MessageClientSound : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public string CueName;
 
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public float Volume;
 
         // Need to hold onto the emitter.

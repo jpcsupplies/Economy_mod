@@ -1,24 +1,24 @@
 ﻿namespace Economy.scripts.Messages
 {
-    using System;
-    using EconConfig;
     using Economy.scripts;
+    using Economy.scripts.EconConfig;
     using ProtoBuf;
     using Sandbox.ModAPI;
+    using System;
 
     [ProtoContract]
     public class EconPayUser : EconInterModBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public ulong FromPlayerIdentity;
 
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public ulong ToPlayerIdentity;
 
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public decimal TransactionAmount;
 
-        [ProtoMember(4)]
+        [ProtoMember(204)]
         public string Reason;
 
         public override void ProcessServer()

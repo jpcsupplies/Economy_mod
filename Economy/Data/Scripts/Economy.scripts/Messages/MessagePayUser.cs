@@ -9,13 +9,13 @@
     [ProtoContract]
     public class MessagePayUser : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public string ToUserName;
 
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public decimal TransactionAmount;
 
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public string Reason;
 
         public override void ProcessClient()

@@ -25,7 +25,7 @@
     [ProtoContract]
     public class MessageWorth : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public long EntityId;
 
         public static void SendMessage(long entityId)

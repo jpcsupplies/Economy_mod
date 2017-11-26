@@ -1,7 +1,7 @@
 ﻿namespace EconomyAPI
 {
-    using System;
     using Sandbox.ModAPI;
+    using System;
     using VRage.Game;
 
     /// <summary>
@@ -58,19 +58,19 @@
                 return;
             }
 
-            string xml = data as string;
-            if (xml == null)
+            byte[] byteData = data as byte[];
+            if (byteData == null)
             {
                 VRage.Utils.MyLog.Default.WriteLine("Economy API Callback message is invalid. This means indicate the API is out of date, or using an existing subscribed channel.");
                 return;
             }
 
             // "Start Message Serialization";
-            EconMessageContainer message;
+            EconInterModBase message;
 
             try
             {
-                message = MyAPIGateway.Utilities.SerializeFromXML<EconMessageContainer>(xml);
+                message = MyAPIGateway.Utilities.SerializeFromBinary<EconInterModBase>(byteData);
             }
             catch
             {
@@ -80,11 +80,11 @@
 
             // "End Message Serialization";
 
-            if (message != null && message.Content != null)
+            if (message != null /*&& message.Content != null*/)
             {
                 try
                 {
-                    message.Content.ProcessEconomyCallback();
+                    message.ProcessEconomyCallback();
                 }
                 catch (Exception e)
                 {

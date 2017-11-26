@@ -5,9 +5,10 @@
     using EconConfig;
     using EconStructures;
 
+    [ProtoContract]
     public class MessageConnectionRequest : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public int ModCommunicationVersion;
 
         public override void ProcessClient()
@@ -50,8 +51,7 @@
                 ModCommunicationVersion > EconomyConsts.ModCommunicationVersion,
                 new ClientConfig
                 {
-                    TradeNetworkName = EconomyScript.Instance.ServerConfig.TradeNetworkName,
-                    CurrencyName = EconomyScript.Instance.ServerConfig.CurrencyName,
+                    ServerConfig = EconomyScript.Instance.ServerConfig,
                     BankBalance = account.BankBalance,
                     OpenedDate = account.OpenedDate,
                     NewAccount = newAccount,

@@ -6,19 +6,21 @@
     using Sandbox.ModAPI;
     using VRage.Game;
 
+    [ProtoContract]
     public class MessageConnectionResponse : MessageBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public bool OldCommunicationVersion;
 
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public bool NewCommunicationVersion;
 
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public ClientConfig ClientConfig;
 
         public static void SendMessage(ulong steamdId, bool oldCommunicationVersion, bool newCommunicationVersion, ClientConfig clientConfig)
         {
+            EconomyScript.Instance.ServerLogger.WriteInfo("ClientConfig response: Opened {0}  Balance: {1}  Hud: {2}  Missions: {3}", clientConfig.OpenedDate, clientConfig.BankBalance, clientConfig.ClientHudSettings.ShowHud, clientConfig.Missions?.Count ?? -1);
             ConnectionHelper.SendMessageToPlayer(steamdId, new MessageConnectionResponse
             {
                 OldCommunicationVersion = oldCommunicationVersion,
@@ -65,17 +67,17 @@
 
             EconomyScript.Instance.ClientConfig = ClientConfig;
 
-            EconomyScript.Instance.ClientLogger.WriteInfo("ClientConfig received: Opened {0}  Balance: {1}  Hud: {2}", ClientConfig.OpenedDate, ClientConfig.BankBalance, ClientConfig.ClientHudSettings.ShowHud);
+            EconomyScript.Instance.ClientLogger.WriteInfo("ClientConfig received: Opened {0}  Balance: {1}  Hud: {2}  Missions: {3}", ClientConfig.OpenedDate, ClientConfig.BankBalance, ClientConfig.ClientHudSettings.ShowHud, ClientConfig.Missions?.Count ?? -1);
 
             #region Initialise trade network hud
 
             // Set's up the hud for use.
-            MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyScript.Instance.ClientConfig.TradeNetworkName;
+            MyAPIGateway.Utilities.GetObjectiveLine().Title = EconomyScript.Instance.ClientConfig.ServerConfig.TradeNetworkName;
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Clear();
             MyAPIGateway.Utilities.GetObjectiveLine().Objectives.Add("");
 
             MyAPIGateway.Utilities.ShowMessage("Economy", "Trade Network Connected! Type '/hud on' to display status.");
-            MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} System!", EconomyScript.Instance.ClientConfig.TradeNetworkName);
+            MyAPIGateway.Utilities.ShowMessage("Economy", "Welcome to the {0} System!", EconomyScript.Instance.ClientConfig.ServerConfig.TradeNetworkName);
             MyAPIGateway.Utilities.ShowMessage("Economy", "Type '/ehelp' for more informations about available commands");
 
             // if we need to switch to next mission use this MyAPIGateway.Utilities.GetObjectiveLine().AdvanceObjective();

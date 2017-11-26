@@ -12,9 +12,10 @@
         Success = 5
     }
 
+    [ProtoContract]
     public class EconPayUserResponse : EconInterModBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public EconPayUserMessage Message;
 
         public override void ProcessServer()

@@ -2,18 +2,19 @@
 {
     using ProtoBuf;
 
+    [ProtoContract]
     public class EconPayUser : EconInterModBase
     {
-        [ProtoMember(1)]
+        [ProtoMember(201)]
         public ulong FromPlayerIdentity;
 
-        [ProtoMember(2)]
+        [ProtoMember(202)]
         public ulong ToPlayerIdentity;
 
-        [ProtoMember(3)]
+        [ProtoMember(203)]
         public decimal TransactionAmount;
 
-        [ProtoMember(4)]
+        [ProtoMember(204)]
         public string Reason;
 
         /// <summary>
