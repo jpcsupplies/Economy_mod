@@ -92,6 +92,7 @@ namespace Economy.scripts
             MyAPIGateway.Players.GetAllIdentites(listIdentites, p => p.IdentityId == player.IdentityId);
             return listIdentites.FirstOrDefault();
         }
+
         public static bool TryGetPlayer(this IMyPlayerCollection collection, ulong steamId, out IMyPlayer player)
         {
             var players = new List<IMyPlayer>();

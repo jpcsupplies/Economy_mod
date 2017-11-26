@@ -20,7 +20,11 @@
 
         public static void SendMessage(ulong steamdId, bool oldCommunicationVersion, bool newCommunicationVersion, ClientConfig clientConfig)
         {
-            EconomyScript.Instance.ServerLogger.WriteInfo("ClientConfig response: Opened {0}  Balance: {1}  Hud: {2}  Missions: {3}", clientConfig.OpenedDate, clientConfig.BankBalance, clientConfig.ClientHudSettings.ShowHud, clientConfig.Missions?.Count ?? -1);
+            EconomyScript.Instance.ServerLogger.WriteInfo("ClientConfig response: Opened {0}  Balance: {1}  Hud: {2}  Missions: {3}", 
+                clientConfig.OpenedDate, 
+                clientConfig.BankBalance, 
+                clientConfig.ClientHudSettings.ShowHud, 
+                clientConfig.Missions?.Count ?? -1);
             ConnectionHelper.SendMessageToPlayer(steamdId, new MessageConnectionResponse
             {
                 OldCommunicationVersion = oldCommunicationVersion,

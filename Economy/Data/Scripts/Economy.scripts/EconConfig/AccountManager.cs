@@ -63,10 +63,16 @@
         {
             var create = DateTime.Now; // Keeps the Date and OpenedDate at the same millisecond on creation.
             //are we creating a player or the NPC trader - this may require finer discrimination if we ever have multiple NPCs
-            if (steamId != EconomyConsts.NpcMerchantId)
-                return new ClientAccountStruct { BankBalance = EconomyScript.Instance.ServerConfig.DefaultStartingBalance, Date = create, NickName = nickName, SteamId = steamId, OpenedDate = create, Language = language };
-            else
-                return new ClientAccountStruct { BankBalance = EconomyScript.Instance.ServerConfig.NPCStartingBalance, Date = create, NickName = nickName, SteamId = steamId, OpenedDate = create, Language = language };
+            return new ClientAccountStruct
+            {
+                BankBalance = (steamId == EconomyConsts.NpcMerchantId ? EconomyScript.Instance.ServerConfig.NPCStartingBalance : EconomyScript.Instance.ServerConfig.DefaultStartingBalance),
+                Date = create,
+                NickName = nickName,
+                SteamId = steamId,
+                OpenedDate = create,
+                Language = language,
+                ClientHudSettings = new ClientHudSettingsStruct(),
+            };
         }
 
         public static void ResetAccount(ClientAccountStruct account)

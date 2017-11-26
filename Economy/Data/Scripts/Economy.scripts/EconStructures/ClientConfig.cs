@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using Messages;
     using MissionStructures;
     using ProtoBuf;
 
@@ -70,15 +71,13 @@
         [ProtoMember(9)]
         public string FactionName { get; set; }
 
-
-
         //Hud configuration - needs to be set by client values here are placeholders for testing.
         //If these are being pulled from a client file this will probably cause problems
         //probably should be saved client side
         //probably should get defaults from Economyconsts
         [ProtoMember(10)]
         public ClientHudSettingsStruct ClientHudSettings { get; set; }
-        
+
         // if Hud is off, also dont check xyz, cargo and region in updates
         [ProtoMember(11)]
         public string LazyMissionText = "Mission: Survive | Deadline: Unlimited";
@@ -94,7 +93,8 @@
         /// <summary>
         /// Client side temporary store of active missions for this player.
         /// </summary>
+        /// <remarks>For some reason, the List<T> needs to be created, otherwise <see cref="MessageConnectionResponse"/> will not serialize and pass null. </remarks>
         [ProtoMember(14)]
-        public List<MissionBaseStruct> Missions = new List<MissionBaseStruct>();
+        public List<MissionBaseStruct> Missions { get; set; } = new List<MissionBaseStruct>();
     }
 }
