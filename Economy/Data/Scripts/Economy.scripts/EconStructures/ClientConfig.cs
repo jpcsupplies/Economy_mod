@@ -93,7 +93,8 @@
         /// <summary>
         /// Client side temporary store of active missions for this player.
         /// </summary>
-        /// <remarks>For some reason, the List<T> needs to be created, otherwise <see cref="MessageConnectionResponse"/> will not serialize and pass null. </remarks>
+        /// <remarks>ProtoBuf treats empty collections as null, so they need to be constructed by default,
+        /// otherwise an empty collection will not deserialize.</remarks>
         [ProtoMember(14)]
         public List<MissionBaseStruct> Missions { get; set; } = new List<MissionBaseStruct>();
     }
