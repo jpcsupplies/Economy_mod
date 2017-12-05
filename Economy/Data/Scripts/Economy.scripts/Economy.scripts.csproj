@@ -111,6 +111,7 @@
     <Compile Include="InterModAPI\EconPayUser.cs" />
     <Compile Include="InterModAPI\EconInterModBase.cs" />
     <Compile Include="InterModAPI\EconPayUserResponse.cs" />
+    <Compile Include="Management\TextPanelLogic.cs" />
     <Compile Include="Messages\MessageClientSound.cs" />
     <Compile Include="Messages\MessageHudUpdate.cs" />
     <Compile Include="MissionStructures\BlockCaptureMission.cs" />

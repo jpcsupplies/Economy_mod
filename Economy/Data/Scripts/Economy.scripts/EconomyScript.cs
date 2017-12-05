@@ -168,6 +168,13 @@ namespace Economy.scripts
         /// </summary>
         public readonly Dictionary<long, MessageMarketManagePlayer> PlayerMarketRegister = new Dictionary<long, MessageMarketManagePlayer>();
 
+        public bool IsServerRegistered => _isServerRegistered;
+
+        /// <summary>
+        /// Indicates that the Mod is fully initialized and running.
+        /// </summary>
+        public bool IsReady;
+
         #endregion
 
         #region attaching events and wiring up
@@ -193,6 +200,7 @@ namespace Economy.scripts
                 && MyAPIGateway.Session != null && MyAPIGateway.Utilities.IsDedicated && MyAPIGateway.Multiplayer.IsServer)
             {
                 InitServer();
+                IsReady = true;
                 return;
             }
 
@@ -204,6 +212,7 @@ namespace Economy.scripts
             }
 
             HudManager.UpdateAfterSimulation();
+            IsReady = true;
 
             base.UpdateAfterSimulation();
         }
@@ -438,29 +447,28 @@ namespace Economy.scripts
 
         private void Timer1EventsOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
         {
-            // DO NOT SET ANY IN GAME API CALLS HERE. AT ALL!
-            MyAPIGateway.Utilities.InvokeOnGameThread(delegate
-            {
-                // Recheck main Gateway properties, as the Game world my be currently shutting down when the InvokeOnGameThread is called.
-                if (MyAPIGateway.Players == null || MyAPIGateway.Entities == null || MyAPIGateway.Session == null || MyAPIGateway.Utilities == null)
-                    return;
+            // commented out while there isn't any use.  TODO: remove later if there isn't any more need.
 
-                if (_timer1Block) // prevent other any additional calls into this code while it may still be running.
-                    return;
+            //// DO NOT SET ANY IN GAME API CALLS HERE. AT ALL!
+            //MyAPIGateway.Utilities.InvokeOnGameThread(delegate
+            //{
+            //    // Recheck main Gateway properties, as the Game world my be currently shutting down when the InvokeOnGameThread is called.
+            //    if (MyAPIGateway.Players == null || MyAPIGateway.Entities == null || MyAPIGateway.Session == null || MyAPIGateway.Utilities == null)
+            //        return;
 
-                _timer1Block = true;
-                try
-                {
-                    // Any processing needs to occur in here, as it will be on the main thread, and hopefully thread safe.
-                    LcdManager.UpdateLcds();
-                    //updates hud items that may change at times other than using chat commands
-                    //if (ClientConfig.ShowXYZ || ClientConfig.ShowContractCount || ClientConfig.ShowCargoSpace || ClientConfig.ShowRegion || ClientConfig.ShowFaction) if (!HudManager.UpdateHud()) { MyAPIGateway.Utilities.ShowMessage("Error", "Hud Failed"); }
-                }
-                finally
-                {
-                    _timer1Block = false;
-                }
-            });
+            //    if (_timer1Block) // prevent other any additional calls into this code while it may still be running.
+            //        return;
+
+            //    _timer1Block = true;
+            //    try
+            //    {
+            //        // Any processing needs to occur in here, as it will be on the main thread, and hopefully thread safe.
+            //    }
+            //    finally
+            //    {
+            //        _timer1Block = false;
+            //    }
+            //});
         }
 
         private void Timer10EventsOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)

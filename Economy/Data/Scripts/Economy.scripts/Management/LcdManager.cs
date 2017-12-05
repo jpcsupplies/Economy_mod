@@ -1,8 +1,5 @@
 ﻿namespace Economy.scripts.Management
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using EconConfig;
     using Economy.scripts;
     using Economy.scripts.EconStructures;
@@ -11,49 +8,51 @@
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Interfaces;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using VRage.Game;
     using VRage.Game.ModAPI;
     using VRage.Game.ObjectBuilders.Definitions;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
-    using VRageMath;
 
     public class LcdManager
     {
         private const string UpdateCrashMessage = "This exception may indicate an error in the game or mod code. If this exception continues to appear, then please contact the game developers.";
 
-        public static void UpdateLcds()
-        {
-            if (!EconomyScript.Instance.ServerConfig.EnableLcds)
-                return;
+        //public static void UpdateLcds()
+        //{
+        //    if (!EconomyScript.Instance.ServerConfig.EnableLcds)
+        //        return;
 
-            var players = new List<IMyPlayer>();
-            MyAPIGateway.Players.GetPlayers(players, p => p != null);
-            var updatelist = new HashSet<IMyTextPanel>();
+        //    var players = new List<IMyPlayer>();
+        //    MyAPIGateway.Players.GetPlayers(players, p => p != null);
+        //    var updatelist = new HashSet<IMyTextPanel>();
 
-            foreach (var player in players)
-            {
-                // Establish a visual range of the LCD.
-                // if there are no players closer than this, don't bother updating it.
-                var sphere = new BoundingSphereD(player.GetPosition(), 75);
-                var list = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere);
-                foreach (var block in list)
-                {
-                    // TODO: projected ship check?
-                    var textPanel = block as IMyTextPanel;
-                    if (textPanel != null
-                        && textPanel.IsFunctional
-                        && textPanel.IsWorking
-                        && EconomyConsts.LCDTags.Any(tag => textPanel.CustomName.IndexOf(tag, StringComparison.InvariantCultureIgnoreCase) >= 0))
-                    {
-                        updatelist.Add((IMyTextPanel)block);
-                    }
-                }
-            }
+        //    foreach (var player in players)
+        //    {
+        //        // Establish a visual range of the LCD.
+        //        // if there are no players closer than this, don't bother updating it.
+        //        var sphere = new BoundingSphereD(player.GetPosition(), 75);
+        //        var list = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere);
+        //        foreach (var block in list)
+        //        {
+        //            // TODO: projected ship check?
+        //            var textPanel = block as IMyTextPanel;
+        //            if (textPanel != null
+        //                && textPanel.IsFunctional
+        //                && textPanel.IsWorking
+        //                && EconomyConsts.LCDTags.Any(tag => textPanel.CustomName.IndexOf(tag, StringComparison.InvariantCultureIgnoreCase) >= 0))
+        //            {
+        //                updatelist.Add((IMyTextPanel)block);
+        //            }
+        //        }
+        //    }
 
-            foreach (var textPanel in updatelist)
-                ProcessLcdBlock(textPanel);
-        }
+        //    foreach (var textPanel in updatelist)
+        //        ProcessLcdBlock(textPanel);
+        //}
 
         public static void BlankLcds()
         {
@@ -82,7 +81,7 @@
 
         private enum StartFrom { None, Line, Page };
 
-        private static void ProcessLcdBlock(IMyTextPanel textPanel)
+        public static void ProcessLcdBlock(IMyTextPanel textPanel)
         {
             //counter++;
 
