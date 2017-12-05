@@ -1350,8 +1350,8 @@ namespace Economy.scripts
                 }
                 if (split.Length == 2)
                 {
-                    if (split[1].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowHud = false; MessageClientSound.PlaySound("HudClick"); MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
-                    if (split[1].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowHud = true; MessageClientSound.PlaySound("inithudA"); MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
+                    if (ClientConfig.ClientHudSettings.ShowHud && split[1].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowHud = false; MessageClientSound.PlaySound("HudClick", 0.2f); MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
+                    if (!ClientConfig.ClientHudSettings.ShowHud && split[1].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowHud = true; MessageClientSound.PlaySound("inithudA", 0.2f); MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
                 }
                 if (split.Length == 3)
                 {
