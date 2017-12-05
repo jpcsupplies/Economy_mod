@@ -1,15 +1,15 @@
 ﻿namespace Economy.scripts.Messages
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using EconConfig;
     using Economy.scripts;
     using Economy.scripts.EconStructures;
     using ProtoBuf;
     using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
     using VRage.Game;
     using VRage.Game.ModAPI;
 
@@ -243,7 +243,12 @@
 
                                         foreach (var grid in grids)
                                         {
-                                            grid.ChangeGridOwnership(player.IdentityId, MyOwnershipShareModeEnum.Faction);
+                                            MyAPIGateway.Utilities.InvokeOnGameThread(delegate
+                                            {
+                                                // Need to run this on foreground thread, as Havok will be called 
+                                                // during the disconnect of ConnectorBlock if ownership changes.
+                                                grid.ChangeGridOwnership(player.IdentityId, MyOwnershipShareModeEnum.Faction);
+                                            });
 
                                             foreach (IMyIdentity identity in listIdentites)
                                             {
