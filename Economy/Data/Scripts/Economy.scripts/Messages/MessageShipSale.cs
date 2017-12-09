@@ -52,7 +52,7 @@
             }
 
             var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
-            var character = player.GetCharacter();
+            var character = player.Character;
             if (character == null)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "SHIPSALE", "You are dead. You cant trade ships while dead.");

@@ -1219,7 +1219,7 @@ namespace Economy.scripts
                             tankBlocks.AddRange(blocks.Cast<MyCubeBlock>());
                         }
 
-                        var character = MyAPIGateway.Session.Player.GetCharacter();
+                        var character = MyAPIGateway.Session.Player.Character;
 
                         if (id.TypeId == typeof(MyObjectBuilder_GasProperties))
                         {

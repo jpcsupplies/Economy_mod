@@ -45,7 +45,7 @@
             EconomyScript.Instance.ServerLogger.WriteVerbose("Worth Request for {0} from '{1}'", EntityId, SenderSteamId);
 
             var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
-            var character = player.GetCharacter();
+            var character = player.Character;
             if (character == null)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "WORTH", "You are dead. You get market items values while dead.");

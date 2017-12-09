@@ -287,14 +287,14 @@
         /// <returns></returns>
         public static MarketStruct FindClosestPlayerMarket(IMyPlayer player, bool? isOpen = null)
         {
-            var character = player.GetCharacter();
+            var character = player.Character;
             if (character == null)
             {
                 // Cannot determine the player's location.
                 return null;
             }
 
-            var position = ((IMyEntity)character).GetPosition();
+            var position = character.GetPosition();
             var markets = EconomyScript.Instance.Data.Markets.Where(m => m.MarketId == player.SteamUserId && (!isOpen.HasValue || m.Open == isOpen.Value)).ToArray();
 
             if (markets.Length == 0)

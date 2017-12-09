@@ -1,12 +1,11 @@
 namespace Economy.scripts
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Sandbox.Common.ObjectBuilders;
     using Sandbox.Definitions;
     using Sandbox.Game.Entities;
     using Sandbox.ModAPI;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using VRage;
     using VRage.Game;
     using VRage.Game.Entity;
@@ -96,63 +95,17 @@ namespace Economy.scripts
         public static bool TryGetPlayer(this IMyPlayerCollection collection, ulong steamId, out IMyPlayer player)
         {
             var players = new List<IMyPlayer>();
-            collection.GetPlayers(players, p => p != null);
-
-            player = players.FirstOrDefault(p => p.SteamUserId == steamId);
-            if (player == null)
-                return false;
-
-            return true;
+            collection.GetPlayers(players, p => p.SteamUserId == steamId);
+            player = players.FirstOrDefault();
+            return player != null;
         }
 
         public static bool TryGetPlayer(this IMyPlayerCollection collection, long playerId, out IMyPlayer player)
         {
             var players = new List<IMyPlayer>();
-            collection.GetPlayers(players, p => p != null);
-
-            player = players.FirstOrDefault(p => p.IdentityId == playerId);
-            if (player == null)
-                return false;
-
-            return true;
-        }
-
-        /// <summary>
-        /// Used to find the Character Entity (which is the physical representation in game) from the Player (the network connected human).
-        /// This is a kludge as a proper API doesn't exist, even though the game code could easily expose this and save all this processing we are forced to do.
-        /// </summary>
-        /// <param name="player"></param>
-        /// <returns></returns>
-        public static IMyCharacter GetCharacter(this IMyPlayer player)
-        {
-            var character = player.Controller.ControlledEntity as IMyCharacter;
-            if (character != null)
-                return character;
-
-            var cubeBlock = player.Controller.ControlledEntity as IMyCubeBlock;
-            if (cubeBlock == null)
-                return null;
-
-            var controller = cubeBlock as Sandbox.Game.Entities.MyShipController;
-            if (controller != null)
-                return controller.Pilot;
-
-            // TODO: test conditions for Cryochamber block.
-
-            // Cannot determine Character controlling MyLargeTurretBase as class is internal.
-            // TODO: find if the player is controlling a turret.
-
-            //var charComponent = cubeBlock.Components.Get<MyCharacterComponent>();
-
-            //if (charComponent != null)
-            //{
-            //    var entity = charComponent.Entity;
-            //    MyAPIGateway.Utilities.ShowMessage("Entity", "Good");
-            //}
-            //var turret = cubeBlock as Sandbox.Game.Weapons.MyLargeTurretBase;
-            //var turret = cubeBlock as IMyControllableEntity;
-
-            return null;
+            collection.GetPlayers(players, p => p.IdentityId == playerId);
+            player = players.FirstOrDefault();
+            return player != null;
         }
 
         public static bool IsHost(this IMyPlayer player)
@@ -228,28 +181,13 @@ namespace Economy.scripts
 
         public static IMyInventory GetPlayerInventory(this IMyPlayer player)
         {
-            var character = player.GetCharacter();
-            if (character == null)
-                return null;
-            return character.GetPlayerInventory();
+            var character = player.Character;
+            return character?.GetPlayerInventory();
         }
 
         public static IMyInventory GetPlayerInventory(this IMyCharacter character)
         {
-            if (character == null)
-                return null;
-            return ((MyEntity)character).GetInventory();
-        }
-
-        // copy of Sandbox.ModAPI.Ingame.TerminalBlockExtentions, but without Ingame.
-        public static void ApplyAction(this IMyTerminalBlock block, string actionName)
-        {
-            block.GetActionWithName(actionName).Apply(block);
-        }
-
-        public static void ApplyAction(this Sandbox.ModAPI.Ingame.IMyTerminalBlock block, string actionName)
-        {
-            block.GetActionWithName(actionName).Apply(block);
+            return ((MyEntity)character)?.GetInventory();
         }
 
         #region attached grids

@@ -195,7 +195,7 @@
                         // TODO: later check trade block, cockpit inventory, cockpit ship inventory, inventory of targeted cube.
 
                         // Get the player's inventory, regardless of if they are in a ship, or a remote control cube.
-                        var character = sellingPlayer.GetCharacter();
+                        var character = sellingPlayer.Character;
                         // TODO: do players in Cryochambers count as a valid trading partner? They should be alive, but the connected player may be offline.
                         // I think we'll have to do lower level checks to see if a physical player is Online.
                         if (character == null)

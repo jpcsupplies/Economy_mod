@@ -231,8 +231,8 @@
             //there has to be an easy way to do this, the GPSs use it..
             // TODO: implement. https://github.com/jpcsupplies/Economy_mod/issues/49
 
-            var character1 = player1.GetCharacter();
-            var character2 = player2.GetCharacter();
+            var character1 = player1.Character;
+            var character2 = player2.Character;
 
             if (character1 == null || character2 == null)
                 // one player or the other doesn't exist in game.

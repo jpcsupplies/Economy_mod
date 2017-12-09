@@ -56,7 +56,7 @@
             EconomyScript.Instance.ServerLogger.WriteVerbose("Price List Request for from '{0}'", SenderSteamId);
 
             var player = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
-            var character = player.GetCharacter();
+            var character = player.Character;
             if (character == null)
             {
                 MessageClientTextMessage.SendMessage(SenderSteamId, "PRICELIST", "You are dead. You get market items values while dead.");

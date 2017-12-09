@@ -153,7 +153,7 @@
             List<MarketStruct> markets;
             if (string.IsNullOrEmpty(MarketZone))
             {
-                var character = player.GetCharacter();
+                var character = player.Character;
 
                 if (character == null)
                 {
