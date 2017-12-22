@@ -71,22 +71,29 @@
         [ProtoMember(9)]
         public string FactionName { get; set; }
 
+        /// <summary>
+        /// String to hold the TradeZone name/s that the player is in.
+        /// </summary>
+        [ProtoMember(10)]
+        public string TradeZoneName { get; set; }
+
         //Hud configuration - needs to be set by client values here are placeholders for testing.
         //If these are being pulled from a client file this will probably cause problems
         //probably should be saved client side
         //probably should get defaults from Economyconsts
-        [ProtoMember(10)]
+        [ProtoMember(11)]
         public ClientHudSettingsStruct ClientHudSettings { get; set; }
 
         // if Hud is off, also dont check xyz, cargo and region in updates
-        [ProtoMember(11)]
+        [ProtoMember(12)]
         public string LazyMissionText = "Mission: Survive | Deadline: Unlimited";
 
-        [ProtoMember(12)]
+        [ProtoMember(13)]
         public int CompletedMissions = 0;
 
-        [ProtoMember(13)]
+        [ProtoMember(14)]
         public bool SeenBriefing = false;
+
 
         #endregion hudconfig
 
@@ -95,7 +102,21 @@
         /// </summary>
         /// <remarks>ProtoBuf treats empty collections as null, so they need to be constructed by default,
         /// otherwise an empty collection will not deserialize.</remarks>
-        [ProtoMember(14)]
+        [ProtoMember(15)]
         public List<MissionBaseStruct> Missions { get; set; } = new List<MissionBaseStruct>();
+
+        /// <summary>
+        /// Client side temporary store of active markets for this player.
+        /// </summary>
+        /// <remarks>ProtoBuf treats empty collections as null, so they need to be constructed by default,
+        /// otherwise an empty collection will not deserialize.</remarks>
+        [ProtoMember(16)]
+        public List<MarketStruct> Markets { get; set; } = new List<MarketStruct>();
+
+        /// <summary>
+        /// Array to hold the current TradeZones that the player is in.
+        /// </summary>
+        [ProtoMember(17)]
+        public List<ulong> TradeZones { get; set; } = new List<ulong>();
     }
 }

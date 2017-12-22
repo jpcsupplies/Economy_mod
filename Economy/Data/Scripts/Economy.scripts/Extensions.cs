@@ -38,21 +38,33 @@ namespace Economy.scripts
             return player.PromoteLevel == MyPromoteLevel.Owner ||  // 5 star
                 player.PromoteLevel == MyPromoteLevel.Admin ||     // 4 star
                 player.PromoteLevel == MyPromoteLevel.SpaceMaster; // 3 star
-
-            //// determine if client is admin of Dedicated server.
-            //var clients = MyAPIGateway.Session.GetCheckpoint("null").Clients;
-            //if (clients != null)
-            //{
-            //    var client = clients.FirstOrDefault(c => c.SteamId == player.SteamUserId && c.IsAdmin);
-            //    return client != null;
-            //    // If user is not in the list, automatically assume they are not an Admin.
-            //}
-
-            //// clients is null when it's not a dedicated server.
-            //// Otherwise Treat everyone as Normal Player.
-
-            //return false;
+            // Otherwise Treat everyone as Normal Player.
         }
+
+        public static uint UserSecurityLevel(this IMyPlayer player)
+        {
+            switch (player.PromoteLevel)
+            {
+                // 5 star
+                case MyPromoteLevel.Owner: return ChatCommandSecurity.Owner;
+
+                // 4 star
+                case MyPromoteLevel.Admin: return ChatCommandSecurity.Admin;
+
+                // 3 star
+                case MyPromoteLevel.SpaceMaster: return ChatCommandSecurity.SpaceMaster;
+
+                case MyPromoteLevel.Moderator: return ChatCommandSecurity.Moderator;
+
+                case MyPromoteLevel.Scripter: return ChatCommandSecurity.Scripter;
+
+                // normal player.
+                case MyPromoteLevel.None: return ChatCommandSecurity.User;
+
+                default: return ChatCommandSecurity.User;
+            }
+        }
+
 
         public static void ShowMessage(this IMyUtilities utilities, string sender, string messageText, params object[] args)
         {
@@ -90,6 +102,13 @@ namespace Economy.scripts
             var listIdentites = new List<IMyIdentity>();
             MyAPIGateway.Players.GetAllIdentites(listIdentites, p => p.IdentityId == player.IdentityId);
             return listIdentites.FirstOrDefault();
+        }
+
+        public static IMyPlayer GetPlayer(this IMyPlayerCollection collection, ulong steamId)
+        {
+            var players = new List<IMyPlayer>();
+            collection.GetPlayers(players, p => p.SteamUserId == steamId);
+            return players.FirstOrDefault();
         }
 
         public static bool TryGetPlayer(this IMyPlayerCollection collection, ulong steamId, out IMyPlayer player)
@@ -252,5 +271,30 @@ namespace Economy.scripts
         }
 
         #endregion
+
+        public static bool TryWordParseBool(this string value, out bool result)
+        {
+            bool boolTest;
+            if (bool.TryParse(value, out boolTest))
+            {
+                result = boolTest;
+                return true;
+            }
+
+            if (value.Equals("on", StringComparison.InvariantCultureIgnoreCase) || value.Equals("yes", StringComparison.InvariantCultureIgnoreCase) || value.Equals("1", StringComparison.InvariantCultureIgnoreCase))
+            {
+                result = true;
+                return true;
+            }
+
+            if (value.Equals("off", StringComparison.InvariantCultureIgnoreCase) || value.Equals("no", StringComparison.InvariantCultureIgnoreCase) || value.Equals("0", StringComparison.InvariantCultureIgnoreCase))
+            {
+                result = false;
+                return true;
+            }
+
+            result = false;
+            return false;
+        }
     }
 }

@@ -54,6 +54,10 @@
         //        ProcessLcdBlock(textPanel);
         //}
 
+
+        /// <summary>
+        /// This forces any Economy enabled LCD to blank it's display.
+        /// </summary>
         public static void BlankLcds()
         {
             var entities = new HashSet<IMyEntity>();
@@ -66,8 +70,8 @@
                     continue;
 
                 var blocks = new List<IMySlimBlock>();
-                cubeGrid.GetBlocks(blocks, block => block != null && block.FatBlock != null &&
-                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_TextPanel) &&
+                cubeGrid.GetBlocks(blocks, block => block?.FatBlock != null && 
+                    block.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_TextPanel) && 
                     EconomyConsts.LCDTags.Any(tag => ((IMyTerminalBlock)block.FatBlock).CustomName.IndexOf(tag, StringComparison.InvariantCultureIgnoreCase) >= 0));
 
                 foreach (var block in blocks)
@@ -94,7 +98,7 @@
             {
                 interval = Math.Max((float)EconomyScript.Instance.ServerConfig.MinimumLcdDisplayInterval, textPanel.GetValueFloat("ChangeIntervalSlider"));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 // The game may generate an exception from the GetValueFloat(GetValue) call.
                 EconomyScript.Instance.ServerLogger.WriteException(ex, UpdateCrashMessage);
@@ -165,7 +169,7 @@
 
             bool showHelp = !showAll && !showOre && !showIngot && !showComponent && !showAmmo && !showTools && !showGasses;
 
-       
+
 
             showPrices = !showStock || writer.IsWide;
 
@@ -293,12 +297,14 @@
                     if (startFrom == StartFrom.Line && line - startLine >= writer.WholeDisplayLines - 2)  // counts 2 lines of headers.
                         break; // truncate the display and don't display the text on the bottom edge of the display.
                     writer.AddPublicLeftTrim(buyColumn - 120, kvp.Value);
-                    
+
                     decimal showBuy = kvp.Key.BuyPrice;
                     decimal showSell = kvp.Key.SellPrice;
-                    if ((EconomyScript.Instance.ServerConfig.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))  { 
+                    if ((EconomyScript.Instance.ServerConfig.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))
+                    {
                         showBuy = EconDataManager.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity, PricingBias.Buy);
-                        showSell = EconDataManager.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity, PricingBias.Sell); }
+                        showSell = EconDataManager.PriceAdjust(kvp.Key.SellPrice, kvp.Key.Quantity, PricingBias.Sell);
+                    }
 
                     if (showPrices && showStock)
                     {

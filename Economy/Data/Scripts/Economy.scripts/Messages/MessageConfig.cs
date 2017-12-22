@@ -1,15 +1,13 @@
 ﻿namespace Economy.scripts.Messages
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Text;
     using Economy.scripts;
     using Management;
     using ProtoBuf;
     using Sandbox.ModAPI;
+    using System;
+    using System.Globalization;
+    using System.Text;
     using VRage;
-    using VRage.Game.ModAPI;
 
     /// <summary>
     /// this is to do the actual work of setting new prices and stock levels.
@@ -112,7 +110,7 @@
                         EconomyScript.Instance.ServerConfig.TradeNetworkName = Value;
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "TradeNetworkName updated to: \"{0}\"", EconomyScript.Instance.ServerConfig.TradeNetworkName);
 
-                        UpdateClientsServerConfig();
+                        MessageUpdateClient.SendServerConfig(EconomyScript.Instance.ServerConfig);
                     }
                     break;
 
@@ -128,7 +126,7 @@
                         EconomyScript.Instance.ServerConfig.CurrencyName = Value;
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "CurrencyName updated to: \"{0}\"", EconomyScript.Instance.ServerConfig.CurrencyName);
 
-                        UpdateClientsServerConfig();
+                        MessageUpdateClient.SendServerConfig(EconomyScript.Instance.ServerConfig);
                     }
                     break;
 
@@ -141,10 +139,10 @@
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LimitedRange: {0}", EconomyScript.Instance.ServerConfig.LimitedRange ? "On" : "Off");
                     else
                     {
-                        bool? boolTest = GetBool(Value);
-                        if (boolTest.HasValue)
+                        bool boolTest;
+                        if (Value.TryWordParseBool(out boolTest))
                         {
-                            EconomyScript.Instance.ServerConfig.LimitedRange = boolTest.Value;
+                            EconomyScript.Instance.ServerConfig.LimitedRange = boolTest;
                             MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LimitedRange updated to: {0}", EconomyScript.Instance.ServerConfig.LimitedRange ? "On" : "Off");
                             return;
                         }
@@ -162,10 +160,10 @@
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LimitedSupply: {0}", EconomyScript.Instance.ServerConfig.LimitedSupply ? "On" : "Off");
                     else
                     {
-                        bool? boolTest = GetBool(Value);
-                        if (boolTest.HasValue)
+                        bool boolTest;
+                        if (Value.TryWordParseBool(out boolTest))
                         {
-                            EconomyScript.Instance.ServerConfig.LimitedSupply = boolTest.Value;
+                            EconomyScript.Instance.ServerConfig.LimitedSupply = boolTest;
                             MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "LimitedSupply updated to: {0}", EconomyScript.Instance.ServerConfig.LimitedSupply ? "On" : "Off");
                             return;
                         }
@@ -184,11 +182,11 @@
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnableLcds: {0}", EconomyScript.Instance.ServerConfig.EnableLcds ? "On" : "Off");
                     else
                     {
-                        bool? boolTest = GetBool(Value);
-                        if (boolTest.HasValue)
+                        bool boolTest;
+                        if (Value.TryWordParseBool(out boolTest))
                         {
-                            var clearRefresh = EconomyScript.Instance.ServerConfig.EnableLcds && !boolTest.Value;
-                            EconomyScript.Instance.ServerConfig.EnableLcds = boolTest.Value;
+                            var clearRefresh = EconomyScript.Instance.ServerConfig.EnableLcds && !boolTest;
+                            EconomyScript.Instance.ServerConfig.EnableLcds = boolTest;
                             MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnableLcds updated to: {0}", EconomyScript.Instance.ServerConfig.EnableLcds ? "On" : "Off");
 
                             if (clearRefresh)
@@ -209,15 +207,15 @@
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnableNpcTradezones: {0}", EconomyScript.Instance.ServerConfig.EnableNpcTradezones ? "On" : "Off");
                     else
                     {
-                        bool? boolTest = GetBool(Value);
-                        if (boolTest.HasValue)
+                        bool boolTest;
+                        if (Value.TryWordParseBool(out boolTest))
                         {
-                            var clearRefresh = EconomyScript.Instance.ServerConfig.EnableNpcTradezones && !boolTest.Value;
-                            EconomyScript.Instance.ServerConfig.EnableNpcTradezones = boolTest.Value;
+                            var clearRefresh = EconomyScript.Instance.ServerConfig.EnableNpcTradezones != boolTest;
+                            EconomyScript.Instance.ServerConfig.EnableNpcTradezones = boolTest;
                             MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnableNpcTradezones updated to: {0}", EconomyScript.Instance.ServerConfig.EnableNpcTradezones ? "On" : "Off");
 
                             if (clearRefresh)
-                                LcdManager.BlankLcds();
+                                MessageUpdateClient.SendServerTradeZones();
                             return;
                         }
 
@@ -234,15 +232,15 @@
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnablePlayerTradezones: {0}", EconomyScript.Instance.ServerConfig.EnablePlayerTradezones ? "On" : "Off");
                     else
                     {
-                        bool? boolTest = GetBool(Value);
-                        if (boolTest.HasValue)
+                        bool boolTest;
+                        if (Value.TryWordParseBool(out boolTest))
                         {
-                            var clearRefresh = EconomyScript.Instance.ServerConfig.EnablePlayerTradezones && !boolTest.Value;
-                            EconomyScript.Instance.ServerConfig.EnablePlayerTradezones = boolTest.Value;
+                            var clearRefresh = EconomyScript.Instance.ServerConfig.EnablePlayerTradezones != boolTest;
+                            EconomyScript.Instance.ServerConfig.EnablePlayerTradezones = boolTest;
                             MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnablePlayerTradezones updated to: {0}", EconomyScript.Instance.ServerConfig.EnablePlayerTradezones ? "On" : "Off");
 
                             if (clearRefresh)
-                                LcdManager.BlankLcds();
+                                MessageUpdateClient.SendServerTradeZones();
                             return;
                         }
 
@@ -259,15 +257,11 @@
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnablePlayerPayments: {0}", EconomyScript.Instance.ServerConfig.EnablePlayerPayments ? "On" : "Off");
                     else
                     {
-                        bool? boolTest = GetBool(Value);
-                        if (boolTest.HasValue)
+                        bool boolTest;
+                        if (Value.TryWordParseBool(out boolTest))
                         {
-                            var clearRefresh = EconomyScript.Instance.ServerConfig.EnablePlayerPayments && !boolTest.Value;
-                            EconomyScript.Instance.ServerConfig.EnablePlayerPayments = boolTest.Value;
+                            EconomyScript.Instance.ServerConfig.EnablePlayerPayments = boolTest;
                             MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnablePlayerPayments updated to: {0}", EconomyScript.Instance.ServerConfig.EnablePlayerPayments ? "On" : "Off");
-
-                            if (clearRefresh)
-                                LcdManager.BlankLcds();
                             return;
                         }
 
@@ -490,10 +484,10 @@
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "PriceScaling: {0}", EconomyScript.Instance.ServerConfig.PriceScaling ? "On" : "Off");
                     else
                     {
-                        bool? boolTest = GetBool(Value);
-                        if (boolTest.HasValue)
+                        bool boolTest;
+                        if (Value.TryWordParseBool(out boolTest))
                         {
-                            EconomyScript.Instance.ServerConfig.PriceScaling = boolTest.Value;
+                            EconomyScript.Instance.ServerConfig.PriceScaling = boolTest;
                             MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "PriceScaling updated to: {0}", EconomyScript.Instance.ServerConfig.PriceScaling ? "On" : "Off");
                             return;
                         }
@@ -511,10 +505,10 @@
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "ShipTrading: {0}", EconomyScript.Instance.ServerConfig.ShipTrading ? "On" : "Off");
                     else
                     {
-                        bool? boolTest = GetBool(Value);
-                        if (boolTest.HasValue)
+                        bool boolTest;
+                        if (Value.TryWordParseBool(out boolTest))
                         {
-                            EconomyScript.Instance.ServerConfig.ShipTrading = boolTest.Value;
+                            EconomyScript.Instance.ServerConfig.ShipTrading = boolTest;
                             MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "ShipTrading updated to: {0}", EconomyScript.Instance.ServerConfig.ShipTrading ? "On" : "Off");
                             return;
                         }
@@ -569,14 +563,13 @@
                         MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnableMissions: {0}", EconomyScript.Instance.ServerConfig.EnableMissions ? "On" : "Off");
                     else
                     {
-                        bool? boolTest = GetBool(Value);
-                        if (boolTest.HasValue)
+                        bool boolTest;
+                        if (Value.TryWordParseBool(out boolTest))
                         {
-                            var clearRefresh = EconomyScript.Instance.ServerConfig.EnableMissions && !boolTest.Value;
-                            EconomyScript.Instance.ServerConfig.EnableMissions = boolTest.Value;
+                            EconomyScript.Instance.ServerConfig.EnableMissions = boolTest;
                             MessageClientTextMessage.SendMessage(SenderSteamId, "ECONFIG", "EnableMissions updated to: {0}", EconomyScript.Instance.ServerConfig.EnableMissions ? "On" : "Off");
 
-                            UpdateClientsServerConfig();
+                            MessageUpdateClient.SendServerConfig(EconomyScript.Instance.ServerConfig);
                             return;
                         }
 
@@ -622,30 +615,6 @@
 
                     #endregion
             }
-        }
-
-        private void UpdateClientsServerConfig()
-        {
-            // push updates to all clients.
-            var listPlayers = new List<IMyPlayer>();
-            MyAPIGateway.Players.GetPlayers(listPlayers);
-
-            foreach (var connectedPlayer in listPlayers)
-                MessageUpdateClient.SendServerConfig(connectedPlayer.SteamUserId, EconomyScript.Instance.ServerConfig);
-        }
-
-        private bool? GetBool(string value)
-        {
-            bool boolTest;
-            if (bool.TryParse(value, out boolTest))
-                return boolTest;
-
-            if (value.Equals("off", StringComparison.InvariantCultureIgnoreCase) || value == "0")
-                return false;
-
-            if (value.Equals("on", StringComparison.InvariantCultureIgnoreCase) || value == "1")
-                return true;
-            return null;
         }
     }
 }

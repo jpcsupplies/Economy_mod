@@ -17,7 +17,7 @@
         /// communications classes. A Player will connect to the server, and will automatically download version 2.
         /// We would now have a Client running newer communication classes trying to talk to the Server with older classes.
         /// </remarks>
-        public const int ModCommunicationVersion = 20171126; // This will be based on the date of update.
+        public const int ModCommunicationVersion = 20171213; // This will be based on the date of update.
 
 
         //milestone level A=Alpha B=Beta, dev = development test version or Milestone eg 1.0A Milestone, 1.1A Dev etc
@@ -317,9 +317,11 @@
 
     public enum ClientUpdateAction : byte
     {
-        Account = 0,
-        ServerConfig = 1,
-        TradeZones = 2
+        ClientConfig = 0,
+        Account = 1,
+        ServerConfig = 2,
+        Missions = 3,
+        AllTradeZones = 4,
     }
 
     public enum MissionType : int
@@ -395,5 +397,38 @@
         /// Only the first player will recieve the reward.
         /// </summary>
         FirstPlayer = 1
+    }
+
+    public class ChatCommandSecurity
+    {
+        /// <summary>
+        /// The normal average player can access these command
+        /// </summary>
+        public const uint User = 0;
+
+        /// <summary>
+        /// Can edit scripts when the scripter role is enabled
+        /// </summary>
+        public const uint Scripter = 50;
+
+        /// <summary>
+        /// Can kick and ban players, has access to 'Show All Players' option in Admin Tools menu
+        /// </summary>
+        public const uint Moderator = 80;
+
+        /// <summary>
+        /// Has access to Space Master tools
+        /// </summary>
+        public const uint SpaceMaster = 100;
+
+        /// <summary>
+        /// Has access to Admin tools
+        /// </summary>
+        public const uint Admin = 200;
+
+        /// <summary>
+        /// Admins listed in server config, cannot be demoted
+        /// </summary>
+        public const uint Owner = 500;
     }
 }

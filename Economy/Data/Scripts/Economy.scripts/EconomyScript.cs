@@ -138,7 +138,8 @@ namespace Economy.scripts
 
         private readonly Action<object> _interModMessageHandler = new Action<object>(InterModHandleMessage);
 
-        public static EconomyScript Instance;
+        internal static EconomyScript Instance;
+        internal bool IsConnected;
 
         public TextLogger ServerLogger = new TextLogger(); // This is a dummy logger until Init() is called.
         public TextLogger ClientLogger = new TextLogger(); // This is a dummy logger until Init() is called.
@@ -895,7 +896,7 @@ namespace Economy.scripts
                     return true;
                 }
 
-                MyAPIGateway.Utilities.ShowMessage("TradeZone", "Nothing to do? Valid Options register, unregister, move, factionmode, buy/sell|blacklist/restrict/limit,");
+                MyAPIGateway.Utilities.ShowMessage("TradeZone", "Nothing to do? Valid Options register, unregister, open, close, factionmode, buy/sell|blacklist/restrict/limit,");
 
                 
                  //everything else goes here - note this doesnt allow for spaces in names
@@ -1346,6 +1347,7 @@ namespace Economy.scripts
             //command to allow players to customise their hud?             
             if (split[0].Equals("/hud", StringComparison.InvariantCultureIgnoreCase))
             {
+                bool testval;
                 if (ClientConfig == null)
                 {
                     MyAPIGateway.Utilities.ShowMessage("Warning", "Economy Config has not been received from the Server yet.");
@@ -1358,23 +1360,17 @@ namespace Economy.scripts
                 }
                 if (split.Length == 2)
                 {
-                    if (ClientConfig.ClientHudSettings.ShowHud && split[1].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowHud = false; MessageClientSound.PlaySound("HudClick", 0.2f); MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
-                    if (!ClientConfig.ClientHudSettings.ShowHud && split[1].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowHud = true; MessageClientSound.PlaySound("inithudA", 0.2f); MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
+                    if (ClientConfig.ClientHudSettings.ShowHud && split[1].TryWordParseBool(out testval) && !testval) { ClientConfig.ClientHudSettings.ShowHud = false; MessageClientSound.PlaySound("HudClick", 0.2f); MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
+                    if (!ClientConfig.ClientHudSettings.ShowHud && split[1].TryWordParseBool(out testval) && testval) { ClientConfig.ClientHudSettings.ShowHud = true; MessageClientSound.PlaySound("inithudA", 0.2f); MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
                 }
                 if (split.Length == 3)
                 {
-                    if (split[1].Equals("balance", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowBalance = true; }
-                    if (split[1].Equals("balance", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowBalance = false; }
-                    if (split[1].Equals("region", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowRegion = true; }
-                    if (split[1].Equals("region", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowRegion = false; }
-                    if (split[1].Equals("GPS", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowPosition = true; }
-                    if (split[1].Equals("GPS", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowPosition = false; }
-                    if (split[1].Equals("contracts", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowContractCount = true; }
-                    if (split[1].Equals("contracts", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowContractCount = false; }
-                    if (split[1].Equals("cargo", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowCargoSpace = true; }
-                    if (split[1].Equals("cargo", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowCargoSpace = false; }
-                    if (split[1].Equals("agency", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("on", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowFaction = true; }
-                    if (split[1].Equals("agency", StringComparison.InvariantCultureIgnoreCase) && split[2].Equals("off", StringComparison.InvariantCultureIgnoreCase)) { ClientConfig.ClientHudSettings.ShowFaction = false; }
+                    if (split[1].Equals("balance", StringComparison.InvariantCultureIgnoreCase) && split[2].TryWordParseBool(out testval)) { ClientConfig.ClientHudSettings.ShowBalance = testval; }
+                    if (split[1].Equals("region", StringComparison.InvariantCultureIgnoreCase) && split[2].TryWordParseBool(out testval)) { ClientConfig.ClientHudSettings.ShowRegion = testval; }
+                    if (split[1].Equals("GPS", StringComparison.InvariantCultureIgnoreCase) && split[2].TryWordParseBool(out testval)) { ClientConfig.ClientHudSettings.ShowPosition = testval; }
+                    if (split[1].Equals("contracts", StringComparison.InvariantCultureIgnoreCase) && split[2].TryWordParseBool(out testval)) { ClientConfig.ClientHudSettings.ShowContractCount = testval; }
+                    if (split[1].Equals("cargo", StringComparison.InvariantCultureIgnoreCase) && split[2].TryWordParseBool(out testval)) { ClientConfig.ClientHudSettings.ShowCargoSpace = testval; }
+                    if (split[1].Equals("agency", StringComparison.InvariantCultureIgnoreCase) && split[2].TryWordParseBool(out testval)) { ClientConfig.ClientHudSettings.ShowFaction = testval; }
                 }
 
                 MessageHudUpdate.SendMessage(ClientConfig.ClientHudSettings);

@@ -1,12 +1,11 @@
 ﻿namespace Economy.scripts.EconConfig
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using EconStructures;
     using Messages;
     using MissionStructures;
     using Sandbox.ModAPI;
+    using System.Collections.Generic;
+    using System.Linq;
     using VRage.Game.ModAPI;
     using VRageMath;
 
@@ -20,6 +19,7 @@
     {
         private static int _hudCounter;
         private static int _missionCounter;
+        private static bool _initialUpdate = true;
 
         static HudManager()
         {
@@ -39,6 +39,7 @@
             if (_missionCounter > 200)
             {
                 UpdateMission();
+                DisplayHud100();
                 _missionCounter = 0;
             }
         }
@@ -83,9 +84,7 @@
                 if (clientConfig.HudReadout != null)
                 {
                     // if the player does not have a controlable body yet, no point displaying a hud.
-                    if (MyAPIGateway.Session.Player.Controller != null
-                        && MyAPIGateway.Session.Player.Controller.ControlledEntity != null
-                        && MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity != null)
+                    if (MyAPIGateway.Session.Player.Controller?.ControlledEntity?.Entity != null)
                     {
                         Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
 
@@ -95,7 +94,8 @@
                             position.X,
                             position.Y,
                             position.Z,
-                            clientConfig.FactionName);
+                            clientConfig.FactionName,
+                            clientConfig.TradeZoneName);
                     }
                 }
 
@@ -118,6 +118,62 @@
             }
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;  //using title not mission text now
         }
+
+        /// <summary>
+        /// This is for more complex and CPU intensive check that should be run less often.
+        /// </summary>
+        private static void DisplayHud100()
+        {
+            ClientConfig clientConfig = EconomyScript.Instance.ClientConfig;
+
+            // client config has not been received from server yet.
+            if (clientConfig == null)
+                return;
+
+            if (clientConfig.ClientHudSettings.ShowHud && clientConfig.HudReadout != null)
+            {
+                // if the player does not have a controlable body yet, no point displaying a hud.
+                if (MyAPIGateway.Session.Player.Controller?.ControlledEntity?.Entity != null)
+                {
+                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
+
+                    if (clientConfig.ClientHudSettings.ShowRegion)
+                    {
+                        string tradeZoneName = "None";
+                        List<ulong> tradeZones = new List<ulong>();
+                        // Get tradezone from player current position.
+                        List<MarketStruct> markets = MarketManager.ClientFindMarketsFromLocation(
+                            clientConfig.Markets,
+                            position,
+                            clientConfig.ServerConfig.EnablePlayerTradezones,
+                            clientConfig.ServerConfig.EnableNpcTradezones);
+
+                        if (markets.Count > 0)
+                        {
+                            tradeZoneName = markets.Select(m => m.DisplayName).Aggregate((current, next) => current + ", " + next);
+                        }
+                        bool newZoneDetected = false;
+                        foreach (MarketStruct market in markets)
+                        {
+                            newZoneDetected |= !clientConfig.TradeZones.Contains(market.MarketId);
+                            tradeZones.Add(market.MarketId);
+                        }
+
+                        clientConfig.TradeZoneName = tradeZoneName;
+                        clientConfig.TradeZones = tradeZones;
+
+                        // don't play sound if this is the first update of hud.
+                        if (newZoneDetected && !_initialUpdate)
+                        {
+                            // play sound on NEW zone.
+                            MessageClientSound.PlaySound("tradezonedetA", 0.2f);
+                        }
+                    }
+                    _initialUpdate = false;
+                }
+            }
+        }
+
 
         /// <summary>
         /// This will update values to appear on the hud.
@@ -156,30 +212,20 @@
                 string readout = clientConfig.ServerConfig.TradeNetworkName + ": ";
                 if (clientConfig.ClientHudSettings.ShowBalance) readout += "{0:#,##0.0000} {1}";
 
-                string tradeZoneName = "Unknown";
-                if (MyAPIGateway.Session.Player.Controller != null
-                    && MyAPIGateway.Session.Player.Controller.ControlledEntity != null
-                    && MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity != null)
-                {
-                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-                    // TODO: Get tradezone from player current position.
-                }
-
-                if (clientConfig.ClientHudSettings.ShowRegion) readout += " | Trade region: " + tradeZoneName;
-
+                if (clientConfig.ClientHudSettings.ShowRegion)
+                    readout += " | Trade region: {6}";
                 if (clientConfig.ClientHudSettings.ShowPosition)
                     readout += " | " + "X: {2:F0} Y: {3:F0} Z: {4:F0}";
 
                 if (clientConfig.ClientHudSettings.ShowContractCount)
-                    readout += " | Tasks: " + (clientConfig.CompletedMissions-1) + " of 2";
+                    readout += " | Tasks: " + (clientConfig.CompletedMissions - 1) + " of 2";
                 if (clientConfig.ClientHudSettings.ShowCargoSpace)
                     readout += " | Cargo ? of ?";
                 if (clientConfig.ClientHudSettings.ShowFaction)
                 {
                     string faction = "Free agent";
-                    IMyFaction plFaction;
-                    
-                    plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.IdentityId);
+                    // TODO: find an event triggered by Faction change to update the hud detail.
+                    IMyFaction plFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(MyAPIGateway.Session.Player.IdentityId);
                     if (plFaction != null)
                     {
                         faction = plFaction.Name;  //should this show tag or full name? depends on screen size i suppose
@@ -225,7 +271,7 @@
             }
         }
 
-        public static void GPS(double x,double y, double z, string name, string description, bool create)
+        public static void GPS(double x, double y, double z, string name, string description, bool create)
         {
             //make a gps point for the objective.  eg GPS(x,y,z,name,description,true)
             //remove an existing GPS point  eg GPS(x,y,z,name,description,false)

@@ -23,7 +23,7 @@
         public bool ShowBalance { get; set; } = true;
 
         /// <summary>
-        /// Shows the Region in the hud.
+        /// Shows the Trade Zone Region name in the hud.
         /// </summary>
         [ProtoMember(3)]
         [DefaultValue(false)]

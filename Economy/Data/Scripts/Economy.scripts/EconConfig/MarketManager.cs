@@ -215,7 +215,7 @@
                             continue;
                         }
 
-                        var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, market.MarketZoneSphere.HasValue ? market.MarketZoneSphere.Value.Radius : 1);
+                        var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, market.MarketZoneSphere?.Radius ?? 1);
                         if (sphere.Contains(position) == ContainmentType.Contains)
                             list.Add(market);
                         break;
@@ -223,9 +223,9 @@
                     case MarketZoneType.FixedSphere:
                         if (!EconomyScript.Instance.ServerConfig.EnableNpcTradezones)
                             continue;
-                        if (!market.MarketZoneSphere.HasValue)
+                        if (market.MarketZoneSphere == null)
                             continue;
-                        if (market.MarketZoneSphere.Value.Contains(position) == ContainmentType.Contains)
+                        if (((BoundingSphereD)market.MarketZoneSphere).Contains(position) == ContainmentType.Contains)
                             list.Add(market);
                         break;
 
@@ -239,6 +239,67 @@
                         break;
                 }
             }
+            return list;
+        }
+
+        /// <summary>
+        /// Finds all available markets that are within range that can be traded with.
+        /// This is onyl called from the Client side, so any configuration must be passed in.
+        /// </summary>
+        public static List<MarketStruct> ClientFindMarketsFromLocation(List<MarketStruct> markets, Vector3D position,
+                        bool enablePlayerTradezones, bool enableNpcTradezones)
+        {
+            var list = new List<MarketStruct>();
+            foreach (var market in markets)
+            {
+                if (!market.Open)
+                    continue;
+
+                switch (market.MarketZoneType)
+                {
+                    case MarketZoneType.EntitySphere:
+                        if (!enablePlayerTradezones)
+                            continue;
+                        if (market.EntityId == 0 || !MyAPIGateway.Entities.EntityExists(market.EntityId))
+                            continue;
+                        IMyEntity entity;
+                        if (!MyAPIGateway.Entities.TryGetEntityById(market.EntityId, out entity))
+                            // Not in range of player, or no longer exists.
+                            continue;
+                        if (entity.Closed || entity.MarkedForClose)
+                            // Not in range of player, or no longer exists.
+                            continue;
+                        IMyBeacon beacon = entity as IMyBeacon;
+                        if (beacon == null)
+                            continue;
+                        if (!beacon.IsWorking)
+                            continue;
+
+                        var sphere = new BoundingSphereD(entity.WorldMatrix.Translation, market.MarketZoneSphere?.Radius ?? 1);
+                        if (sphere.Contains(position) == ContainmentType.Contains)
+                            list.Add(market);
+                        break;
+
+                    case MarketZoneType.FixedSphere:
+                        if (!enableNpcTradezones)
+                            continue;
+                        if (market.MarketZoneSphere == null)
+                            continue;
+                        if (((BoundingSphereD)market.MarketZoneSphere).Contains(position) == ContainmentType.Contains)
+                            list.Add(market);
+                        break;
+
+                    case MarketZoneType.FixedBox:
+                        if (!enableNpcTradezones)
+                            continue;
+                        if (!market.MarketZoneBox.HasValue)
+                            continue;
+                        if (market.MarketZoneBox.Value.Contains(position) == ContainmentType.Contains)
+                            list.Add(market);
+                        break;
+                }
+            }
+
             return list;
         }
 

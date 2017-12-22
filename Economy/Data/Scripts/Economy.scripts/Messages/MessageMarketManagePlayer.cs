@@ -253,7 +253,7 @@
                                 if (beacon == null)
                                     destroyed = true;
 
-                                var radius = market.MarketZoneSphere.HasValue ? market.MarketZoneSphere.Value.Radius : 1;
+                                var radius = market.MarketZoneSphere?.Radius ?? 1;
 
                                 // TODO: should add a basic stock count. total sum of items in the market.
 
@@ -540,6 +540,7 @@
                         }
 
                         EconomyScript.Instance.Data.Markets.Remove(market);
+                        MessageUpdateClient.SendServerTradeZones();
                         MessageClientTextMessage.SendMessage(SenderSteamId, "TZ UNREGISTER", "The market '{0}' has been removed.", MarketName);
                     }
                     break;
@@ -584,6 +585,7 @@
                         }
 
                         market.Open = true;
+                        MessageUpdateClient.SendServerTradeZones();
                         MessageClientTextMessage.SendMessage(SenderSteamId, "TZ OPEN", "Market '{0}' has been opened for trade.", market.DisplayName);
                     }
                     break;
@@ -628,6 +630,7 @@
                         }
 
                         market.Open = false;
+                        MessageUpdateClient.SendServerTradeZones();
                         MessageClientTextMessage.SendMessage(SenderSteamId, "TZ CLOSE", "Market '{0}' has been closed for trade.", market.DisplayName);
                     }
                     break;

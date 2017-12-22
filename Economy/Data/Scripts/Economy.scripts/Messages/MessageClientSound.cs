@@ -65,7 +65,7 @@
         /// <param name="soundName"></param>
         /// <param name="position"></param>
         /// <param name="volume"></param>
-        public static void PlaySoundFrom(string soundName, Vector3D position, float volume = 1f)
+        public static void PlaySoundFrom(string soundName, Vector3D position, float? volume = null)
         {
             var emitter = new MyEntity3DSoundEmitter(null)
             {
@@ -88,7 +88,7 @@
         /// </summary>
         /// <param name="soundName">The Audio cue to play.</param>
         /// <param name="volume">The audio volume.</param>
-        public static void PlaySound(string soundName, float volume = 1.0f)
+        public static void PlaySound(string soundName, float? volume = null)
         {
             var controlled = MyAPIGateway.Session?.ControlledObject?.Entity;
 
