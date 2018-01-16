@@ -588,8 +588,8 @@
                     {
                         EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell Collect or /collect started by Steam Id '{0}'.", SenderSteamId);
                         var collectableOrders = EconomyScript.Instance.Data.OrderBook.Where(e =>
-                            (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellTimedout)
-                            || (e.TraderId == SenderSteamId && e.TradeState == TradeState.Holding)
+                        (e.TraderId == SenderSteamId && e.TradeState == TradeState.Holding)
+                            || (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellTimedout)
                             || (e.TraderId == SenderSteamId && e.TradeState == TradeState.SellRejected)
                             || (e.OptionalId == SenderSteamId.ToString() && e.TradeState == TradeState.SellAccepted)).ToArray();
 
@@ -604,7 +604,7 @@
                         // TODO: this is just for debugging until the message below are completed....
                         //MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are collecting items from {0} order/s.", collectableOrders.Length);
 
-                        foreach (var order in collectableOrders)
+                        foreach (OrderBookStruct order in collectableOrders)
                         {
                             MyDefinitionBase definition = null;
                             MyObjectBuilderType result;
@@ -623,7 +623,35 @@
                                 continue;
                             }
 
-                            EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- adding to inventories.", SenderSteamId);
+                            if (order.TradeState == TradeState.Holding && order.MarketId != 0)
+                            {
+                                MarketStruct market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.MarketId == order.MarketId);
+                                if (market == null)
+                                {
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", $"Market Unavailable. Unable to collect {order.Price * order.Quantity} worth of {definition.GetDisplayName()} ({order.Quantity} units)");
+                                    continue;
+                                }
+
+                                var character = collectingPlayer.Character;
+                                if (character == null)
+                                {
+                                    // Player has no body. Could mean they are dead.
+                                    // Either way, there is no inventory.
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "You are dead. You cannot trade while dead.");
+                                    EconomyScript.Instance.ServerLogger.WriteVerbose($"Action /collect aborted by Steam Id '{SenderSteamId}' -- player is dead.");
+                                    return;
+                                }
+
+                                var markets = MarketManager.FindMarketsFromLocation(character.WorldMatrix.Translation);
+
+                                if (!(markets.Any(m => m.MarketId == market.MarketId)))
+                                {
+                                    MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", $"'{market.DisplayName}' is out of range. Unable to collect {order.Quantity} unit of {definition.GetDisplayName()}.");
+                                    continue;
+                                }
+                            }
+
+                            EconomyScript.Instance.ServerLogger.WriteVerbose($"Action /Sell finalizing by Steam Id '{SenderSteamId}' -- adding to inventories.");
                             var remainingToCollect = MessageSell.AddToInventories(collectingPlayer, order.Quantity, definition.Id);
                             var collected = order.Quantity - remainingToCollect;
 

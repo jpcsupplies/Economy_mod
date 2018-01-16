@@ -185,6 +185,7 @@
             var position = ((IMyEntity)character).WorldMatrix.Translation;
 
             MarketItemStruct marketItem = null;
+            ulong marketId = 0;
             
             if (BuyFromMerchant || UseBankSellPrice)
             {
@@ -206,6 +207,7 @@
                     return;
                 }
 
+                marketId = market.MarketId;
                 accountToSell = AccountManager.FindAccount(market.MarketId);
 
                 marketItem = market.MarketItems.FirstOrDefault(e => e.TypeId == ItemTypeId && e.SubtypeName == ItemSubTypeName);
@@ -283,7 +285,7 @@
 
                     if (remainingToCollect > 0)
                     {
-                        MarketManager.CreateStockHeld(buyingPlayer.SteamUserId, ItemTypeId, ItemSubTypeName, remainingToCollect, ItemPrice);
+                        MarketManager.CreateStockHeld(marketId, buyingPlayer.SteamUserId, ItemTypeId, ItemSubTypeName, remainingToCollect, ItemPrice);
                         // TODO: there should be a common command to collect items. Not use /sell.
                         MessageClientTextMessage.SendMessage(SenderSteamId, "BUY", "There are {0} remaining to collect. Use '/collect'", remainingToCollect);
                     }

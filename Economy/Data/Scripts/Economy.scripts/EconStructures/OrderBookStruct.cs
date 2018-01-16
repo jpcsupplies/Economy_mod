@@ -12,6 +12,12 @@
         public DateTime Created { get; set; }
 
         /// <summary>
+        /// Market from which a player bought an item.
+        /// TODO: determine if this is needed for Player-to-player trade instead of the current OptionalId.
+        /// </summary>
+        public ulong MarketId { get; set; }
+
+        /// <summary>
         /// SteamId of seller, or wanted to buy.
         /// </summary>
         public ulong TraderId { get; set; }

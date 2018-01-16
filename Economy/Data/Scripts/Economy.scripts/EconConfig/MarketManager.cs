@@ -98,11 +98,12 @@
             EconomyScript.Instance.Data.OrderBook.Add(order);
         }
 
-        public static void CreateStockHeld(ulong sellerId, string goodsTypeId, string goodsSubtypeName, decimal quantity, decimal price)
+        public static void CreateStockHeld(ulong marketId, ulong sellerId, string goodsTypeId, string goodsSubtypeName, decimal quantity, decimal price)
         {
             var order = new OrderBookStruct
             {
                 Created = DateTime.Now,
+                MarketId = marketId,
                 TraderId = sellerId,
                 TypeId = goodsTypeId,
                 SubtypeName = goodsSubtypeName,
