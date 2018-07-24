@@ -776,8 +776,8 @@
       <TypeId>MyObjectBuilder_GasProperties</TypeId>
       <SubtypeName>Hydrogen</SubtypeName>
       <Quantity>10000</Quantity>
-      <SellPrice>0.003</SellPrice>
-      <BuyPrice>0.0025</BuyPrice>
+      <SellPrice>0.03</SellPrice>
+      <BuyPrice>0.025</BuyPrice>
       <IsBlacklisted>true</IsBlacklisted>
     </MarketItem>
     <MarketItem>
