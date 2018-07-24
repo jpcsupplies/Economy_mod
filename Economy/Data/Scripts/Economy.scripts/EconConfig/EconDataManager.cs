@@ -768,16 +768,16 @@
       <TypeId>MyObjectBuilder_GasProperties</TypeId>
       <SubtypeName>Oxygen</SubtypeName>
       <Quantity>10000</Quantity>
-      <SellPrice>10.11</SellPrice>
-      <BuyPrice>8.97</BuyPrice>
+      <SellPrice>0.035</SellPrice>
+      <BuyPrice>0.033</BuyPrice>
       <IsBlacklisted>true</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_GasProperties</TypeId>
       <SubtypeName>Hydrogen</SubtypeName>
       <Quantity>10000</Quantity>
-      <SellPrice>10.11</SellPrice>
-      <BuyPrice>8.97</BuyPrice>
+      <SellPrice>0.003</SellPrice>
+      <BuyPrice>0.0025</BuyPrice>
       <IsBlacklisted>true</IsBlacklisted>
     </MarketItem>
     <MarketItem>
