@@ -1200,19 +1200,29 @@
             //This should prevent the sell (to player) price dropping below any possible reactive price change to the buy (from player) price
             //Ths should be all this logic needs to be production server safe. 
             var x = 0;
+            
+            //Splen's alt pricing system variables
+            //You'll probably want to put this where the other variables are and create an admin command to toggle it
+            bool AltPriceSystem = false;
+            
             do
             {
-                if ((onhand > EconomyScript.Instance.ReactivePricing.Prices[x].PricePoint) && (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange < 1))  //price goes down
-                {
-                    if (bias == PricingBias.Buy) { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange - 0.05m); } // Buy from player price bias too much stock
-                     //else { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange); } // Sell to player price disabled as this can potentially allow players to cheat
-                }
+                //if using the alt price system, adjust both the buy and sell prices, not just one or the other
+                if (AltPriceSystem == true) {price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange)}
                 else
                 {
-                    if ((onhand <= EconomyScript.Instance.ReactivePricing.Prices[x].PricePoint) && (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange > 1)) //price goes up
+                    if ((onhand > EconomyScript.Instance.ReactivePricing.Prices[x].PricePoint) && (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange < 1))  //price goes down
                     {
-                        if (bias == PricingBias.Sell) { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange + 0.05m); } //Sell to player price bias low stock
-                        //else { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange); } // Buy from player price disabled as this can potentially allow players to cheat
+                        if (bias == PricingBias.Buy) { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange - 0.05m); } // Buy from player price bias too much stock
+                         //else { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange); } // Sell to player price disabled as this can potentially allow players to cheat
+                    }
+                    else
+                    {
+                        if ((onhand <= EconomyScript.Instance.ReactivePricing.Prices[x].PricePoint) && (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange > 1)) //price goes up
+                        {
+                            if (bias == PricingBias.Sell) { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange + 0.05m); } //Sell to player price bias low stock
+                            //else { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange); } // Buy from player price disabled as this can potentially allow players to cheat
+                        }
                     }
                 }
                 x++;
