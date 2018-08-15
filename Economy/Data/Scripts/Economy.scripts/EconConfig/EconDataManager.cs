@@ -1208,7 +1208,7 @@
             do
             {
                 //if using the alt price system, adjust both the buy and sell prices, not just one or the other
-                if (AltPriceSystem == true) {price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange}
+                if (AltPriceSystem == true) {price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange)}
                 else
                 {
                     if ((onhand > EconomyScript.Instance.ReactivePricing.Prices[x].PricePoint) && (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange < 1))  //price goes down
