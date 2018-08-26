@@ -22,13 +22,16 @@ namespace Economy.scripts.Management
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
             _objectBuilder = objectBuilder;
-            this.NeedsUpdate |= MyEntityUpdateEnum.EACH_100TH_FRAME;
-
-            if (!_isInitilized)
+            if (MyAPIGateway.Multiplayer.IsServer)
             {
-                // Use this space to hook up events. NOT TO PROCESS ANYTHING.
-                _isInitilized = true;
-                _textPanel = (IMyTextPanel)Entity;
+                this.NeedsUpdate |= MyEntityUpdateEnum.EACH_100TH_FRAME;
+
+                if (!_isInitilized)
+                {
+                    // Use this space to hook up events. NOT TO PROCESS ANYTHING.
+                    _isInitilized = true;
+                    _textPanel = (IMyTextPanel) Entity;
+                }
             }
         }
 
@@ -36,6 +39,7 @@ namespace Economy.scripts.Management
         {
             if (!_isInitilized ||
                 EconomyScript.Instance == null ||
+                EconomyScript.Instance.ServerConfig == null ||
                 !EconomyScript.Instance.IsServerRegistered ||
                 !EconomyScript.Instance.IsReady ||
                 !EconomyScript.Instance.ServerConfig.EnableLcds)

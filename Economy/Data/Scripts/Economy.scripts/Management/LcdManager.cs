@@ -375,7 +375,7 @@
             writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "LongDatePattern: {0}", EconomyScript.ServerCulture.DateTimeFormat.LongDatePattern));
             writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "NumberPattern: {0}", (12345678.910d).ToString("N", EconomyScript.ServerCulture)));
 
-            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "Local Date: {0}", DateTime.Now));
+            writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "Local Date: {0:o}", DateTime.Now));
             writer.AddPublicLine(string.Format(EconomyScript.ServerCulture, "Elapsed Session Time: {0}", MyAPIGateway.Session.ElapsedGameTime()));
         }
 
