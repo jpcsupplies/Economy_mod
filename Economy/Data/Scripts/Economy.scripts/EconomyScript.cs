@@ -189,9 +189,9 @@ namespace Economy.scripts
             if (!_isInitialized && MyAPIGateway.Session != null && MyAPIGateway.Session.Player != null)
             {
                 DebugOn = MyAPIGateway.Session.Player.IsExperimentalCreator();
-                if (MyAPIGateway.Session.OnlineMode.Equals(MyOnlineModeEnum.OFFLINE)) // pretend single player instance is also server.
+                if (MyAPIGateway.Session.IsSinglePlayerOffline()) // pretend single player instance is also server.
                     InitServer();
-                if (!MyAPIGateway.Session.OnlineMode.Equals(MyOnlineModeEnum.OFFLINE) && MyAPIGateway.Multiplayer.IsServer && !MyAPIGateway.Utilities.IsDedicated)
+                else if (!MyAPIGateway.Session.IsSinglePlayerOffline() && MyAPIGateway.Multiplayer.IsServer && !MyAPIGateway.Utilities.IsDedicated)
                     InitServer();
                 InitClient();
             }

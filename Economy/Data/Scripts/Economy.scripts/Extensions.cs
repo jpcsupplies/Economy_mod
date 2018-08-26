@@ -17,6 +17,17 @@ namespace Economy.scripts
     public static class Extensions
     {
         /// <summary>
+        /// This is an overly complex check to avoid issues that Torch develolpers have caused by utilizing the OnlineMode for other purposes.
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsSinglePlayerOffline(this IMySession session)
+        {
+            return session.OnlineMode == MyOnlineModeEnum.OFFLINE
+                   && session.IsServer // it calls MyAPIGateway.Multiplayer.IsServer.
+                   && !MyAPIGateway.Utilities.IsDedicated;
+        }
+
+        /// <summary>
         /// Determines if the player is an Administrator of the active game session.
         /// </summary>
         /// <param name="player"></param>
@@ -24,7 +35,7 @@ namespace Economy.scripts
         public static bool IsAdmin(this IMyPlayer player)
         {
             // Offline mode. You are the only player.
-            if (MyAPIGateway.Session.OnlineMode == MyOnlineModeEnum.OFFLINE)
+            if (MyAPIGateway.Session.IsSinglePlayerOffline())
             {
                 return true;
             }
