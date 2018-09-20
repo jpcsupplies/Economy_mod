@@ -1,29 +1,70 @@
-﻿namespace Economy.scripts.EconConfig
+﻿namespace Economy.scripts
 {
+    using Economy.scripts;
+    using Economy.scripts.EconConfig;
     using Economy.scripts.EconStructures;
-    using MissionStructures;
-    using Sandbox.ModAPI;
+    using Economy.scripts.MissionStructures;
+    using ProtoBuf;
+    using Sandbox.Definitions;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Xml;
+    using System.Xml.Serialization;
     using VRageMath;
 
-    public static class EconDataManager
+    public class EconomyManagerAlt
     {
-        #region Load and save CONFIG
+        private const string ModStoragePath = "515710178.sbm_Economy.scripts";
 
-        public static EconConfigStruct LoadConfig()
+        public bool LoadEconomy(string savePath)
+        {
+            var storagePath = Path.Combine(savePath, savePath);
+            EconomyScript.Instance.ServerConfig = LoadConfig(storagePath);
+            EconomyScript.Instance.ReactivePricing = LoadReactivePricing(storagePath);
+            EconomyScript.Instance.Data = LoadData(storagePath, EconomyScript.Instance.ServerConfig.DefaultPrices);
+            return true;
+        }
+
+        public bool SaveEconomy(string savePath)
+        {
+            //if (Data != null)
+            //{
+            //    EconDataManager.SaveData(Data);
+            //}
+
+            //if (ServerConfig != null)
+            //{
+            //    EconDataManager.SaveConfig(ServerConfig);
+            //}
+
+            //if (ReactivePricing != null)
+            //{
+            //    EconDataManager.SaveReactivePricing(ReactivePricing);
+            //}
+
+
+
+            // TODO: ....
+
+
+
+            return false;
+        }
+
+        private static EconConfigStruct LoadConfig(string storagePath)
         {
             EconConfigStruct config;
             string xmlText;
 
             // new file name and location.
-            if (MyAPIGateway.Utilities.FileExistsInWorldStorage(EconomyConsts.WorldStorageConfigFilename, typeof(EconConfigStruct)))
+            string filename = Path.Combine(storagePath, "Storage", ModStoragePath, EconomyConsts.WorldStorageConfigFilename);
+            if (File.Exists(filename))
             {
-                TextReader reader = MyAPIGateway.Utilities.ReadFileInWorldStorage(EconomyConsts.WorldStorageConfigFilename, typeof(EconConfigStruct));
-                xmlText = reader.ReadToEnd();
-                reader.Close();
+                xmlText = File.ReadAllText(filename);
             }
             else
             {
@@ -41,13 +82,11 @@
 
             try
             {
-                config = MyAPIGateway.Utilities.SerializeFromXML<EconConfigStruct>(xmlText);
-                EconomyScript.Instance.ServerLogger.WriteInfo("Loading existing EconConfigStruct.");
+                config = SerializeFromXML<EconConfigStruct>(xmlText);
             }
             catch
             {
                 // config failed to deserialize.
-                EconomyScript.Instance.ServerLogger.WriteError("Failed to deserialize EconConfigStruct. Creating new EconConfigStruct.");
                 config = InitConfig();
             }
 
@@ -58,23 +97,8 @@
             return config;
         }
 
-        private static void ValidateAndUpdateConfig(EconConfigStruct config)
-        {
-            EconomyScript.Instance.ServerLogger.WriteInfo("Validating and Updating Config.");
-
-            // Sync in whatever is defined in the game (may contain new cubes, and modded cubes).
-            MarketManager.SyncMarketItems(ref config.DefaultPrices);
-
-            if (config.TradeTimeout.TotalSeconds < 1f)
-            {
-                config.TradeTimeout = new TimeSpan(0, 0, 1); // limit minimum trade timeout to 1 second.
-                EconomyScript.Instance.ServerLogger.WriteWarning("TradeTimeout has been reset, as it was below 1 second.");
-            }
-        }
-
         private static EconConfigStruct InitConfig()
         {
-            EconomyScript.Instance.ServerLogger.WriteInfo("Creating new EconConfigStruct.");
             EconConfigStruct config = new EconConfigStruct();
             config.DefaultPrices = new List<MarketItemStruct>();
 
@@ -772,42 +796,138 @@
 
             try
             {
-                var items = MyAPIGateway.Utilities.SerializeFromXML<MarketStruct>(xmlText);
+                var items = SerializeFromXML<MarketStruct>(xmlText);
                 config.DefaultPrices = items.MarketItems;
             }
             catch (Exception ex)
             {
                 // This catches our stupidity and two left handed typing skills.
                 // Check the Server logs to make sure this data loaded.
-                EconomyScript.Instance.ServerLogger.WriteException(ex);
+                //EconomyScript.Instance.ServerLogger.WriteException(ex);
             }
 
             return config;
         }
 
-        public static void SaveConfig(EconConfigStruct config)
+        private static void ValidateAndUpdateConfig(EconConfigStruct config)
         {
-            TextWriter writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(EconomyConsts.WorldStorageConfigFilename, typeof(EconConfigStruct));
-            writer.Write(MyAPIGateway.Utilities.SerializeToXML<EconConfigStruct>(config));
-            writer.Flush();
-            writer.Close();
+            // Sync in whatever is defined in the game (may contain new cubes, and modded cubes).
+            SyncMarketItems(ref config.DefaultPrices);
+
+            if (config.TradeTimeout.TotalSeconds < 1f)
+            {
+                config.TradeTimeout = new TimeSpan(0, 0, 1); // limit minimum trade timeout to 1 second.
+            }
         }
 
-        #endregion
+        private static void SyncMarketItems(ref List<MarketItemStruct> marketItems)
+        {
+            // Combination of Components.sbc, PhysicalItems.sbc, and AmmoMagazines.sbc files.
+            var physicalItems = MyDefinitionManager.Static.GetPhysicalItemDefinitions();
 
-        #region Load and save DATA
+            foreach (var item in physicalItems)
+            {
+                if (item.Public)
+                {
+                    // TypeId and SubtypeName are both Case sensitive. Do not Ignore case.
+                    if (!marketItems.Any(e => e.TypeId.Equals(item.Id.TypeId.ToString()) && e.SubtypeName.Equals(item.Id.SubtypeName)))
+                    {
+                        // Need to add new items as Blacklisted.
+                        marketItems.Add(new MarketItemStruct { TypeId = item.Id.TypeId.ToString(), SubtypeName = item.Id.SubtypeName, BuyPrice = 1, SellPrice = 1, IsBlacklisted = true });
+                    }
+                }
+            }
 
-        public static EconDataStruct LoadData(List<MarketItemStruct> defaultPrices)
+            // get Gas Property Items.  MyObjectBuilder_GasProperties
+            var gasItems = MyDefinitionManager.Static.GetGasDefinitions();
+
+            foreach (var item in gasItems)
+            {
+                if (item.Public)
+                {
+                    // TypeId and SubtypeName are both Case sensitive. Do not Ignore case.
+                    if (!marketItems.Any(e => e.TypeId.Equals(item.Id.TypeId.ToString()) && e.SubtypeName.Equals(item.Id.SubtypeName)))
+                    {
+                        // Need to add new items as Blacklisted.
+                        marketItems.Add(new MarketItemStruct { TypeId = item.Id.TypeId.ToString(), SubtypeName = item.Id.SubtypeName, BuyPrice = 1, SellPrice = 1, IsBlacklisted = true });
+                    }
+                }
+            }
+
+            // TODO: make sure buy and sell work with correct value of Gas.
+            // Bottles...
+            // MyDefinitionId = MyOxygenContainerDefinition.StoredGasId;
+            // maxVolume = MyOxygenContainerDefinition.Capacity;
+
+            // Tanks... To be done later. it should work the same as bottles though.
+            // MyDefinitionId = MyGasTankDefinition.StoredGasId;
+        }
+
+        private static ReactivePricingStruct LoadReactivePricing(string storagePath)
+        {
+            ReactivePricingStruct pricingData;
+            string xmlText;
+
+            // new file name and location.
+            string filename = Path.Combine(storagePath, "Storage", ModStoragePath, EconomyConsts.WorldStoragePricescaleFilename);
+            if (File.Exists(filename))
+            {
+                xmlText = File.ReadAllText(filename);
+            }
+            else
+            {
+                return InitPricing();
+            }
+
+            if (string.IsNullOrWhiteSpace(xmlText))
+            {
+                return InitPricing();
+            }
+
+            try
+            {
+                pricingData = SerializeFromXML<ReactivePricingStruct>(xmlText);
+            }
+            catch
+            {
+                // config failed to deserialize.
+                pricingData = InitPricing();
+            }
+
+            if (pricingData == null || pricingData.Prices == null || pricingData.Prices.Count == 0)
+                pricingData = InitPricing();
+
+            return pricingData;
+        }
+
+        private static ReactivePricingStruct InitPricing()
+        {
+            ReactivePricingStruct pricing = new ReactivePricingStruct();
+
+            // This entire section should instead load / create the list at server start so that nothing but simple maths is performed in reactive pricing so there is 
+            // negligable performance impact to lcds
+            pricing.Prices.Add(new PricingStruct(10, 1.1m, "Critical stock 10 or less 10% increase"));
+            pricing.Prices.Add(new PricingStruct(50, 1.1m, "Low Stock 11 to 50 10% increase"));
+            pricing.Prices.Add(new PricingStruct(100, 1.05m, "Could be better 51 to 100 5% increase"));
+            pricing.Prices.Add(new PricingStruct(1000, 1m, "About right 101 to 5000 no change"));
+            pricing.Prices.Add(new PricingStruct(5000, 0.95m, "Bit high  5001- 10000 drop price 5%"));
+            pricing.Prices.Add(new PricingStruct(10000, 0.95m, "Getting fuller 10001 to 50000 drop another 5%"));
+            pricing.Prices.Add(new PricingStruct(50000, 0.90m, "Way too much now drop another 10%"));
+            pricing.Prices.Add(new PricingStruct(100000, 0.50m, "Getting out of hand drop another 50%"));
+            pricing.Prices.Add(new PricingStruct(200000, 0.25m, "Ok we need to dump this stock now 75% price drop"));
+            return pricing;
+        }
+
+        private static EconDataStruct LoadData(string storagePath, List<MarketItemStruct> defaultPrices)
         {
             EconDataStruct data;
             string xmlText;
 
             // new file name and location.
-            if (MyAPIGateway.Utilities.FileExistsInWorldStorage(EconomyConsts.WorldStorageDataFilename, typeof(EconDataStruct)))
+            string filename = Path.Combine(storagePath, "Storage", ModStoragePath, EconomyConsts.WorldStorageDataFilename);
+            if (File.Exists(filename))
             {
-                TextReader reader = MyAPIGateway.Utilities.ReadFileInWorldStorage(EconomyConsts.WorldStorageDataFilename, typeof(EconDataStruct));
-                xmlText = reader.ReadToEnd();
-                reader.Close();
+                xmlText = File.ReadAllText(filename);
             }
             else
             {
@@ -827,13 +947,13 @@
 
             try
             {
-                data = MyAPIGateway.Utilities.SerializeFromXML<EconDataStruct>(xmlText);
-                EconomyScript.Instance.ServerLogger.WriteInfo("Loading existing EconDataStruct.");
+                data = SerializeFromXML<EconDataStruct>(xmlText);
+                //EconomyScript.Instance.ServerLogger.WriteInfo("Loading existing EconDataStruct.");
             }
             catch
             {
                 // data failed to deserialize.
-                EconomyScript.Instance.ServerLogger.WriteError("Failed to deserialize EconDataStruct. Creating new EconDataStruct.");
+                //EconomyScript.Instance.ServerLogger.WriteError("Failed to deserialize EconDataStruct. Creating new EconDataStruct.");
                 data = InitData();
             }
 
@@ -842,9 +962,21 @@
             return data;
         }
 
+        private static EconDataStruct InitData()
+        {
+            //EconomyScript.Instance.ServerLogger.WriteInfo("Creating new EconDataStruct.");
+            EconDataStruct data = new EconDataStruct();
+            data.Clients = new List<ClientAccountStruct>();
+            data.Markets = new List<MarketStruct>();
+            data.OrderBook = new List<OrderBookStruct>();
+            data.ShipSale = new List<ShipSaleStruct>();
+            data.Missions = new List<MissionBaseStruct>();
+            return data;
+        }
+
         private static void CheckDefaultMarket(EconDataStruct data, List<MarketItemStruct> defaultPrices)
         {
-            EconomyScript.Instance.ServerLogger.WriteInfo("Checking Default Market Data.");
+            //EconomyScript.Instance.ServerLogger.WriteInfo("Checking Default Market Data.");
 
             var market = data.Markets.FirstOrDefault(m => m.MarketId == EconomyConsts.NpcMerchantId);
             if (market == null)
@@ -854,7 +986,7 @@
                     MarketId = EconomyConsts.NpcMerchantId,
                     MarketZoneType = MarketZoneType.FixedSphere,
                     DisplayName = EconomyConsts.NpcMarketName,
-                    MarketZoneSphere = new BoundingSphereD(Vector3D.Zero, EconomyScript.Instance.ServerConfig.DefaultTradeRange), // Center of the game world.
+                    MarketZoneSphere = new BoundingSphereD(Vector3D.Zero, EconomyConsts.DefaultTradeRange), // Center of the game world.
                     MarketItems = new List<MarketItemStruct>()
                 };
                 data.Markets.Add(market);
@@ -870,7 +1002,7 @@
                 if (item == null)
                 {
                     market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = defaultItem.Quantity });
-                    EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
+                    //EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
                 }
                 else
                 {
@@ -878,95 +1010,12 @@
                     if (defaultItem.IsBlacklisted)
                         item.IsBlacklisted = true;
                 }
-            }
-        }
-
-        public static void CreateNpcMarket(string marketName, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)
-        {
-            EconomyScript.Instance.ServerLogger.WriteInfo("Creating Npc Market.");
-
-            var market = new MarketStruct
-            {
-                MarketId = EconomyConsts.NpcMerchantId,
-                Open = true,
-                DisplayName = marketName,
-                MarketItems = new List<MarketItemStruct>(),
-            };
-            SetMarketShape(market, x, y, z, size, shape);
-
-            // Add missing items that are covered by Default items.
-            foreach (var defaultItem in EconomyScript.Instance.ServerConfig.DefaultPrices)
-            {
-                var item = market.MarketItems.FirstOrDefault(e => e.TypeId.Equals(defaultItem.TypeId) && e.SubtypeName.Equals(defaultItem.SubtypeName));
-                if (item == null)
-                {
-                    market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = defaultItem.Quantity });
-                    EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
-                }
-                else
-                {
-                    // Disable any blackmarket items.
-                    if (defaultItem.IsBlacklisted)
-                        item.IsBlacklisted = true;
-                }
-            }
-
-            EconomyScript.Instance.Data.Markets.Add(market);
-        }
-
-        public static void CreatePlayerMarket(ulong accountId, long entityId, double size, string blockCustomName)
-        {
-            EconomyScript.Instance.ServerLogger.WriteInfo("Creating Player Market.");
-
-            var market = new MarketStruct
-            {
-                MarketId = accountId,
-                Open = false,
-                EntityId = entityId,
-                DisplayName = blockCustomName,
-                MarketItems = new List<MarketItemStruct>(),
-                MarketZoneType = MarketZoneType.EntitySphere,
-                MarketZoneSphere = new BoundingSphereD(Vector3D.Zero, size)
-            };
-
-            // Add missing items that are covered by Default items, with 0 quantity.
-            foreach (var defaultItem in EconomyScript.Instance.ServerConfig.DefaultPrices)
-            {
-                var item = market.MarketItems.FirstOrDefault(e => e.TypeId.Equals(defaultItem.TypeId) && e.SubtypeName.Equals(defaultItem.SubtypeName));
-                if (item == null)
-                {
-                    market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = 0 });
-                    EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
-                }
-                else
-                {
-                    // Disable any blackmarket items.
-                    if (defaultItem.IsBlacklisted)
-                        item.IsBlacklisted = true;
-                }
-            }
-
-            EconomyScript.Instance.Data.Markets.Add(market);
-        }
-
-        public static void SetMarketShape(MarketStruct market, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)
-        {
-            market.MarketZoneType = shape;
-            switch (shape)
-            {
-                case MarketZoneType.FixedSphere:
-                    market.MarketZoneSphere = new BoundingSphereD(new Vector3D((double)x, (double)y, (double)z), (double)size);
-                    break;
-                case MarketZoneType.FixedBox:
-                    var sz = (double)(size / 2);
-                    market.MarketZoneBox = new BoundingBoxD(new Vector3D((double)x - sz, (double)y - sz, (double)z - sz), new Vector3D((double)x + sz, (double)y + sz, (double)z + sz));
-                    break;
             }
         }
 
         private static void ValidateAndUpdateData(EconDataStruct data, List<MarketItemStruct> defaultPrices)
         {
-            EconomyScript.Instance.ServerLogger.WriteInfo("Validating and Updating Data.");
+            //EconomyScript.Instance.ServerLogger.WriteInfo("Validating and Updating Data.");
 
             if (data.Accounts != null)
             {
@@ -1014,7 +1063,7 @@
                     if (item == null)
                     {
                         market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = isNpcMerchant ? defaultItem.Quantity : 0 });
-                        EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
+                        //EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
                     }
                     else
                     {
@@ -1035,146 +1084,79 @@
             AccountManager.CheckAccountExpiry(data);
         }
 
-        private static EconDataStruct InitData()
+        #region Helpers
+
+        // Sandbox.ModAPI.MyAPIUtilities
+        private static byte[] SerializeToBinary<T>(T obj)
         {
-            EconomyScript.Instance.ServerLogger.WriteInfo("Creating new EconDataStruct.");
-            EconDataStruct data = new EconDataStruct();
-            data.Clients = new List<ClientAccountStruct>();
-            data.Markets = new List<MarketStruct>();
-            data.OrderBook = new List<OrderBookStruct>();
-            data.ShipSale = new List<ShipSaleStruct>();
-            data.Missions = new List<MissionBaseStruct>();
-            return data;
+            byte[] result;
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                Serializer.Serialize<T>(memoryStream, obj);
+                result = memoryStream.ToArray();
+            }
+            return result;
         }
 
-        public static void SaveData(EconDataStruct data)
+        // Sandbox.ModAPI.MyAPIUtilities
+        private static T SerializeFromBinary<T>(byte[] data)
         {
-            TextWriter writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(EconomyConsts.WorldStorageDataFilename, typeof(EconDataStruct));
-            writer.Write(MyAPIGateway.Utilities.SerializeToXML<EconDataStruct>(data));
-            writer.Flush();
-            writer.Close();
+            T result;
+            using (MemoryStream memoryStream = new MemoryStream(data))
+            {
+                result = Serializer.Deserialize<T>(memoryStream);
+            }
+            return result;
         }
 
-        #endregion
-
-        #region Load and Save ReactivePricing
-
-        /// <summary>
-        /// Loads the Reactive Pricing data if it exists, or it creates a default table if data is empty (no rows).
-        /// </summary>
-        /// <returns></returns>
-        public static ReactivePricingStruct LoadReactivePricing()
+        // string IMyUtilities.SerializeToXML<T>(T objToSerialize)
+        private static string SerializeToXML<T>(T objToSerialize)
         {
-            ReactivePricingStruct pricingData;
-            string xmlText;
+            try
+            {
+                var type = objToSerialize.GetType();
+                System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(type);
+                StringWriter textWriter = new StringWriter();
+                x.Serialize(textWriter, objToSerialize);
+                return textWriter.ToString();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
 
-            // new file name and location.
-            if (MyAPIGateway.Utilities.FileExistsInWorldStorage(EconomyConsts.WorldStoragePricescaleFilename, typeof(ReactivePricingStruct)))
+        private static T SerializeFromXML<T>(string xml)
+        {
+            if (string.IsNullOrEmpty(xml))
             {
-                TextReader reader = MyAPIGateway.Utilities.ReadFileInWorldStorage(EconomyConsts.WorldStoragePricescaleFilename, typeof(ReactivePricingStruct));
-                xmlText = reader.ReadToEnd();
-                reader.Close();
-            }
-            else
-            {
-                return InitPricing();
+                return default(T);
             }
 
-            if (string.IsNullOrWhiteSpace(xmlText))
-            {
-                return InitPricing();
-            }
+            XmlSerializer serializer = new XmlSerializer(typeof(T));
+
+            //serializer.UnknownElement += Serializer_UnknownElement;
+            //serializer.UnknownAttribute += Serializer_UnknownAttribute;
+            //serializer.UnknownNode += Serializer_UnknownNode;
+            //serializer.UnreferencedObject += Serializer_UnreferencedObject;
 
             try
             {
-                pricingData = MyAPIGateway.Utilities.SerializeFromXML<ReactivePricingStruct>(xmlText);
-                EconomyScript.Instance.ServerLogger.WriteInfo("Loading existing ReactivePricingStruct.");
-            }
-            catch
-            {
-                // config failed to deserialize.
-                EconomyScript.Instance.ServerLogger.WriteError("Failed to deserialize ReactivePricingStruct. Creating new ReactivePricingStruct.");
-                pricingData = InitPricing();
-            }
-
-            if (pricingData == null || pricingData.Prices == null || pricingData.Prices.Count == 0)
-                pricingData = InitPricing();
-
-            return pricingData;
-        }
-
-        private static ReactivePricingStruct InitPricing()
-        {
-            EconomyScript.Instance.ServerLogger.WriteInfo("Creating new ReactivePricingStruct.");
-            ReactivePricingStruct pricing = new ReactivePricingStruct();
-
-            // This entire section should instead load / create the list at server start so that nothing but simple maths is performed in reactive pricing so there is 
-            // negligable performance impact to lcds
-            pricing.Prices.Add(new PricingStruct(10, 1.1m, "Critical stock 10 or less 10% increase"));
-            pricing.Prices.Add(new PricingStruct(50, 1.1m, "Low Stock 11 to 50 10% increase"));
-            pricing.Prices.Add(new PricingStruct(100, 1.05m, "Could be better 51 to 100 5% increase"));
-            pricing.Prices.Add(new PricingStruct(1000, 1m, "About right 101 to 5000 no change"));
-            pricing.Prices.Add(new PricingStruct(5000, 0.95m, "Bit high  5001- 10000 drop price 5%"));
-            pricing.Prices.Add(new PricingStruct(10000, 0.95m, "Getting fuller 10001 to 50000 drop another 5%"));
-            pricing.Prices.Add(new PricingStruct(50000, 0.90m, "Way too much now drop another 10%"));
-            pricing.Prices.Add(new PricingStruct(100000, 0.50m, "Getting out of hand drop another 50%"));
-            pricing.Prices.Add(new PricingStruct(200000, 0.25m, "Ok we need to dump this stock now 75% price drop"));
-            return pricing;
-        }
-
-        public static void SaveReactivePricing(ReactivePricingStruct pricingData)
-        {
-            TextWriter writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(EconomyConsts.WorldStoragePricescaleFilename, typeof(ReactivePricingStruct));
-            writer.Write(MyAPIGateway.Utilities.SerializeToXML<ReactivePricingStruct>(pricingData));
-            writer.Flush();
-            writer.Close();
-        }
-
-        public static decimal PriceAdjust(decimal price, decimal onhand, PricingBias bias)
-        {
-            //
-            // Summary:
-            //     Takes specified price, and adjusts it based on given stock on hand using reactive price rules to
-            //     give us a market buy or sell price that has reacted to overstocked or understocked goods.
-            //     Can be called when buying(done), selling(done) or displaying prices on lcds(done) or /pricelist command(done) or /value(done) possibly /worth too (possible issues with performance)
-            //     Bias favours price changes on sell or buy (done), need to factor in transaction size or item price somehow to avoid exploiting price points
-
-            /* desired logic:
-            0: presumably we run this server side since the player is unlikely to have the price file, if no file found create one
-            1: either load the price adjust table from the pricetable file OR use a list/array which already contains the table
-            2: compare the on hand value supplied with the values in the table if it matches a criteria adjust price and any other bias/protection we add
-            3: repeat this until all table entries have been checked and/or applied as appropriate to slide the price up or down
-            4: return the calculated price for output to player price list or for buy/sell transactions
-            *** We also apply transport tycoon style subsides in here too.
-            */
-
-
-
-            //here is the meat and bones of the reactive pricing.  Any logic we use to slide the price up or down goes here  
-            //This should prevent the sell (to player) price dropping below any possible reactive price change to the buy (from player) price
-            //Ths should be all this logic needs to be production server safe. 
-            var x = 0;
-            do
-            {
-                if ((onhand > EconomyScript.Instance.ReactivePricing.Prices[x].PricePoint) && (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange < 1))  //price goes down
+                using (StringReader textReader = new StringReader(xml))
                 {
-                    if (bias == PricingBias.Buy) { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange - 0.05m); } // Buy from player price bias too much stock
-                     //else { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange); } // Sell to player price disabled as this can potentially allow players to cheat
-                }
-                else
-                {
-                    if ((onhand <= EconomyScript.Instance.ReactivePricing.Prices[x].PricePoint) && (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange > 1)) //price goes up
+                    using (XmlReader xmlReader = XmlReader.Create(textReader))
                     {
-                        if (bias == PricingBias.Sell) { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange + 0.05m); } //Sell to player price bias low stock
-                        //else { price = price * (EconomyScript.Instance.ReactivePricing.Prices[x].PriceChange); } // Buy from player price disabled as this can potentially allow players to cheat
+                        return (T)serializer.Deserialize(xmlReader);
                     }
                 }
-                x++;
-            } while (x < EconomyScript.Instance.ReactivePricing.Prices.Count); //Avoid out of bounds errors
-
-            return price;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         #endregion
+
     }
 }

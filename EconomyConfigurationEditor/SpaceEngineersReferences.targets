@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+
+  <!-- Copy this PropertyGroup into "user.targets" and modify the "BinPath" to indicate the path to SpaceEngineers in the Steam directory. -->
+  <PropertyGroup>
+    <BinPath>c:\Program Files (x86)\Steam\SteamApps\common\SpaceEngineers\Bin64</BinPath>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(MSBuildProjectDirectory)\user.targets" Condition="exists('$(MSBuildProjectDirectory)\user.targets')" />
+  </ImportGroup>
+
+  <ItemGroup>
+    <Reference Include="Sandbox.Common">
+      <HintPath>$(BinPath)\Sandbox.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Sandbox.Game">
+      <HintPath>$(BinPath)\Sandbox.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DXGI">
+      <HintPath>$(BinPath)\SharpDX.DXGI.dll</HintPath>
+    </Reference>
+    <Reference Include="SpaceEngineers.Game">
+      <HintPath>$(BinPath)\SpaceEngineers.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="SpaceEngineers.ObjectBuilders">
+      <HintPath>$(BinPath)\SpaceEngineers.ObjectBuilders.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite">
+      <HintPath>$(BinPath)\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage">
+      <HintPath>$(BinPath)\VRage.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Game">
+      <HintPath>$(BinPath)\VRage.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Library">
+      <HintPath>$(BinPath)\VRage.Library.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Math">
+      <HintPath>$(BinPath)\VRage.Math.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Native">
+      <HintPath>$(BinPath)\VRage.Native.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Render">
+      <HintPath>$(BinPath)\VRage.Render.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Render11">
+      <HintPath>$(BinPath)\VRage.Render11.dll</HintPath>
+    </Reference>
+
+  </ItemGroup>
+
+</Project>

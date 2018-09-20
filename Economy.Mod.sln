@@ -1,38 +1,39 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2016
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy.scripts", "Economy\Data\Scripts\Economy.scripts\Economy.scripts.csproj", "{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EconomyAPI", "EconomyAPI\EconomyAPI.csproj", "{716C2AEA-3959-41FA-AA85-4A5E779223BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EconomyConfigurationEditor", "EconomyConfigurationEditor\EconomyConfigurationEditor.csproj", "{2B12EFA1-EFA4-4D7F-8535-DCBB8097CA04}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{52CEA04B-B14C-4EFF-9886-4F6C9D961237}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
-		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}.Debug|x64.ActiveCfg = Debug|x64
 		{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}.Debug|x64.Build.0 = Debug|x64
-		{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}.Release|x64.ActiveCfg = Release|x64
 		{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}.Release|x64.Build.0 = Release|x64
-		{716C2AEA-3959-41FA-AA85-4A5E779223BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{716C2AEA-3959-41FA-AA85-4A5E779223BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{716C2AEA-3959-41FA-AA85-4A5E779223BF}.Debug|x64.ActiveCfg = Debug|x64
 		{716C2AEA-3959-41FA-AA85-4A5E779223BF}.Debug|x64.Build.0 = Debug|x64
-		{716C2AEA-3959-41FA-AA85-4A5E779223BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{716C2AEA-3959-41FA-AA85-4A5E779223BF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{716C2AEA-3959-41FA-AA85-4A5E779223BF}.Release|x64.ActiveCfg = Release|Any CPU
-		{716C2AEA-3959-41FA-AA85-4A5E779223BF}.Release|x64.Build.0 = Release|Any CPU
+		{716C2AEA-3959-41FA-AA85-4A5E779223BF}.Release|x64.ActiveCfg = Release|x64
+		{716C2AEA-3959-41FA-AA85-4A5E779223BF}.Release|x64.Build.0 = Release|x64
+		{2B12EFA1-EFA4-4D7F-8535-DCBB8097CA04}.Debug|x64.ActiveCfg = Debug|x64
+		{2B12EFA1-EFA4-4D7F-8535-DCBB8097CA04}.Debug|x64.Build.0 = Debug|x64
+		{2B12EFA1-EFA4-4D7F-8535-DCBB8097CA04}.Release|x64.ActiveCfg = Release|x64
+		{2B12EFA1-EFA4-4D7F-8535-DCBB8097CA04}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3412FFDA-ADB6-4F2F-9360-AE388D607225}
 	EndGlobalSection
 EndGlobal

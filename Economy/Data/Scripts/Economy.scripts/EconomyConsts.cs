@@ -20,6 +20,11 @@
         public const int ModCommunicationVersion = 20180116; // This will be based on the date of update.
 
 
+        internal const string WorldStorageConfigFilename = "EconomyConfig.xml";
+        internal const string WorldStorageDataFilename = "EconomyData.xml";
+        internal const string WorldStoragePricescaleFilename = "EconPriceScale.xml";
+
+
         //milestone level A=Alpha B=Beta, dev = development test version or Milestone eg 1.0A Milestone, 1.1A Dev etc
         public const string MajorVer = "Econ 3.397A +#177";
 

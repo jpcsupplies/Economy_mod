@@ -61,6 +61,8 @@
             return "You have sucessfully investigated the location.";
         }
 
+#if !EDITOR
+
         public override bool CheckMission()
         {
             IMyPlayer player;
@@ -95,5 +97,7 @@
 
             EconConfig.HudManager.GPS(center.X, center.Y, center.Z, "Mission Objective^" + MissionId, GetName(), false);
         }
+
+#endif
     }
 }

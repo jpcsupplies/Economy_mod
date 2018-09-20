@@ -4,13 +4,16 @@
     using System.Collections.Generic;
     using System.Linq;
     using Economy.scripts.EconStructures;
-    using Messages;
     using Sandbox.Definitions;
     using Sandbox.ModAPI;
     using VRage.Game;
     using VRage.Game.ModAPI;
     using VRage.ModAPI;
     using VRageMath;
+
+    #if !EDITOR
+    using Messages;
+#endif
 
     public static class MarketManager
     {
@@ -116,6 +119,7 @@
             EconomyScript.Instance.Data.OrderBook.Add(order);
         }
 
+#if !EDITOR
         public static void CheckTradeTimeouts()
         {
             var processingTime = DateTime.Now;
@@ -164,6 +168,7 @@
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Finds all available markets that are within range that can be traded with.

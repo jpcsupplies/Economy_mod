@@ -1,0 +1,230 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2B12EFA1-EFA4-4D7F-8535-DCBB8097CA04}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>EconomyConfigurationEditor</RootNamespace>
+    <AssemblyName>EconomyConfigurationEditor</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;EDITOR</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE;EDITOR</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildProjectDirectory)\SpaceEngineersReferences.targets" />
+  <ItemGroup>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconConfig\AccountManager.cs">
+      <Link>Economy\EconConfig\AccountManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconConfig\EconDataManager.cs">
+      <Link>Economy\EconConfig\EconDataManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconConfig\MarketManager.cs">
+      <Link>Economy\EconConfig\MarketManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconConfig\NpcMerchantManager.cs">
+      <Link>Economy\EconConfig\NpcMerchantManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconomyConsts.cs">
+      <Link>Economy\EconomyConsts.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconStructures\BankAccountStruct.cs">
+      <Link>Economy\EconStructures\BankAccountStruct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconStructures\ClientAccountStruct.cs">
+      <Link>Economy\EconStructures\ClientAccountStruct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconStructures\ClientHudSettingsStruct.cs">
+      <Link>Economy\EconStructures\ClientHudSettingsStruct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconStructures\EconConfigStruct.cs">
+      <Link>Economy\EconStructures\EconConfigStruct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconStructures\EconDataStruct.cs">
+      <Link>Economy\EconStructures\EconDataStruct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconStructures\MarketItemStruct.cs">
+      <Link>Economy\EconStructures\MarketItemStruct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconStructures\MarketStruct.cs">
+      <Link>Economy\EconStructures\MarketStruct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconStructures\OrderBookStruct.cs">
+      <Link>Economy\EconStructures\OrderBookStruct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconStructures\PricingStruct.cs">
+      <Link>Economy\EconStructures\PricingStruct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconStructures\ReactivePricingStruct.cs">
+      <Link>Economy\EconStructures\ReactivePricingStruct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconStructures\ServerConfigUpdateStuct.cs">
+      <Link>Economy\EconStructures\ServerConfigUpdateStuct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\EconStructures\ShipSaleStruct.cs">
+      <Link>Economy\EconStructures\ShipSaleStruct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\Extensions.cs">
+      <Link>Economy\Extensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\BlockActivateMission.cs">
+      <Link>Economy\MissionStructures\BlockActivateMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\BlockCaptureMission.cs">
+      <Link>Economy\MissionStructures\BlockCaptureMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\BlockDeactivateMission.cs">
+      <Link>Economy\MissionStructures\BlockDeactivateMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\BlockDestroyMission.cs">
+      <Link>Economy\MissionStructures\BlockDestroyMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\BuySomethingMission.cs">
+      <Link>Economy\MissionStructures\BuySomethingMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\DeliverItemToTradeZoneMission.cs">
+      <Link>Economy\MissionStructures\DeliverItemToTradeZoneMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\JoinFactionMission.cs">
+      <Link>Economy\MissionStructures\JoinFactionMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\KillPlayerMission.cs">
+      <Link>Economy\MissionStructures\KillPlayerMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\MineMission.cs">
+      <Link>Economy\MissionStructures\MineMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\MissionBaseStruct.cs">
+      <Link>Economy\MissionStructures\MissionBaseStruct.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\PayPlayerMission.cs">
+      <Link>Economy\MissionStructures\PayPlayerMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\StayAliveMission.cs">
+      <Link>Economy\MissionStructures\StayAliveMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\TradeWithPlayerMission.cs">
+      <Link>Economy\MissionStructures\TradeWithPlayerMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\TravelMission.cs">
+      <Link>Economy\MissionStructures\TravelMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\UseAccountBalanceMission.cs">
+      <Link>Economy\MissionStructures\UseAccountBalanceMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\UseBuySellShipMission.cs">
+      <Link>Economy\MissionStructures\UseBuySellShipMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\UseWorthMission.cs">
+      <Link>Economy\MissionStructures\UseWorthMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\MissionStructures\WeldMission.cs">
+      <Link>Economy\MissionStructures\WeldMission.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\SerializableBoundingSphereD.cs">
+      <Link>Economy\SerializableBoundingSphereD.cs</Link>
+    </Compile>
+    <Compile Include="..\Economy\Data\Scripts\Economy.scripts\TextLogger.cs">
+      <Link>Economy\TextLogger.cs</Link>
+    </Compile>
+    <Compile Include="ConfigurationEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConfigurationEditorForm.Designer.cs">
+      <DependentUpon>ConfigurationEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\MarketItemsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\MarketItemsControl.Designer.cs">
+      <DependentUpon>MarketItemsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Interop\EconomyScript.cs" />
+    <Compile Include="GlobalSettings.cs" />
+    <Compile Include="Interop\EconomyManagerAlt.cs" />
+    <Compile Include="Interop\MySessionReplacement.cs" />
+    <Compile Include="Interop\SpaceEngineersApi.cs" />
+    <Compile Include="Interop\SpaceEngineersConsts.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Interop\SandboxManager.cs" />
+    <Compile Include="SettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SettingsForm.Designer.cs">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Support\FrameworkExtension.cs" />
+    <Compile Include="Support\ReflectionUtil.cs" />
+    <Compile Include="Support\TempfileUtil.cs" />
+    <EmbeddedResource Include="ConfigurationEditorForm.resx">
+      <DependentUpon>ConfigurationEditorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\MarketItemsControl.resx">
+      <DependentUpon>MarketItemsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="SettingsForm.resx">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <None Include="SpaceEngineersReferences.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
