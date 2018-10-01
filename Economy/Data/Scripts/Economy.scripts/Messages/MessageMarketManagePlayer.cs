@@ -670,10 +670,10 @@
                             return;
                         }
 
-                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase) && m.MarketId == SenderSteamId);
+                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase));
                         if (market == null)
                         {
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LOAD", "You do not have a market by that name.");
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LOAD", "A market by that name does not exist.");
                             return;
                         }
 
