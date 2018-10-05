@@ -15,6 +15,7 @@
     using VRage.Library.Utils;
     using VRage.ModAPI;
     using VRage.ObjectBuilders;
+   
 
     [ProtoContract]
     public class MessageMarketManagePlayer : MessageBase
@@ -120,6 +121,11 @@
         public static void SendLoadMessage(long entityId, string marketName)
         {
             ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Load, MarketName = marketName, EntityId = entityId });
+        }
+
+        public static void SendExportMessage(long entityId, string marketName)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageMarketManagePlayer { CommandType = PlayerMarketManage.Export, MarketName = marketName, EntityId = entityId });
         }
 
         public static void SendSaveMessage(long entityId, string marketName)
@@ -636,6 +642,159 @@
                     break;
 
                 #endregion
+
+                #region export
+                case PlayerMarketManage.Export:
+                    {
+                        IMyCubeBlock cubeBlock = MyAPIGateway.Entities.GetEntityById(EntityId) as IMyCubeBlock;
+
+                        if (cubeBlock == null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ EXPORT", "The specified block does not exist.");
+                            return;
+                        }
+
+                        IMyTextPanel textBlock = cubeBlock as IMyTextPanel;
+
+                        if (textBlock == null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ EXPORT", "You need to target a Text Panel to load market data.");
+                            return;
+                        }
+
+                        var relation = textBlock.GetUserRelationToOwner(player.IdentityId);
+                        if (relation != MyRelationsBetweenPlayerAndBlock.Owner && relation != MyRelationsBetweenPlayerAndBlock.NoOwnership)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ EXPORT", "You must own the Text Panel to load market data.");
+                            return;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(MarketName) || MarketName == "*")
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ EXPORT", "Invalid name supplied for the Trade Zone name.");
+                            return;
+                        }
+
+                        var market = EconomyScript.Instance.Data.Markets.FirstOrDefault(m => m.DisplayName.Equals(MarketName, StringComparison.InvariantCultureIgnoreCase));
+                        if (market == null)
+                        {
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ EXPORT", "Market not found.");
+                            return;
+                        }
+
+                        StringBuilder msg = new StringBuilder();
+
+                        msg.AppendLine(@"# Limit/Quantity | Sell/Buy | Restriction | ""Name""");
+
+                        var orderedList = new Dictionary<MarketItemStruct, string>();
+                        var groupingList = new Dictionary<MarketItemStruct, MyDefinitionBase>();
+
+                        foreach (var marketItem in market.MarketItems)
+                        {
+                            MarketItemStruct configItem = EconomyScript.Instance.ServerConfig.DefaultPrices.FirstOrDefault(m => m.TypeId == marketItem.TypeId && m.SubtypeName == marketItem.SubtypeName && !m.IsBlacklisted);
+                            if (configItem == null)
+                                continue; // doesn't exist or is blacklisted by server.
+
+                            MyObjectBuilderType result;
+                            if (MyObjectBuilderType.TryParse(marketItem.TypeId, out result))
+                            {
+                                MyDefinitionBase definition = MyDefinitionManager.Static.GetDefinition(marketItem.TypeId, marketItem.SubtypeName);
+
+                                if (definition != null)
+                                {
+                                    groupingList.Add(marketItem, definition);
+                                    orderedList.Add(marketItem, definition.GetDisplayName());
+                                }
+                            }
+                        }
+
+                        orderedList = orderedList.OrderBy(kvp => kvp.Value).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+                        // TODO: unique name checks on items.
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Ores");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            if (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_Ore))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Ingots");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            if (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_Ingot))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Components");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            if (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_Component))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Ammo");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            if (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_AmmoMagazine))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Tools");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            if (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_PhysicalGunObject))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Other");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            var type = groupingList[kvp.Key].Id.TypeId;
+
+                            if (type == typeof(MyObjectBuilder_Ore)
+                                || type == typeof(MyObjectBuilder_Ingot)
+                                || type == typeof(MyObjectBuilder_Component)
+                                || type == typeof(MyObjectBuilder_AmmoMagazine)
+                                || type == typeof(MyObjectBuilder_PhysicalGunObject))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+                        msg.Append(@"
+# Any text behind the # will be ignored.
+");
+
+                        textBlock.WritePublicText(msg.ToString(), false);
+
+                        MessageClientTextMessage.SendMessage(SenderSteamId, "TZ EXPORT", "Text panel updated.");
+                    }
+                    break;
+                #endregion export
+
 
                 #region load
 

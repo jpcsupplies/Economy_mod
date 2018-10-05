@@ -791,6 +791,26 @@ namespace Economy.scripts
                         return true;
                     }
 
+                    if (keyName.Equals("export", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
+                        if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof(MyObjectBuilder_TextPanel))
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You need to target a Text panel to export market data.");
+                            return true;
+                        }
+
+                        var relation = selectedBlock.GetPlayerRelationToOwner();
+                        if (relation != MyRelationsBetweenPlayerAndBlock.Owner && relation != MyRelationsBetweenPlayerAndBlock.NoOwnership)
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("TZ", "You must own the Text panel to export market data.");
+                            return true;
+                        }
+
+                        MessageMarketManagePlayer.SendExportMessage(selectedBlock.EntityId, tradezoneName);
+                        return true;
+                    }
+
                     if (keyName.Equals("load", StringComparison.InvariantCultureIgnoreCase))
                     {
                         var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
