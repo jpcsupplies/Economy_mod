@@ -102,7 +102,7 @@ namespace Economy.scripts
         /// <summary>
         /// pattern defines how to unregister or modify specific player trade zone.
         /// </summary>
-        const string PlayerZoneModifyPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(?<key>(unregister)|(open)|(close)|(save)|(load))\s+(?:(?:""(?<zonename>[^""]|.*?)"")|(?<zonename>[^\s]*))";
+        const string PlayerZoneModifyPattern = @"(?<command>(/tz)|(/tradezone)|(/shop))\s+(?<key>(unregister)|(open)|(close)|(save)|(export)|(load))\s+(?:(?:""(?<zonename>[^""]|.*?)"")|(?<zonename>[^\s]*))";
 
         /// <summary>
         /// pattern defines how to use paramterless player trade zone commands.
