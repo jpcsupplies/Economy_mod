@@ -109,7 +109,7 @@
             if (writer.LastUpdate > DateTime.Now.AddSeconds(-interval))
                 return;
 
-            var checkArray = textPanel.GetPublicTitle().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var checkArray = (textPanel.CustomName + ' ' + textPanel.GetPublicTitle()).Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             var showAll = false;
             bool showOre = false;
             bool showIngot = false;
