@@ -138,7 +138,7 @@ namespace Economy.scripts
 
         private readonly Action<object> _interModMessageHandler = new Action<object>(InterModHandleMessage);
 
-        internal static EconomyScript Instance;
+        public static EconomyScript Instance;
         internal bool IsConnected;
 
         public TextLogger ServerLogger = new TextLogger(); // This is a dummy logger until Init() is called.
