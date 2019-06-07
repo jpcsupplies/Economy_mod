@@ -52,7 +52,7 @@
                 return;
             }
 
-            MyTexts.LanguageDescription myLanguage;
+            MyTexts.MyLanguageDescription myLanguage;
 
             // These will match with names defined in the RegEx patterm <EconomyScript.EconfigPattern>
             switch (ConfigName)
