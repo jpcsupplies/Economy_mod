@@ -83,6 +83,14 @@
             const string xmlText = @"<Market>
 <MarketItems>
     <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalObject</TypeId>
+      <SubtypeName>SpaceCredit</SubtypeName>
+      <Quantity>1000000000</Quantity>
+      <SellPrice>0.0107</SellPrice>
+      <BuyPrice>0.0107</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
       <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
       <SubtypeName>NATO_5p56x45mm</SubtypeName>
       <Quantity>1000</Quantity>

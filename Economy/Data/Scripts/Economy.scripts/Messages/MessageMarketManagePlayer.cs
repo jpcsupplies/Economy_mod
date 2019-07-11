@@ -768,6 +768,18 @@
                         }
 
                         msg.AppendLine();
+                        msg.AppendLine(@"## Supplies");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            if (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_PhysicalObject))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
+
+                        msg.AppendLine();
                         msg.AppendLine(@"## Other");
 
                         foreach (var kvp in orderedList)
@@ -777,6 +789,7 @@
                             if (type == typeof(MyObjectBuilder_Ore)
                                 || type == typeof(MyObjectBuilder_Ingot)
                                 || type == typeof(MyObjectBuilder_Component)
+                                || type == typeof(MyObjectBuilder_PhysicalObject)
                                 || type == typeof(MyObjectBuilder_AmmoMagazine)
                                 || type == typeof(MyObjectBuilder_PhysicalGunObject))
                                 continue;
@@ -921,6 +934,18 @@
                             msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
                         }
 
+
+                        msg.AppendLine();
+                        msg.AppendLine(@"## Supplies");
+
+                        foreach (var kvp in orderedList)
+                        {
+                            if (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_PhysicalObject))
+                                continue;
+
+                            msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
+                        }
+
                         msg.AppendLine();
                         msg.AppendLine(@"## Other");
 
@@ -932,6 +957,7 @@
                                 || type == typeof(MyObjectBuilder_Ingot)
                                 || type == typeof(MyObjectBuilder_Component)
                                 || type == typeof(MyObjectBuilder_AmmoMagazine)
+                                || type == typeof(MyObjectBuilder_PhysicalObject)
                                 || type == typeof(MyObjectBuilder_PhysicalGunObject))
                                 continue;
 

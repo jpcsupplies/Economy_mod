@@ -1503,6 +1503,7 @@ namespace Economy.scripts
                     bool showComponent = false;
                     bool showAmmo = false;
                     bool showTools = false;
+                    bool showSupplies = false;
                     bool showGasses = false;
                     string findZoneName = match.Groups["zonename"].Value;
 
@@ -1519,11 +1520,15 @@ namespace Economy.scripts
                             showAmmo = true;
                         if (str.StartsWith("tool", StringComparison.InvariantCultureIgnoreCase))
                             showTools = true;
+                        if (str.StartsWith("supplies", StringComparison.InvariantCultureIgnoreCase))
+                            showSupplies = true;
+                        if (str.StartsWith("supply", StringComparison.InvariantCultureIgnoreCase))
+                            showSupplies = true;
                         if (str.StartsWith("gas", StringComparison.InvariantCultureIgnoreCase))
                             showGasses = true;
                     }
 
-                    MessageMarketPriceList.SendMessage(showOre, showIngot, showComponent, showAmmo, showTools, showGasses, findZoneName);
+                    MessageMarketPriceList.SendMessage(showOre, showIngot, showComponent, showAmmo, showTools, showSupplies, showGasses, findZoneName);
                     return true;
                 }
             }

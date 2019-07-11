@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-16"?>
+<EconReactivePricing xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EconReactivePrices>
+    <PricePoint>10</PricePoint>
+    <PriceChange>1.1</PriceChange>
+    <Description>Critical stock 10 or less 10% increase</Description>
+  </EconReactivePrices>
+  <EconReactivePrices>
+    <PricePoint>50</PricePoint>
+    <PriceChange>1.1</PriceChange>
+    <Description>Low Stock 11 to 50 10% increase</Description>
+  </EconReactivePrices>
+  <EconReactivePrices>
+    <PricePoint>100</PricePoint>
+    <PriceChange>1.05</PriceChange>
+    <Description>Could be better 51 to 100 5% increase</Description>
+  </EconReactivePrices>
+  <EconReactivePrices>
+    <PricePoint>1000</PricePoint>
+    <PriceChange>1</PriceChange>
+    <Description>About right 101 to 5000 no change</Description>
+  </EconReactivePrices>
+  <EconReactivePrices>
+    <PricePoint>5000</PricePoint>
+    <PriceChange>0.95</PriceChange>
+    <Description>Bit high  5001- 10000 drop price 5%</Description>
+  </EconReactivePrices>
+  <EconReactivePrices>
+    <PricePoint>10000</PricePoint>
+    <PriceChange>0.95</PriceChange>
+    <Description>Getting fuller 10001 to 50000 drop another 5%</Description>
+  </EconReactivePrices>
+  <EconReactivePrices>
+    <PricePoint>50000</PricePoint>
+    <PriceChange>0.90</PriceChange>
+    <Description>Way too much now drop another 10%</Description>
+  </EconReactivePrices>
+  <EconReactivePrices>
+    <PricePoint>100000</PricePoint>
+    <PriceChange>0.50</PriceChange>
+    <Description>Getting out of hand drop another 50%</Description>
+  </EconReactivePrices>
+  <EconReactivePrices>
+    <PricePoint>200000</PricePoint>
+    <PriceChange>0.25</PriceChange>
+    <Description>Ok we need to dump this stock now 75% price drop</Description>
+  </EconReactivePrices>
+</EconReactivePricing>

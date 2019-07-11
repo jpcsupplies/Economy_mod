@@ -34,14 +34,17 @@
         public bool ShowTools;
 
         [ProtoMember(206)]
-        public bool ShowGasses;
+        public bool ShowSupplies;
 
         [ProtoMember(207)]
+        public bool ShowGasses;
+
+        [ProtoMember(208)]
         public string FindMarket;
 
-        public static void SendMessage(bool showOre, bool showIngot, bool showComponent, bool showAmmo, bool showTools, bool showGasses, string findMarket)
+        public static void SendMessage(bool showOre, bool showIngot, bool showComponent, bool showAmmo, bool showTools, bool showSupplies, bool showGasses, string findMarket)
         {
-            ConnectionHelper.SendMessageToServer(new MessageMarketPriceList { ShowAmmo = showAmmo, ShowComponent = showComponent, ShowIngot = showIngot, ShowOre = showOre, ShowTools = showTools, ShowGasses = showGasses, FindMarket = findMarket });
+            ConnectionHelper.SendMessageToServer(new MessageMarketPriceList { ShowAmmo = showAmmo, ShowComponent = showComponent, ShowIngot = showIngot, ShowOre = showOre, ShowTools = showTools, ShowSupplies = showSupplies, ShowGasses = showGasses, FindMarket = findMarket });
         }
 
         public override void ProcessClient()
@@ -102,7 +105,7 @@
 
                 try
                 {
-                    bool showAll = !ShowOre && !ShowIngot && !ShowComponent && !ShowAmmo && !ShowTools && !ShowGasses;
+                    bool showAll = !ShowOre && !ShowIngot && !ShowComponent && !ShowAmmo && !ShowTools && !ShowSupplies && !ShowGasses;
 
                     var orderedList = new Dictionary<MarketItemStruct, string>();
                     foreach (var marketItem in market.MarketItems)
@@ -123,6 +126,7 @@
                                 (ShowIngot && content is MyObjectBuilder_Ingot) ||
                                 (ShowComponent && content is MyObjectBuilder_Component) ||
                                 (ShowAmmo && content is MyObjectBuilder_AmmoMagazine) ||
+                                (ShowSupplies && content is MyObjectBuilder_PhysicalObject) ||
                                 (ShowTools && content is MyObjectBuilder_PhysicalGunObject) || // guns, welders, hand drills, grinders.
                                 (ShowGasses && content is MyObjectBuilder_GasContainerObject) || // aka gas bottle.
                                 (ShowGasses && content is MyObjectBuilder_GasProperties))
