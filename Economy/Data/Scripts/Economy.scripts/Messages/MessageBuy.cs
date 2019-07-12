@@ -233,6 +233,7 @@
                 // Verify that the items are in the player inventory.
                 // TODO: later check trade block, cockpit inventory, cockpit ship inventory, inventory of targeted cube.
                 // Check the display name to see if we are trading space credits
+                if (definition.GetDisplayName() == "SpaceCredit" || definition.GetDisplayName() == "Space Credit") { SpaceCredit = True; }
 
                 if (UseBankSellPrice)
                     // The player is buying, but the *Market* will *sell* it to the player at this price.
