@@ -1982,7 +1982,8 @@ namespace Economy.scripts
                                 "component  (displays all component buy/sell prices)\r\n" +
                                 "ore        (displays all ore buy/sell prices)\r\n" +
                                 "ingot      (displays all ingot buy/sell prices)\r\n" +
-                                "Tools      (displays all tool buy/sell prices)\r\n" +
+                                "Tools      (displays all tool buy/sell prices)\r\n" +                                
+                                "Supplies   (displays cash, medkits, battery etc)\r\n" +
                                 "ammo       (displays all ammunition buy/sell prices)\r\n" +
                                 "#y         (Display only items from line y - eg #10 is item 10 in list)\r\nAllows price lists to run onto more than one LCD\r\n" +
                                 "Px         (Display only items from page x - eg P3 is page 3 in list)\r\nAllows price lists to run onto more than one LCD Automatically\r\n" +
