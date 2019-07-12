@@ -70,7 +70,7 @@
         public bool FindOnMarket;
 
         #endregion
-
+            
         public static void SendMessage(string toUserName, decimal itemQuantity, string itemTypeId, string itemSubTypeName, decimal itemPrice, bool useBankBuyPrice, bool sellToMerchant, bool offerToMarket)
         {
             ConnectionHelper.SendMessageToServer(new MessageBuy { FromUserName = toUserName, ItemQuantity = itemQuantity, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, ItemPrice = itemPrice, UseBankSellPrice = useBankBuyPrice, BuyFromMerchant = sellToMerchant, FindOnMarket = offerToMarket });
@@ -93,10 +93,6 @@
 
             // Get player steam ID
             var buyingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
-
-	    // Placeholder are we trading Space Credits
-	    bool SpaceCredit=false;
-	    
 
             MyDefinitionBase definition = null;
             MyObjectBuilderType result;
@@ -191,7 +187,10 @@
 
             MarketItemStruct marketItem = null;
             ulong marketId = 0;
-            
+
+            // Placeholder are we trading Space Credits
+            bool SpaceCredit = false;
+
             if (BuyFromMerchant || UseBankSellPrice)
             {
                 var markets = MarketManager.FindMarketsFromLocation(position);
@@ -233,7 +232,9 @@
                 // Verify that the items are in the player inventory.
                 // TODO: later check trade block, cockpit inventory, cockpit ship inventory, inventory of targeted cube.
                 // Check the display name to see if we are trading space credits
-                if (definition.GetDisplayName() == "SpaceCredit" || definition.GetDisplayName() == "Space Credit") { SpaceCredit = True; }
+
+
+                if (definition.GetDisplayName() == "SpaceCredit" || definition.GetDisplayName() == "Space Credit") { SpaceCredit = true; }
 
                 if (UseBankSellPrice)
                     // The player is buying, but the *Market* will *sell* it to the player at this price.

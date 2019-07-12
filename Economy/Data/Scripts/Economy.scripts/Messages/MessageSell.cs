@@ -83,6 +83,7 @@
 
         #endregion
 
+
         #region send message methods
 
         public static void SendAcceptMessage()
@@ -135,9 +136,6 @@
                         //* Logic:                     
                         //* Get player steam ID
                         var sellingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
-
-	                // Placeholder are we trading Space Credits
-	                bool SpaceCredit=false;
 
                         MyDefinitionBase definition = null;
                         MyObjectBuilderType result;
@@ -317,6 +315,8 @@
                         }
 
                         MarketItemStruct marketItem = null;
+                        // Placeholder are we trading Space Credits
+                        bool SpaceCredit = false;
 
                         if (SellToMerchant || UseBankBuyPrice)
                         {
@@ -356,7 +356,7 @@
                             }
 
                             // Check the display name to see if we are trading space credits
-                            if (definition.GetDisplayName() == "SpaceCredit" || definition.GetDisplayName() == "Space Credit") { SpaceCredit = True; }
+                            if (definition.GetDisplayName() == "SpaceCredit" || definition.GetDisplayName() == "Space Credit") { SpaceCredit = true; }
 
                             if (UseBankBuyPrice)
                                 // The player is selling, but the *Market* will *buy* it from the player at this price.
