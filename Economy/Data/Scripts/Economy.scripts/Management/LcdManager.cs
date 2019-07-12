@@ -283,7 +283,7 @@
                             (showIngot && content is MyObjectBuilder_Ingot) ||
                             (showComponent && content is MyObjectBuilder_Component) ||
                             (showAmmo && content is MyObjectBuilder_AmmoMagazine) ||
-                            (showTools && content is MyObjectBuilder_PhysicalObject) || 
+                            (showSupplies && content is MyObjectBuilder_PhysicalObject) || //space credits med kits and batteries
                             (showTools && content is MyObjectBuilder_PhysicalGunObject) || // guns, welders, hand drills, grinders.
                             (showGasses && content is MyObjectBuilder_GasContainerObject) || // aka gas bottle.
                             (showGasses && content is MyObjectBuilder_GasProperties))  // Type check here allows mods that inherit from the same type to also appear in the lists.
@@ -305,7 +305,7 @@
                     writer.AddPublicLeftTrim(buyColumn - 120, kvp.Value);
 
                     decimal showBuy = kvp.Key.BuyPrice;
-                    decimal showSell = kvp.Key.SellPrice;
+                    decimal showSell = kvp.Key.SellPrice; //going to need to check for space credits here somehow and not scale price on it
                     if ((EconomyScript.Instance.ServerConfig.PriceScaling) && (market.MarketId == EconomyConsts.NpcMerchantId))
                     {
                         showBuy = EconDataManager.PriceAdjust(kvp.Key.BuyPrice, kvp.Key.Quantity, PricingBias.Buy);
