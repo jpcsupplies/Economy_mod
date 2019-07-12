@@ -116,6 +116,7 @@
             bool showComponent = false;
             bool showAmmo = false;
             bool showTools = false;
+            bool showSupplies = false;
             bool showGasses = false;
             bool showStock = false;
             bool showPrices = true;
@@ -162,12 +163,16 @@
                         showAmmo = true;
                     else if (str.StartsWith("tool", StringComparison.InvariantCultureIgnoreCase))
                         showTools = true;
+                    else if (str.StartsWith("supplies", StringComparison.InvariantCultureIgnoreCase))
+                        showSupplies = true;
+                    else if (str.StartsWith("supply", StringComparison.InvariantCultureIgnoreCase))
+                        showSupplies = true;
                     else if (str.StartsWith("gas", StringComparison.InvariantCultureIgnoreCase))
                         showGasses = true;
                 }
             }
 
-            bool showHelp = !showAll && !showOre && !showIngot && !showComponent && !showAmmo && !showTools && !showGasses;
+            bool showHelp = !showAll && !showOre && !showIngot && !showComponent && !showAmmo && !showSupplies && !showTools && !showGasses;
 
 
 

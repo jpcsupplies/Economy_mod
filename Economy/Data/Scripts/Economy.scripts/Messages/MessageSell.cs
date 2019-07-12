@@ -136,6 +136,9 @@
                         //* Get player steam ID
                         var sellingPlayer = MyAPIGateway.Players.FindPlayerBySteamId(SenderSteamId);
 
+	                // Placeholder are we trading Space Credits
+	                bool SpaceCredit=false;
+
                         MyDefinitionBase definition = null;
                         MyObjectBuilderType result;
                         if (MyObjectBuilderType.TryParse(ItemTypeId, out result))
@@ -352,11 +355,13 @@
                                 return;
                             }
 
+                            // Check the display name to see if we are trading space credits
+                            if (definition.GetDisplayName() == "SpaceCredit" || definition.GetDisplayName() == "Space Credit") { SpaceCredit = True; }
 
                             if (UseBankBuyPrice)
                                 // The player is selling, but the *Market* will *buy* it from the player at this price.
                                 // if we are not using price scaling OR the market we are trading with isn't owned by the NPC ID, dont change price. Otherwise scale.
-                                if (!EconomyScript.Instance.ServerConfig.PriceScaling || accountToBuy.SteamId != EconomyConsts.NpcMerchantId) ItemPrice = marketItem.BuyPrice; else ItemPrice = EconDataManager.PriceAdjust(marketItem.BuyPrice, marketItem.Quantity, PricingBias.Buy);
+                                if (SpaceCredit || !EconomyScript.Instance.ServerConfig.PriceScaling || accountToBuy.SteamId != EconomyConsts.NpcMerchantId) ItemPrice = marketItem.BuyPrice; else ItemPrice = EconDataManager.PriceAdjust(marketItem.BuyPrice, marketItem.Quantity, PricingBias.Buy);
                                 // if we are using price scaling adjust the price before our NPC trade (or check player for subsidy pricing)
                         }
 
@@ -397,7 +402,7 @@
                                 // here we look up item price and transfer items and money as appropriate
                                 EconomyScript.Instance.ServerLogger.WriteVerbose("Action /Sell finalizing by Steam Id '{0}' -- removing inventory.", SenderSteamId);
                                 RemoveInventory(playerInventory, cargoBlocks, tankBlocks, amount, definition.Id);
-                                marketItem.Quantity += ItemQuantity; // increment Market content.
+                                if (!SpaceCredit) { marketItem.Quantity += ItemQuantity; } // increment Market content unless its money
 
                                 if (accountToBuy.SteamId != accountToSell.SteamId)
                                 {

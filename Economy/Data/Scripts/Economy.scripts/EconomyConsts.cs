@@ -17,7 +17,7 @@
         /// communications classes. A Player will connect to the server, and will automatically download version 2.
         /// We would now have a Client running newer communication classes trying to talk to the Server with older classes.
         /// </remarks>
-        public const int ModCommunicationVersion = 20180116; // This will be based on the date of update.
+        public const int ModCommunicationVersion = 20190712; // This will be based on the date of update.
 
 
         internal const string WorldStorageConfigFilename = "EconomyConfig.xml";
@@ -26,7 +26,7 @@
 
 
         //milestone level A=Alpha B=Beta, dev = development test version or Milestone eg 1.0A Milestone, 1.1A Dev etc
-        public const string MajorVer = "Econ 3.397A +#177";
+        public const string MajorVer = "Econ 3.399A +SC";
 
         //Name our money
         public const string CurrencyName = "Credits";
