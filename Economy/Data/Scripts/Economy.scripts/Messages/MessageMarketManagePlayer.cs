@@ -4,6 +4,7 @@
     using EconStructures;
     using ProtoBuf;
     using Sandbox.Definitions;
+    using Sandbox.Common.ObjectBuilders.Definitions;
     using Sandbox.ModAPI;
     using System;
     using System.Collections.Generic;
@@ -772,6 +773,7 @@
 
                         foreach (var kvp in orderedList)
                         {
+                            if ((groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_ConsumableItem)) && (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_Package)) && (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_Datapad)))
                                 continue;
 
                             msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
