@@ -772,6 +772,7 @@
 
                         foreach (var kvp in orderedList)
                         {
+                            if ( (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_ConsumableItem)))// && (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_Package)) && (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_Datapad))
                                 continue;
 
                             msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
@@ -789,6 +790,8 @@
                                 || type == typeof(MyObjectBuilder_Ingot)
                                 || type == typeof(MyObjectBuilder_Component)
                                 || type == typeof(MyObjectBuilder_ConsumableItem)
+                                //|| type == typeof(MyObjectBuilder_Package)
+                                //|| type == typeof(MyObjectBuilder_Datapad)
                                 || type == typeof(MyObjectBuilder_AmmoMagazine)
                                 || type == typeof(MyObjectBuilder_PhysicalGunObject))
                                 continue;
@@ -939,6 +942,7 @@
 
                         foreach (var kvp in orderedList)
                         {
+                            if ((groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_ConsumableItem)))// && (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_Package)) && (groupingList[kvp.Key].Id.TypeId != typeof(MyObjectBuilder_Datapad)))
                                 continue;
 
                             msg.AppendFormat("{0}/{1} | {2}/{3} | {4} | \"{5}\" \r\n", kvp.Key.IsBlacklisted ? "-1" : (kvp.Key.StockLimit == decimal.MaxValue ? "MAX" : kvp.Key.StockLimit.ToString(CultureInfo.InvariantCulture)), kvp.Key.Quantity, kvp.Key.SellPrice, kvp.Key.BuyPrice, "A", kvp.Value);
@@ -956,6 +960,8 @@
                                 || type == typeof(MyObjectBuilder_Component)
                                 || type == typeof(MyObjectBuilder_AmmoMagazine)
                                 || type == typeof(MyObjectBuilder_ConsumableItem)
+                               // || type == typeof(MyObjectBuilder_Package)
+                               // || type == typeof(MyObjectBuilder_Datapad)
                                 || type == typeof(MyObjectBuilder_PhysicalGunObject))
                                 continue;
 
