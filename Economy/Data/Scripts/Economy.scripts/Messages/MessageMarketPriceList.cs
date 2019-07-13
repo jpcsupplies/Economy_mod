@@ -126,7 +126,9 @@
                                 (ShowIngot && content is MyObjectBuilder_Ingot) ||
                                 (ShowComponent && content is MyObjectBuilder_Component) ||
                                 (ShowAmmo && content is MyObjectBuilder_AmmoMagazine) ||
-                                (ShowSupplies && content is MyObjectBuilder_PhysicalObject) ||
+                                (ShowSupplies && content is MyObjectBuilder_ConsumableItem) ||
+                                (ShowSupplies && content is MyObjectBuilder_Datapad) ||
+                                (ShowSupplies && content is MyObjectBuilder_Package) ||
                                 (ShowTools && content is MyObjectBuilder_PhysicalGunObject) || // guns, welders, hand drills, grinders.
                                 (ShowGasses && content is MyObjectBuilder_GasContainerObject) || // aka gas bottle.
                                 (ShowGasses && content is MyObjectBuilder_GasProperties))

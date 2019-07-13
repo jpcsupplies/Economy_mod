@@ -265,7 +265,7 @@
 
                 foreach (var marketItem in market.MarketItems)
                 {
-                    if (marketItem.IsBlacklisted)
+                    if (marketItem.IsBlacklisted || marketItem.SubtypeName == "SpaceCredit" || marketItem.SubtypeName == "Space Credit")
                         continue;
 
                     MyObjectBuilderType result;
@@ -283,7 +283,9 @@
                             (showIngot && content is MyObjectBuilder_Ingot) ||
                             (showComponent && content is MyObjectBuilder_Component) ||
                             (showAmmo && content is MyObjectBuilder_AmmoMagazine) ||
-                            (showTools && content is MyObjectBuilder_PhysicalObject) || 
+                            (showSupplies && content is MyObjectBuilder_ConsumableItem) || 
+                            //(showSupplies && content is MyObjectBuilder_Package) || cannot access
+                            //(showSupplies && content is MyObjectBuilder_Datapad) || cannot access
                             (showTools && content is MyObjectBuilder_PhysicalGunObject) || // guns, welders, hand drills, grinders.
                             (showGasses && content is MyObjectBuilder_GasContainerObject) || // aka gas bottle.
                             (showGasses && content is MyObjectBuilder_GasProperties))  // Type check here allows mods that inherit from the same type to also appear in the lists.

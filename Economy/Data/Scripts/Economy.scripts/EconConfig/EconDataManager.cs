@@ -83,6 +83,46 @@
             const string xmlText = @"<Market>
 <MarketItems>
     <MarketItem>
+      <TypeId>MyObjectBuilder_Component</TypeId>
+      <SubtypeName>ZoneChip</SubtypeName>
+      <Quantity>100000</Quantity>
+      <SellPrice>1147</SellPrice>
+      <BuyPrice>1000</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_Datapad</TypeId>
+      <SubtypeName>Datapad</SubtypeName>
+      <Quantity>500</Quantity>
+      <SellPrice>8</SellPrice>
+      <BuyPrice>7</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_Package</TypeId>
+      <SubtypeName>Package</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>5000</SellPrice>
+      <BuyPrice>2000</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>Medkit</SubtypeName>
+      <Quantity>10000</Quantity>
+      <SellPrice>12</SellPrice>
+      <BuyPrice>11</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>Powerkit</SubtypeName>
+      <Quantity>10000</Quantity>
+      <SellPrice>11.4</SellPrice>
+      <BuyPrice>10.4</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
       <TypeId>MyObjectBuilder_PhysicalObject</TypeId>
       <SubtypeName>SpaceCredit</SubtypeName>
       <Quantity>1000000000</Quantity>
