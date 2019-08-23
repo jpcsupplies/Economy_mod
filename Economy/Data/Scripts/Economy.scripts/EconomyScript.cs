@@ -1799,7 +1799,7 @@ namespace Economy.scripts
                 }
 
                 // TODO: report back bad command.
-                MyAPIGateway.Utilities.ShowMessage("/npczone list/[add]/remove zone [x y z radius shape]", "Manages your NPC trading zone portal locations.");
+                MyAPIGateway.Utilities.ShowMessage("/npczone list/[add]/addhere/movehere/remove zonename [x y z radius shape]", "Manages your NPC trading zone portal locations.");
                 return true;
             }
 
