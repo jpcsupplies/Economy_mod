@@ -130,8 +130,8 @@
             {
                 _fontSize = value;
                 WidthModifier = (_isWide ? 2f : 1f) / FontSize;
-                DisplayLines = (int)Math.Round(17.6f / FontSize);
-                WholeDisplayLines = (int)Math.Truncate(17.6f / FontSize);
+                DisplayLines = (int)Math.Round(17.6f / FontSize - (17.6f / FontSize * _panel.TextPadding / 100));
+                WholeDisplayLines = (int)Math.Truncate(17.6f / FontSize - (17.6f / FontSize * _panel.TextPadding / 100));
             }
         }
 
@@ -295,6 +295,7 @@
             float textWidth = MeasureString(text);
             rightEdgePosition *= WidthModifier;
             rightEdgePosition -= curWidth;
+            rightEdgePosition -= (LcdLineWidth * WidthModifier * _panel.TextPadding / 100) * 2;
 
             if (rightEdgePosition < textWidth)
             {
@@ -314,6 +315,12 @@
             float textWidth = MeasureString(text);
             centerPosition *= WidthModifier;
             centerPosition -= curWidth;
+
+            if (_panel.Alignment == VRage.Game.GUI.TextPanel.TextAlignment.CENTER)
+            {
+                stringBuilder.Append(text);
+                return;
+            }
 
             if (centerPosition < textWidth / 2)
             {
@@ -466,7 +473,9 @@
         {
             byte width;
             if (!FontCharWidth.TryGetValue(c, out width))
+            {
                 width = DefaultCharWidth;
+            }
             return width;
         }
 
@@ -477,7 +486,9 @@
                 str = string.Empty;
             int sum = 0;
             for (int i = 0; i < str.Length; i++)
+            {
                 sum += MeasureChar(str[i]);
+            }
 
             //  Spacing is applied to every character, except the last.
             sum += Spacing * (str.Length > 1 ? str.Length - 1 : 0);
