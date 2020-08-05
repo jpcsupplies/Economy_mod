@@ -130,7 +130,6 @@ namespace Economy.scripts
         private Timer _timer1Events; // 1 second.
         private Timer _timer10Events; // 10 seconds.
         private Timer _timer3600Events; // 1 hour.
-        private bool _timer1Block;
         private bool _timer10Block;
         private bool _timer3600Block;
 
