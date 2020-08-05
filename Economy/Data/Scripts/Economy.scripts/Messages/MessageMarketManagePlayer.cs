@@ -804,7 +804,7 @@
 # Any text behind the # will be ignored.
 ");
 
-                        textBlock.WritePublicText(msg.ToString(), false);
+                        textBlock.WriteText(msg.ToString(), false);
 
                         MessageClientTextMessage.SendMessage(SenderSteamId, "TZ EXPORT", "Text panel updated.");
                     }
@@ -1001,7 +1001,7 @@
 #   allies, neutral players and enemies.
 ");
 
-                        textBlock.WritePublicText(msg.ToString(), false);
+                        textBlock.WriteText(msg.ToString(), false);
 
                         MessageClientTextMessage.SendMessage(SenderSteamId, "TZ LOAD", "Text panel updated.");
                     }

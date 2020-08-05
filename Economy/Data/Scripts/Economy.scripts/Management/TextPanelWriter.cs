@@ -7,6 +7,7 @@
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Interfaces;
     using VRage;
+    using VRage.Game.GUI.TextPanel;
 
     public class TextPanelWriter
     {
@@ -218,15 +219,13 @@
             LastUpdate = DateTime.Now;
 
             // no need to update if the text has not changed.
-            if (_panel.GetPublicText() != _publicString.ToString())
+            if (_panel.GetText() != _publicString.ToString())
             {
-                _panel.WritePublicText(_publicString.ToString());
+                _panel.WriteText(_publicString.ToString());
 
                 if (show)
                 {
-                    if (ForceRedraw)
-                        _panel.ShowTextureOnScreen();
-                    _panel.ShowPublicTextOnScreen();
+                    _panel.ContentType = ContentType.TEXT_AND_IMAGE;
                 }
             }
         }
@@ -237,11 +236,10 @@
 
         public void UpdateImage(float interval, List<string> images)
         {
+            _panel.ContentType = ContentType.TEXT_AND_IMAGE;
             _panel.ClearImagesFromSelection();
-            _panel.ShowPublicTextOnScreen();
-            _panel.SetValueFloat("ChangeIntervalSlider", interval);
+            _panel.ChangeInterval = interval;
             _panel.AddImagesToSelection(images, true); // This truely acts weird.
-            _panel.ShowTextureOnScreen();
         }
 
         #endregion
