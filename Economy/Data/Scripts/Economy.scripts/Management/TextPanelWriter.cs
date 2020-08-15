@@ -313,6 +313,7 @@
             float textWidth = MeasureString(text);
             centerPosition *= WidthModifier;
             centerPosition -= curWidth;
+            centerPosition -= (LcdLineWidth * WidthModifier * _panel.TextPadding / 100);
 
             if (_panel.Alignment == VRage.Game.GUI.TextPanel.TextAlignment.CENTER)
             {
