@@ -174,10 +174,11 @@
     [Flags]
     public enum SetMarketItemType : byte
     {
-        Quantity = 0x1,
-        BuyPrice = 0x2,
-        SellPrice = 0x4,
-        Blacklisted = 0x8
+        Quantity = 1,
+        BuyPrice = 2,
+        SellPrice = 4,
+        Blacklisted = 8,
+        StockLimit = 16
     }
 
     /// <summary>
@@ -211,7 +212,8 @@
         Delete = 1,
         List = 2,
         Rename = 3,
-        Move = 4
+        Move = 4,
+        Limit = 5
     }
 
     /// <summary>

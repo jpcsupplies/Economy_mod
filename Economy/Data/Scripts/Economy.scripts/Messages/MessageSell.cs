@@ -383,7 +383,7 @@
                             {
                                 decimal limit = EconomyScript.Instance.ServerConfig.LimitedSupply ? marketItem.StockLimit - marketItem.Quantity : ItemQuantity;
 
-                                if (limit == 0)
+                                if (limit <= 0)
                                 {
                                     MessageClientTextMessage.SendMessage(SenderSteamId, "SELL", "Sorry, you cannot sell any more {0} into this market.", definition.GetDisplayName());
                                     return;

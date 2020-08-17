@@ -57,7 +57,7 @@ namespace Economy.scripts
         //set is for admins to configure things like on hand, npc market pricing, toggle blacklist
         //Examples: eg /set 10000 ice    or /set blacklist ice   or /set buy item price
 
-        const string SetPattern = @"(?<command>/set)(?:\s+(?:(?:""(?<market>[^""]|.*?)"")|(?<market>[^\s]*)))?\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<blacklist>blacklist)|(?<buy>buy)|(?<sell>sell))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+))))?";
+        const string SetPattern = @"(?<command>/set)(?:\s+(?:(?:""(?<market>[^""]|.*?)"")|(?<market>[^\s]*)))?\s+(?:(?<qty>[+-]?((\d+(\.\d*)?)|(\.\d+)))|(?<blacklist>blacklist)|(?<buy>buy)|(?<sell>sell)|(?<limit>limit))\s+(?:(?:""(?<item>[^""]|.*?)"")|(?<item>.*(?=\s+\d+\b))|(?<item>.*$))(?:\s+(?<price>[+-]?((\d+(\.\d*)?)|(\.\d+))))?";
 
         /// <summary>
         ///  buy pattern no "all" required.   reusing sell  
@@ -1095,13 +1095,14 @@ namespace Economy.scripts
                     string itemName = match.Groups["item"].Value.Trim();
                     bool setbuy = match.Groups["buy"].Value.Equals("buy", StringComparison.InvariantCultureIgnoreCase);
                     bool setsell = match.Groups["sell"].Value.Equals("sell", StringComparison.InvariantCultureIgnoreCase);
+                    bool setlimit = match.Groups["limit"].Value.Equals("limit", StringComparison.InvariantCultureIgnoreCase);
                     bool blacklist = match.Groups["blacklist"].Value.Equals("blacklist", StringComparison.InvariantCultureIgnoreCase);
                     decimal amount = 0;
                     if (!blacklist && !setbuy && !setsell) // must be setting on hand
                         if (!decimal.TryParse(match.Groups["qty"].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
                             amount = 0;
 
-                    if (setbuy || setsell) // must be setting a price
+                    if (setbuy || setsell || setlimit) // must be setting a price
                         if (!decimal.TryParse(match.Groups["price"].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out amount))
                             amount = 0;
 
@@ -1134,6 +1135,10 @@ namespace Economy.scripts
                     else if (setsell) //or do we want to set sell price..?
                     {
                         MessageSet.SendMessageSell(EconomyConsts.NpcMerchantId, marketZone, content.TypeId.ToString(), content.SubtypeName, amount);
+                    }
+                    else if (setlimit)
+                    {
+                        MessageSet.SendMessageStockLimit(EconomyConsts.NpcMerchantId, marketZone, content.TypeId.ToString(), content.SubtypeName, amount);
                     }
                     else //no we must want to set on hand?
                     {
