@@ -7,6 +7,7 @@
     using Sandbox.ModAPI;
     using Sandbox.ModAPI.Interfaces;
     using VRage;
+    using VRage.Game.GUI.TextPanel;
 
     public class TextPanelWriter
     {
@@ -130,8 +131,8 @@
             {
                 _fontSize = value;
                 WidthModifier = (_isWide ? 2f : 1f) / FontSize;
-                DisplayLines = (int)Math.Round(17.6f / FontSize);
-                WholeDisplayLines = (int)Math.Truncate(17.6f / FontSize);
+                DisplayLines = (int)Math.Round(17.6f / FontSize - (17.6f / FontSize * _panel.TextPadding / 100));
+                WholeDisplayLines = (int)Math.Truncate(17.6f / FontSize - (17.6f / FontSize * _panel.TextPadding / 100));
             }
         }
 
@@ -218,15 +219,13 @@
             LastUpdate = DateTime.Now;
 
             // no need to update if the text has not changed.
-            if (_panel.GetPublicText() != _publicString.ToString())
+            if (_panel.GetText() != _publicString.ToString())
             {
-                _panel.WritePublicText(_publicString.ToString());
+                _panel.WriteText(_publicString.ToString());
 
                 if (show)
                 {
-                    if (ForceRedraw)
-                        _panel.ShowTextureOnScreen();
-                    _panel.ShowPublicTextOnScreen();
+                    _panel.ContentType = ContentType.TEXT_AND_IMAGE;
                 }
             }
         }
@@ -237,11 +236,10 @@
 
         public void UpdateImage(float interval, List<string> images)
         {
+            _panel.ContentType = ContentType.TEXT_AND_IMAGE;
             _panel.ClearImagesFromSelection();
-            _panel.ShowPublicTextOnScreen();
-            _panel.SetValueFloat("ChangeIntervalSlider", interval);
+            _panel.ChangeInterval = interval;
             _panel.AddImagesToSelection(images, true); // This truely acts weird.
-            _panel.ShowTextureOnScreen();
         }
 
         #endregion
@@ -295,6 +293,7 @@
             float textWidth = MeasureString(text);
             rightEdgePosition *= WidthModifier;
             rightEdgePosition -= curWidth;
+            rightEdgePosition -= (LcdLineWidth * WidthModifier * _panel.TextPadding / 100) * 2;
 
             if (rightEdgePosition < textWidth)
             {
@@ -314,6 +313,13 @@
             float textWidth = MeasureString(text);
             centerPosition *= WidthModifier;
             centerPosition -= curWidth;
+            centerPosition -= (LcdLineWidth * WidthModifier * _panel.TextPadding / 100);
+
+            if (_panel.Alignment == VRage.Game.GUI.TextPanel.TextAlignment.CENTER)
+            {
+                stringBuilder.Append(text);
+                return;
+            }
 
             if (centerPosition < textWidth / 2)
             {
@@ -466,7 +472,9 @@
         {
             byte width;
             if (!FontCharWidth.TryGetValue(c, out width))
+            {
                 width = DefaultCharWidth;
+            }
             return width;
         }
 
@@ -477,7 +485,9 @@
                 str = string.Empty;
             int sum = 0;
             for (int i = 0; i < str.Length; i++)
+            {
                 sum += MeasureChar(str[i]);
+            }
 
             //  Spacing is applied to every character, except the last.
             sum += Spacing * (str.Length > 1 ? str.Length - 1 : 0);

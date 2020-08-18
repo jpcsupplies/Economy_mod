@@ -76,7 +76,6 @@
             {
                 if (Amount > 0)
                 {
-                    decimal amount = 0;
                     var check = ShipManager.CheckSellOrder(selectedShip.EntityId);
                     if (check == 0)
                     {

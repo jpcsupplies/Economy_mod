@@ -67,6 +67,12 @@
         [ProtoMember(208)]
         public decimal ItemSellPrice;
 
+        /// <summary>
+        /// Market quanity stock limit.
+        /// </summary>
+        [ProtoMember(209)]
+        public decimal ItemStockLimit;
+
         #endregion
 
         public static void SendMessage(ulong marketId, string marketZone, string itemTypeId, string itemSubTypeName, SetMarketItemType setType, decimal itemQuantity, decimal itemBuyPrice, decimal itemSellPrice)
@@ -87,6 +93,11 @@
         public static void SendMessageQuantity(ulong marketId, string marketZone, string itemTypeId, string itemSubTypeName, decimal itemQuantity)
         {
             ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, MarketZone = marketZone, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = SetMarketItemType.Quantity, ItemQuantity = itemQuantity });
+        }
+
+        public static void SendMessageStockLimit(ulong marketId, string marketZone, string itemTypeId, string itemSubTypeName, decimal itemStockLimit)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageSet { MarketId = marketId, MarketZone = marketZone, ItemTypeId = itemTypeId, ItemSubTypeName = itemSubTypeName, SetType = SetMarketItemType.StockLimit, ItemStockLimit = itemStockLimit});
         }
 
         public override void ProcessClient()
@@ -226,6 +237,23 @@
                     marketItem.IsBlacklisted = !marketItem.IsBlacklisted;
                     msg.AppendFormat("Blacklist to {0}", marketItem.IsBlacklisted ? "On" : "Off");
                 }
+
+                if (SetType.HasFlag(SetMarketItemType.StockLimit))
+                {
+                    if (ItemStockLimit > 0)
+                    {
+                        marketItem.StockLimit = ItemStockLimit;
+                        if (ItemStockLimit == decimal.MaxValue)
+                            msg.AppendFormat("Set stock limit to MAX");
+                        else
+                            msg.AppendFormat("Set stock limit to {0}", ItemStockLimit);
+                    }
+                    else
+                    {
+                        msg.AppendFormat("Can not set stock limit to less than 0.");
+                    }
+                }
+
                 msg.AppendLine();
                 msg.AppendLine();
             }
