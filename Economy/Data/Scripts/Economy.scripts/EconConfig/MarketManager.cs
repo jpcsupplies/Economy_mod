@@ -186,7 +186,9 @@
                 switch (market.MarketZoneType)
                 {
                     case MarketZoneType.EntitySphere:
-                        if (!EconomyScript.Instance.ServerConfig.EnablePlayerTradezones)
+                        if (!EconomyScript.Instance.ServerConfig.EnablePlayerTradezones && market.MarketId != EconomyConsts.NpcMerchantId)
+                            continue;
+                        if (!EconomyScript.Instance.ServerConfig.EnableNpcTradezones && market.MarketId == EconomyConsts.NpcMerchantId)
                             continue;
                         if (market.EntityId == 0 || !MyAPIGateway.Entities.EntityExists(market.EntityId))
                             continue;
@@ -264,7 +266,9 @@
                 switch (market.MarketZoneType)
                 {
                     case MarketZoneType.EntitySphere:
-                        if (!enablePlayerTradezones)
+                        if (!enablePlayerTradezones && market.MarketId != EconomyConsts.NpcMerchantId)
+                            continue;
+                        if (!enableNpcTradezones && market.MarketId == EconomyConsts.NpcMerchantId)
                             continue;
                         if (market.EntityId == 0 || !MyAPIGateway.Entities.EntityExists(market.EntityId))
                             continue;

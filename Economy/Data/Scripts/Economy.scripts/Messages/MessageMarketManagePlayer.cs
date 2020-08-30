@@ -185,14 +185,14 @@
                 case PlayerMarketManage.ConfirmRegister:
                     {
                         string msg = string.Format("Please confirm the registration of a new trade zone called '{0}', with a size of {1}m radius.\r\n" +
-                                                   "The full cost to register it is {2} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.ServerConfig.CurrencyName);
+                                                   "The full cost of registration is {2:#,##0.######} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.ServerConfig.CurrencyName);
                         MyAPIGateway.Utilities.ShowMissionScreen("Please confirm", " ", " ", msg, ConfirmRegisterResponse, "Accept");
                     }
                     break;
                 case PlayerMarketManage.ConfirmRelink:
                     {
                         string msg = string.Format("Please confirm the relink of the existing trade zone called '{0}', with a size of {1}m radius.\r\n" +
-                                                   "The cost to relink it is {2} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.ServerConfig.CurrencyName);
+                                                   "The cost to relink it is {2:#,##0.######} {3}.", MarketName, Size, LicenceCost, EconomyScript.Instance.ClientConfig.ServerConfig.CurrencyName);
                         MyAPIGateway.Utilities.ShowMissionScreen("Please confirm", " ", " ", msg, ConfirmRelinkResponse, "Accept");
                     }
                     break;
@@ -485,7 +485,7 @@
                             EconomyScript.Instance.Data.CreditBalance += msg.LicenceCost;
 
                             EconDataManager.CreatePlayerMarket(player.SteamUserId, msg.EntityId, (double)msg.Size, msg.MarketName);
-                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A new trade zone called registered to beacon '{0}'.", msg.MarketName);
+                            MessageClientTextMessage.SendMessage(SenderSteamId, "TZ REGISTER", "A new trade zone called '{0}' has been registered and linked to a beacon.", msg.MarketName);
                         }
                         else
                         {

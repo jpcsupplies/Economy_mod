@@ -72,6 +72,12 @@ namespace Economy.scripts
         const string NpcZoneAddPattern = @"(?<command>/npczone)\s+((add)|(create))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<X>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Y>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Z>[+-]?((\d+(\.\d*)?)|(\.\d+)))\s+(?<Size>(\d+(\.\d*)?))\s+(?<shape>(round)|(circle)|(sphere)|(spherical)|(box)|(cube)|(cubic))";
 
         /// <summary>
+        /// pattern defines how to create a new NPC Market linked to an entity
+        /// /npczone add|create {name} {size}
+        /// </summary>
+        const string NpcZoneAddPattern2 = @"(?<command>/npczone)\s+((add)|(create))\s+(?:(?:""(?<name>[^""]|.*?)"")|(?<name>[^\s]*))\s+(?<Size>(\d+(\.\d*)?))";
+
+        /// <summary>
         /// pattern defines how to delete an existing NPC Market by name.
         /// /npczone del|delete|remove "{name}" or {name}
         /// </summary>
@@ -1710,15 +1716,32 @@ namespace Economy.scripts
                         case "round":
                         case "circle":
                             shape = MarketZoneType.FixedSphere;
+                            MessageMarketManageNpc.SendAddMessage(marketName, x, y, z, size, shape);
                             break;
                         case "box":
                         case "cube":
                         case "cubic":
                             shape = MarketZoneType.FixedBox;
+                            MessageMarketManageNpc.SendAddMessage(marketName, x, y, z, size, shape);
                             break;
                     }
 
-                    MessageMarketManageNpc.SendAddMessage(marketName, x, y, z, size, shape);
+                    return true;
+                }
+
+                match = Regex.Match(messageText, NpcZoneAddPattern2, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    string marketName = match.Groups["name"].Value;
+                    decimal size = Convert.ToDecimal(match.Groups["Size"].Value, CultureInfo.InvariantCulture);
+                    var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
+                    if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof(MyObjectBuilder_Beacon))
+                    {
+                        MyAPIGateway.Utilities.ShowMessage("TZ", "You need to target a beacon to register a trade zone.");
+                        return true;
+                    }
+                    MessageMarketManageNpc.SendAddMessage(marketName, selectedBlock.EntityId, size, MarketZoneType.EntitySphere);
+                    
                     return true;
                 }
 
