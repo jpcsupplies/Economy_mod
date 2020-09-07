@@ -199,14 +199,14 @@
                 return;
             }
 
-            var buyColumn = TextPanelWriter.LcdLineWidth - 180;
+            var buyColumn = TextPanelWriter.LcdLineWidth - 150;
             var sellColumn = TextPanelWriter.LcdLineWidth - 0;
             var stockColumn = TextPanelWriter.LcdLineWidth - 0;
 
             if (showPrices && showStock)
             {
-                buyColumn = TextPanelWriter.LcdLineWidth - 280;
-                sellColumn = TextPanelWriter.LcdLineWidth - 180;
+                buyColumn = TextPanelWriter.LcdLineWidth - 250;
+                sellColumn = TextPanelWriter.LcdLineWidth - 150;
                 stockColumn = TextPanelWriter.LcdLineWidth - 0;
             }
 
@@ -304,7 +304,7 @@
                         continue;
                     if (startFrom == StartFrom.Line && line - startLine >= writer.WholeDisplayLines - 2)  // counts 2 lines of headers.
                         break; // truncate the display and don't display the text on the bottom edge of the display.
-                    writer.AddPublicLeftTrim(buyColumn - 120, kvp.Value);
+                    writer.AddPublicLeftTrim(buyColumn - 130, kvp.Value);
 
                     decimal showBuy = kvp.Key.BuyPrice;
                     decimal showSell = kvp.Key.SellPrice;
@@ -316,22 +316,22 @@
 
                     if (showPrices && showStock)
                     {
-                        writer.AddPublicRightText(buyColumn, showBuy.ToString("    0.000", EconomyScript.ServerCulture));
-                        writer.AddPublicRightText(sellColumn, showSell.ToString("    0.000", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(buyColumn, showBuy.ToString("  0.000", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(sellColumn, showSell.ToString("  0.000", EconomyScript.ServerCulture));
 
                         // TODO: components and tools should be displayed as whole numbers. Will be hard to align with other values.
-                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("    0.0000", EconomyScript.ServerCulture)); // TODO: recheck number of decimal places.
+                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("  0", EconomyScript.ServerCulture)); // TODO: recheck number of decimal places.
                     }
                     else if (showStock) //does this ever actually run? seems to already be in the above?
                     {
                         // TODO: components and tools should be displayed as whole numbers. Will be hard to align with other values.
 
-                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("    0.0000", EconomyScript.ServerCulture)); // TODO: recheck number of decimal places.
+                        writer.AddPublicRightText(stockColumn, kvp.Key.Quantity.ToString("  0", EconomyScript.ServerCulture)); // TODO: recheck number of decimal places.
                     }
                     else if (showPrices)
                     {
-                        writer.AddPublicRightText(buyColumn, showBuy.ToString("    0.000", EconomyScript.ServerCulture));
-                        writer.AddPublicRightText(sellColumn, showSell.ToString("    0.000", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(buyColumn, showBuy.ToString("  0.000", EconomyScript.ServerCulture));
+                        writer.AddPublicRightText(sellColumn, showSell.ToString("  0.000", EconomyScript.ServerCulture));
                     }
                     writer.AddPublicLine();
                 }
@@ -360,7 +360,7 @@
             Testline1(writer, "zzzzzzzz|");
             Testline1(writer, "\xe008\xe008\xe008\xe008|");
 
-            writer.AddPublicLine(TextPanelWriter.GetStringTrimmed(138f, "                   0"));
+            writer.AddPublicLine(writer.GetStringTrimmed(138f, "                   0"));
             writer.AddPublicRightLine(138f, "...123");
 
             //Testline2(writer, "\xe008\xe008\xe008\xe008\xe008\xe008\xe008\xe008\xe008\xe008\xe008\xe008\xe008\xe008\xe008\xe008\xe008\xe008\xe008!!!");
@@ -389,14 +389,14 @@
 
         private static void Testline1(TextPanelWriter writer, string text)
         {
-            var size = TextPanelWriter.MeasureString(text);
+            var size = writer.MeasureString(text);
             writer.AddPublicText(text);
             writer.AddPublicLine("  " + size.ToString(EconomyScript.ServerCulture));
         }
 
         private static void Testline2(TextPanelWriter writer, string text)
         {
-            var size = TextPanelWriter.MeasureString(text);
+            var size = writer.MeasureString(text);
             writer.AddPublicLine(text);
             writer.AddPublicLine(size.ToString(EconomyScript.ServerCulture));
         }

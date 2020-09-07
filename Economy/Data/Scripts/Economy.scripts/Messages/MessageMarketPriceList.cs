@@ -163,6 +163,7 @@
                         str.AddLeftTrim(550, kvp.Value);
                         str.AddRightText(650, showBuy.ToString("0.00", EconomyScript.ServerCulture));
                         str.AddRightText(850, showSell.ToString("0.00", EconomyScript.ServerCulture));
+                        //str.AddRightText(852, kvp.Key.Quantity >= kvp.Key.StockLimit ? "*" + kvp.Key.StockLimit : "");
                         str.AppendLine();
                     }
                     reply = str.ToString();

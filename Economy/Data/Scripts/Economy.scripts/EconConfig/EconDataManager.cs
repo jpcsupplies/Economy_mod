@@ -899,6 +899,7 @@
             {
                 market = new MarketStruct
                 {
+                    Open = true,
                     MarketId = EconomyConsts.NpcMerchantId,
                     MarketZoneType = MarketZoneType.FixedSphere,
                     DisplayName = EconomyConsts.NpcMarketName,
@@ -911,22 +912,7 @@
             if (string.IsNullOrEmpty(market.DisplayName))
                 market.DisplayName = EconomyConsts.NpcMarketName;
 
-            // Add missing items that are covered by Default items.
-            foreach (var defaultItem in defaultPrices)
-            {
-                var item = market.MarketItems.FirstOrDefault(e => e.TypeId.Equals(defaultItem.TypeId) && e.SubtypeName.Equals(defaultItem.SubtypeName));
-                if (item == null)
-                {
-                    market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = defaultItem.Quantity });
-                    EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
-                }
-                else
-                {
-                    // Disable any blackmarket items.
-                    if (defaultItem.IsBlacklisted)
-                        item.IsBlacklisted = true;
-                }
-            }
+            AddMissingItemsToMarket(market, defaultPrices);
         }
 
         public static void CreateNpcMarket(string marketName, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)
@@ -942,22 +928,27 @@
             };
             SetMarketShape(market, x, y, z, size, shape);
 
-            // Add missing items that are covered by Default items.
-            foreach (var defaultItem in EconomyScript.Instance.ServerConfig.DefaultPrices)
+            AddMissingItemsToMarket(market, EconomyScript.Instance.ServerConfig.DefaultPrices);
+            
+            EconomyScript.Instance.Data.Markets.Add(market);
+        }
+
+        public static void CreateNpcMarket(string marketName, long entityId, decimal size)
+        {
+            EconomyScript.Instance.ServerLogger.WriteInfo("Creating Npc Market.");
+
+            var market = new MarketStruct
             {
-                var item = market.MarketItems.FirstOrDefault(e => e.TypeId.Equals(defaultItem.TypeId) && e.SubtypeName.Equals(defaultItem.SubtypeName));
-                if (item == null)
-                {
-                    market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = defaultItem.Quantity });
-                    EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
-                }
-                else
-                {
-                    // Disable any blackmarket items.
-                    if (defaultItem.IsBlacklisted)
-                        item.IsBlacklisted = true;
-                }
-            }
+                MarketId = EconomyConsts.NpcMerchantId,
+                Open = true,
+                DisplayName = marketName,
+                MarketItems = new List<MarketItemStruct>(),
+                MarketZoneType = MarketZoneType.EntitySphere,
+                MarketZoneSphere = new BoundingSphereD(Vector3D.Zero, decimal.ToDouble(size)),
+                EntityId = entityId
+            };
+
+            AddMissingItemsToMarket(market, EconomyScript.Instance.ServerConfig.DefaultPrices);
 
             EconomyScript.Instance.Data.Markets.Add(market);
         }
@@ -977,13 +968,26 @@
                 MarketZoneSphere = new BoundingSphereD(Vector3D.Zero, size)
             };
 
+            AddMissingItemsToMarket(market, EconomyScript.Instance.ServerConfig.DefaultPrices);
+            
+            EconomyScript.Instance.Data.Markets.Add(market);
+        }
+
+        private static void AddMissingItemsToMarket(MarketStruct market, List<MarketItemStruct> defaultPrices)
+        {
             // Add missing items that are covered by Default items, with 0 quantity.
-            foreach (var defaultItem in EconomyScript.Instance.ServerConfig.DefaultPrices)
+            foreach (var defaultItem in defaultPrices)
             {
                 var item = market.MarketItems.FirstOrDefault(e => e.TypeId.Equals(defaultItem.TypeId) && e.SubtypeName.Equals(defaultItem.SubtypeName));
                 if (item == null)
                 {
-                    market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = 0 });
+                    market.MarketItems.Add(new MarketItemStruct {
+                        TypeId = defaultItem.TypeId,
+                        SubtypeName = defaultItem.SubtypeName,
+                        BuyPrice = defaultItem.BuyPrice,
+                        SellPrice = defaultItem.SellPrice,
+                        IsBlacklisted = defaultItem.IsBlacklisted,
+                        Quantity = market.MarketId == EconomyConsts.NpcMerchantId ? defaultItem.Quantity : 0 });
                     EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
                 }
                 else
@@ -993,8 +997,6 @@
                         item.IsBlacklisted = true;
                 }
             }
-
-            EconomyScript.Instance.Data.Markets.Add(market);
         }
 
         public static void SetMarketShape(MarketStruct market, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)
@@ -1046,31 +1048,9 @@
                     client.ClientHudSettings = new ClientHudSettingsStruct();
             }
 
-            // Add missing items that are covered by Default items.
-            foreach (var defaultItem in defaultPrices)
+            foreach (var market in data.Markets)
             {
-                foreach (var market in data.Markets)
-                {
-                    var item = market.MarketItems.FirstOrDefault(e => e.TypeId.Equals(defaultItem.TypeId) && e.SubtypeName.Equals(defaultItem.SubtypeName));
-                    var isNpcMerchant = market.MarketId == EconomyConsts.NpcMerchantId; // make sure no stock is added to player markets.
-
-                    // TODO: remove this later. It's a temporary fix to setup the new Open property.
-                    // Added 01.125.
-                    if (isNpcMerchant)
-                        market.Open = true;
-
-                    if (item == null)
-                    {
-                        market.MarketItems.Add(new MarketItemStruct { TypeId = defaultItem.TypeId, SubtypeName = defaultItem.SubtypeName, BuyPrice = defaultItem.BuyPrice, SellPrice = defaultItem.SellPrice, IsBlacklisted = defaultItem.IsBlacklisted, Quantity = isNpcMerchant ? defaultItem.Quantity : 0 });
-                        EconomyScript.Instance.ServerLogger.WriteVerbose("MarketItem Adding Default item: {0} {1}.", defaultItem.TypeId, defaultItem.SubtypeName);
-                    }
-                    else
-                    {
-                        // Disable any blackmarket items.
-                        if (defaultItem.IsBlacklisted)
-                            item.IsBlacklisted = true;
-                    }
-                }
+                AddMissingItemsToMarket(market, defaultPrices);
             }
 
             if (data.Missions == null)

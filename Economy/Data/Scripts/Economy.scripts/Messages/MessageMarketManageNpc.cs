@@ -6,6 +6,7 @@
     using EconConfig;
     using ProtoBuf;
     using Sandbox.ModAPI;
+    using VRage.ModAPI;
 
     [ProtoContract]
     public class MessageMarketManageNpc : MessageBase
@@ -34,9 +35,17 @@
         [ProtoMember(208)]
         public string OldMarketName;
 
+        [ProtoMember(209)]
+        public long EntityId;
+
         public static void SendAddMessage(string marketName, decimal x, decimal y, decimal z, decimal size, MarketZoneType shape)
         {
             ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = NpcMarketManage.Add, MarketName = marketName, X = x, Y = y, Z = z, Size = size, Shape = shape });
+        }
+
+        public static void SendAddMessage(string marketName, long entityId, decimal size, MarketZoneType shape)
+        {
+            ConnectionHelper.SendMessageToServer(new MessageMarketManageNpc { CommandType = NpcMarketManage.Add, MarketName = marketName, EntityId = entityId, Size = size, Shape = shape });
         }
 
         public static void SendDeleteMessage(string marketName)
@@ -93,7 +102,15 @@
 
                         // TODO: market inside market check?
 
-                        EconDataManager.CreateNpcMarket(MarketName, X, Y, Z, Size, Shape);
+                        if (EntityId != 0)
+                        {
+                            EconDataManager.CreateNpcMarket(MarketName, EntityId, Size);
+                        }
+                        else
+                        {
+                            EconDataManager.CreateNpcMarket(MarketName, X, Y, Z, Size, Shape);
+                        }
+                        
                         MessageUpdateClient.SendServerTradeZones();
                         MessageClientTextMessage.SendMessage(SenderSteamId, "NPC ADD", "A new market called '{0}' has been created.", MarketName);
                     }
@@ -139,9 +156,28 @@
                             str.AppendFormat("Market: {0}\r\n", market.DisplayName);
                             str.AppendFormat("{0}", market.MarketZoneType);
                             if (market.MarketZoneType == MarketZoneType.FixedSphere && market.MarketZoneSphere != null)
-                                str.AppendFormat("  Center Position=X:{0:N} | Y:{1:N} | Z:{2:N} Radius={3:N}m\r\n\r\n", market.MarketZoneSphere.Center.X, market.MarketZoneSphere.Center.Y, market.MarketZoneSphere.Center.Z, market.MarketZoneSphere.Radius);
+                                str.AppendFormat("  Center Position=X:{0:N} | Y:{1:N} | Z:{2:N}  Radius={3:N}m\r\n\r\n", market.MarketZoneSphere.Center.X, market.MarketZoneSphere.Center.Y, market.MarketZoneSphere.Center.Z, market.MarketZoneSphere.Radius);
                             else if (market.MarketZoneType == MarketZoneType.FixedBox && market.MarketZoneBox.HasValue)
-                                str.AppendFormat("  Center Position=X:{0:N} | Y:{1:N} | Z:{2:N} Size={3:N}m\r\n\r\n", market.MarketZoneBox.Value.Center.X, market.MarketZoneBox.Value.Center.Y, market.MarketZoneBox.Value.Center.Z, market.MarketZoneBox.Value.Size.X);
+                                str.AppendFormat("  Center Position=X:{0:N} | Y:{1:N} | Z:{2:N}  Size={3:N}m\r\n\r\n", market.MarketZoneBox.Value.Center.X, market.MarketZoneBox.Value.Center.Y, market.MarketZoneBox.Value.Center.Z, market.MarketZoneBox.Value.Size.X);
+                            else if (market.MarketZoneType == MarketZoneType.EntitySphere && market.MarketZoneSphere != null)
+                            {
+                                bool destroyed = false;
+                                IMyEntity entity;
+                                if (!MyAPIGateway.Entities.TryGetEntityById(market.EntityId, out entity))
+                                    destroyed = true;
+
+                                if (entity != null && (entity.Closed || entity.MarkedForClose))
+                                    destroyed = true;
+
+                                IMyBeacon beacon = entity as IMyBeacon;
+                                if (beacon == null)
+                                    destroyed = true;
+
+                                if (!destroyed)
+                                    str.AppendFormat("  Center Position=X:{0:N} | Y:{1:N} | Z:{2:N}  Radius={3:N}m\r\n\r\n", beacon.WorldMatrix.Translation.X, beacon.WorldMatrix.Translation.Y, beacon.WorldMatrix.Translation.Z, market.MarketZoneSphere.Radius);
+                                else
+                                    str.AppendFormat("  Unteathered  Radius={0:N}m\r\n\r\n", market.MarketZoneSphere.Radius);
+                            }
                             else
                                 str.AppendLine("\r\n");
                         }

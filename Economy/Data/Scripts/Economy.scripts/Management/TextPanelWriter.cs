@@ -18,14 +18,14 @@
         // Spacing looks to be something Keen planned to implement as configurable to the Font, but haven't and left Spacing defaulted as 1.
         private const int Spacing = 1;
 
-        private static readonly int WhitespaceWidth;
+        private int WhitespaceWidth;
 
         private const int DefaultCharWidth = 40;
 
         public const int LcdLineWidth = 652; // this is approximate.
 
         private const string Elipse = "\x2026"; // the ... symbol.
-        private static readonly int ElipseSize;
+        private int ElipseSize;
 
         private readonly IMyTextPanel _panel;
         private readonly StringBuilder _publicString;
@@ -86,8 +86,6 @@
         static TextPanelWriter()
         {
             LoadCharWidths();
-            WhitespaceWidth = MeasureString(" ");
-            ElipseSize = MeasureString(Elipse);
         }
 
         // TODO: needs to be called routinely at long intervals, to clean up the cache.
@@ -205,8 +203,8 @@
         {
             try
             {
-                if (FontSize != _panel.GetValueFloat("FontSize"))
-                    _panel.SetValueFloat("FontSize", FontSize);
+                if (FontSize != _panel.FontSize)
+                    _panel.FontSize = FontSize;
             }
             catch (Exception ex)
             {
@@ -250,7 +248,9 @@
         {
             try
             {
-                FontSize = _panel.GetValueFloat("FontSize");
+                WhitespaceWidth = MeasureString(" ");
+                ElipseSize = MeasureString(Elipse);
+                FontSize = _panel.FontSize;
             }
             catch (Exception ex)
             {
@@ -343,7 +343,7 @@
             stringBuilder.Append(left + filler + right);
         }
 
-        public static string GetStringTrimmed(float desiredWidth, string text)
+        public string GetStringTrimmed(float desiredWidth, string text)
         {
             float stringSize = MeasureString(text);
             if (stringSize <= desiredWidth)
@@ -468,10 +468,14 @@
 
         #region character helper methods
 
-        private static byte MeasureChar(char c)
+        private byte MeasureChar(char c)
         {
             byte width;
-            if (!FontCharWidth.TryGetValue(c, out width))
+            if (_panel.Font.Equals("Monospace"))
+            {
+                width = 24;
+            }
+            else if (!FontCharWidth.TryGetValue(c, out width))
             {
                 width = DefaultCharWidth;
             }
@@ -479,7 +483,7 @@
         }
 
         // Derived from VRageRender.MyFont.MeasureString
-        public static int MeasureString(string str)
+        public int MeasureString(string str)
         {
             if (str == null)
                 str = string.Empty;
