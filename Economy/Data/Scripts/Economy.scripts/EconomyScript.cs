@@ -2002,7 +2002,7 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Buy", helpreply, null, "Close");
                             return true;
                         case "lcd":
-                            helpreply = "Controls various LCD Information Feeds\r\n" +
+                            helpreply = "Controls various LCD information feeds\r\n" +
                                 "Prerequisites: An LCD. \r\n" +
                                 "Firstly name the LCD you want to use [Economy]\r\n" +
                                 "Edit the public title and insert one or more of the following keywords -\r\n" +
@@ -2021,26 +2021,26 @@ namespace Economy.scripts
                         case "econfig":
                             if (MyAPIGateway.Session.Player.IsAdmin()) 
                                 {  
-                                    helpreply = "Controls Economy Behavior settings\r\n" +
-                                    "Setting 	Details\r\n" +
-                                    "Language	Sets language used on LCD pricelists.\r\n" +
-                                    "TradeNetworkName	 Sets name of your Economy Networ.k\r\n" +
-                                    "CurrencyName	Name of the currency.\r\n" +
-                                    "LimitedRange	Require players to be near each other to trade.\r\n" +
-                                    "LimitedSupply	limited or unlimited supply of NPC items.\r\n" +
-                                    "EnableLcds	Allow [Economy] LCDs to display pricing. \r\n" +
-                                    "EnableNpcTradezones	 NPC trade zones are enabled or not.\r\n" +
-                                    "EnablePlayerTradezones	Can players own trade zones.\r\n" +
-                                    "EnablePlayerPayments	Allow players to pay each other directly.\r\n" +
-                                    "TradeTimeout	How long to wait until we cancel a trade\r\n." +
-                                    "AccountExpiry	How long before a player is purged from bank.\r\n" +
-                                    "StartingBalance	How much money to give new players.\r\n" +
-                                    "LicenceMin | LicenceMax	The minimum and maximum Trade License price.\r\n" +
-                                    "RelinkRatio	The price ratio for relinking to a beacon.\r\n" +
-                                    "MaximumPlayerZones	Number of trade zones a player can own.\r\n" +
-                                    "PriceScaling  This sets if prices should react to available supply.\r\n" +
-                                    "ShipTrading  This set if players can buy and sell ships.\r\n" +
-                                    "LcdDisplayInterval  This restricts the minimum LCD display refresh interval.";
+                                    helpreply = "Controls economy behavior settings\r\n" +
+                                    "\r\n" +
+                                    "Language  -  Sets language used on LCD pricelists.\r\n" +
+                                    "TradeNetworkName  -  Sets name of your Economy Networ.k\r\n" +
+                                    "CurrencyName  -  Name of the currency.\r\n" +
+                                    "LimitedRange  -  Require players to be near each other to trade.\r\n" +
+                                    "LimitedSupply  -  Limited or unlimited supply of NPC items.\r\n" +
+                                    "EnableLcds  -  Allow [Economy] LCDs to display pricing. \r\n" +
+                                    "EnableNpcTradezones  -  NPC trade zones are enabled or not.\r\n" +
+                                    "EnablePlayerTradezones  -  Can players own trade zones.\r\n" +
+                                    "EnablePlayerPayments  -  Allow players to pay each other directly.\r\n" +
+                                    "TradeTimeout  -  How long to wait until we cancel a trade\r\n." +
+                                    "AccountExpiry  -  How long before a player is purged from bank.\r\n" +
+                                    "StartingBalance  -  How much money to give new players.\r\n" +
+                                    "LicenceMin | LicenceMax  -  The minimum and maximum Trade License price.\r\n" +
+                                    "RelinkRatio  -  The price ratio for relinking to a beacon.\r\n" +
+                                    "MaximumPlayerZones  -  Number of trade zones a player can own.\r\n" +
+                                    "PriceScaling  -  This sets if prices should react to available supply.\r\n" +
+                                    "ShipTrading  -  This set if players can buy and sell ships.\r\n" +
+                                    "LcdDisplayInterval  -  This restricts the minimum LCD display refresh interval.";
                                 MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /econfig SETTING  VALUE");
                                     MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Economy Config", helpreply, null, "Close");
                                     return true;
@@ -2048,16 +2048,16 @@ namespace Economy.scripts
                             else { return false; }
                         case "tz":
                             helpreply = "Controls a players trade zone\r\n" +
-                                "/tz register name radius	Register a trade zone.\r\nMust point at Beacon!\r\n" +
-                                "/tz relink name radius	Relink a trade zone.\r\nMust point at Beacon!\r\n" +
-                                "/tz unregister name	Unregisters/removes your market\r\n" +
+                                "/tz register name radius  -  Register a trade zone. Must point at Beacon!\r\n" +
+                                "/tz relink name radius  -  Relink a trade zone. Must point at Beacon!\r\n" +
+                                "/tz unregister name  -  Unregisters/removes your market\r\n" +
                                 "/tz close name Suspends trade in the market named\r\n" +
-                                "/tz open name	market available for trade again\r\n" +
-                                "/tz list	List your registered trading zones\r\n" +
-                                "/tz buy ITEM price	Price to buy ITEM from players\r\n" +
-                                "/tz sell ITEM price	Price sell ITEM to players\r\n" +
-                                "/tz blacklist ITEM	    allow/block  trading this ITEM\r\n" +
-                                "/tz limit ITEM	 #   Limit maximum stock # of ITEM to buy up to. Use MAX instead of a qty for no limit.\r\n" +
+                                "/tz open name  -  market available for trade again\r\n" +
+                                "/tz list  -  List your registered trading zones\r\n" +
+                                "/tz buy ITEM price  -  Price to buy ITEM from players\r\n" +
+                                "/tz sell ITEM price  -  Price sell ITEM to players\r\n" +
+                                "/tz blacklist ITEM  -  Allow/block  trading this ITEM\r\n" +
+                                "/tz limit ITEM	 #  -  Limit maximum stock # of ITEM to buy up to. Use MAX instead of a qty for no limit.\r\n" +
                                 "\r\n";
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /tz register|unregister|close|open|list|buy|sell|blacklist item|name radius|price");
                             MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Trade Zones", helpreply, null, "Close");
@@ -2101,15 +2101,16 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "/ver Displays the diagnostic version of running Economy script");
                             return true;
                         case "npczone":
-                            helpreply = "/npczone list   -  Displays list of all defined NPC market portals\r\n" +
-                                "/npczone add [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]  -  Add a new NPC market zone\r\n" +
-                                " shape can be sphere or box. Box is good in a single room.\r\n Eg /npczone add GunShop 1000 2000 4000 200 box\r\n" +
-                                "/npczone addhere [name] [size optional] -  Add a new NPC market zone from your current location\r\n" +
-                                "size defaults to 2500, shape round if not specified.\r\n" +
-                                "/npczone movehere [name] Moves specified zone to your location. Note: Size defaults to 2500 sphere!\r\n" +
-                                " /npczone delete [zone name]  - removes the named zone eg. /npczone delete freds\r\n" +
-                                " /npczone rename oldname newname  -  change the ID name of the trade zone\r\n" +
-                                " /npczone move [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]  -  move/resize the name trade zone\r\n";
+                            helpreply = "/npczone list  -  Displays list of all defined NPC market portals\r\n" +
+                                "/npczone add [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]\r\n Add a new NPC market zone" +
+                                " shape can be sphere or box.\r\n Box is good in a single room.\r\n Eg /npczone add GunShop 1000 2000 4000 200 box\r\n" +
+                                "/npczone add [name] [size(radius) #]  -  Add a new NPC market zone\r\n linked to a grid, must point at Beacon!\r\n" +
+                                "/npczone addhere [name] [size optional]  -  Add a new NPC market zone\r\n from your current location" +
+                                " size defaults to 2500,\r\n shape round if not specified.\r\n" +
+                                "/npczone movehere [name]  -  Moves specified zone to your location.\r\n Note: Size defaults to 2500 sphere!\r\n" +
+                                "/npczone delete [zone name]  -  Removes the named zone\r\n Eg. /npczone delete freds\r\n" +
+                                "/npczone rename oldname newname\r\n Change the ID name of the trade zone\r\n" +
+                                "/npczone move [name] [x] [y] [z] [size(radius) #] [shape(box/sphere)]\r\n Move/resize the name trade zone\r\n";
                             if (MyAPIGateway.Session.Player.IsAdmin())
                             {   //but only if you are admin!
                                 MyAPIGateway.Utilities.ShowMessage("eHelp", "Example: /npczone (add)/list/([remove])/[rename oldname newname] ([zone]) (x y z size shape)");
