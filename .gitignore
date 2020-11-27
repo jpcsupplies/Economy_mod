@@ -245,3 +245,5 @@ user.targets
 
 # Nothing in the .vs folder belongs in git
 .vs
+
+GameBinaries/
