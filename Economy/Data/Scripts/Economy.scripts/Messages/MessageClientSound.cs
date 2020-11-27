@@ -123,11 +123,9 @@
 
             using (BinaryReader reader = MyAPIGateway.Utilities.ReadBinaryFileInLocalStorage(filename, typeof(EconomyScript)))
             {
-                const int hz = 92000; // I don't even?!
                 var bytes = reader.ReadBytes((int)reader.BaseStream.Length);
-
                 var emitter = new MyEntity3DSoundEmitter((MyEntity)controlled) { CustomVolume = volume };
-                emitter.PlaySound(bytes, bytes.Length, hz, 0.8f, 99999);
+                emitter.PlaySound(bytes, volume);
                 emitter.Cleanup();
             }
         }
