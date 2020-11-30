@@ -245,3 +245,6 @@ user.targets
 
 # Nothing in the .vs folder belongs in git
 .vs
+
+metadata.mod
+GameBinaries/
