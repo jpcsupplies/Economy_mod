@@ -116,6 +116,230 @@
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_FruitBar</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>150</SellPrice>
+      <BuyPrice>90</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_GardenSlaw</SubtypeName>
+      <Quantity>100</Quantity>
+      <SellPrice>200</SellPrice>
+      <BuyPrice>50</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_RedPellets</SubtypeName>
+      <Quantity>50</Quantity>
+      <SellPrice>80</SellPrice>
+      <BuyPrice>20</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_Chili</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1000</SellPrice>
+      <BuyPrice>100</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_Flatbread</SubtypeName>
+      <Quantity>1000</Quantity>
+      <SellPrice>100</SellPrice>
+      <BuyPrice>20</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_FruitPastry</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>130</SellPrice>
+      <BuyPrice>30</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_VeggieBurger</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>250</SellPrice>
+      <BuyPrice>31</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_GreenPellets</SubtypeName>
+      <Quantity>600</Quantity>
+      <SellPrice>80</SellPrice>
+      <BuyPrice>20</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_Curry</SubtypeName>
+      <Quantity>40</Quantity>
+      <SellPrice>300</SellPrice>
+      <BuyPrice>40</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_Dumplings</SubtypeName>
+      <Quantity>10</Quantity>
+      <SellPrice>130</SellPrice>
+      <BuyPrice>30</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_Spaghetti</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>150</SellPrice>
+      <BuyPrice>35</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_Lasagna</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>151</SellPrice>
+      <BuyPrice>35</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_Burrito</SubtypeName>
+      <Quantity>20</Quantity>
+      <SellPrice>135</SellPrice>
+      <BuyPrice>31</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_FrontierStew</SubtypeName>
+      <Quantity>50</Quantity>
+      <SellPrice>600</SellPrice>
+      <BuyPrice>60</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_SearedSabiroid</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1000</SellPrice>
+      <BuyPrice>100</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+       <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+       <SubtypeName>MealPack_SteakDinner</SubtypeName>
+       <Quantity>0</Quantity>
+       <SellPrice>700</SellPrice>
+       <BuyPrice>80</BuyPrice>
+       <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+       <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+       <SubtypeName>MammalMeatRaw</SubtypeName>
+       <Quantity>0</Quantity>
+       <SellPrice>50</SellPrice>
+       <BuyPrice>10</BuyPrice>
+       <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MammalMeatCooked</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>70</SellPrice>
+      <BuyPrice>20</BuyPrice>
+    <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>InsectMeatRaw</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>80</SellPrice>
+      <BuyPrice>30</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>InsectMeatCooked</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>100</SellPrice>
+      <BuyPrice>45</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>RadiationKit</SubtypeName>
+      <Quantity>10000</Quantity>
+      <SellPrice>501</SellPrice>
+      <BuyPrice>350</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_Ramen</SubtypeName>
+      <Quantity>5000</Quantity>
+      <SellPrice>10</SellPrice>
+      <BuyPrice>9</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
+      <SubtypeName>MealPack_KelpCrisp</SubtypeName>
+      <Quantity>80000</Quantity>
+      <SellPrice>30</SellPrice>
+      <BuyPrice>10</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalObject</TypeId>
+      <SubtypeName>Algae</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>3</SellPrice>
+      <BuyPrice>1</BuyPrice>
+      <IsBlacklisted>true</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_SeedItem</TypeId>
+      <SubtypeName>Fruit</SubtypeName>
+      <Quantity>500</Quantity>
+      <SellPrice>300</SellPrice>
+      <BuyPrice>80</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_SeedItem</TypeId>
+      <SubtypeName>Grain</SubtypeName>
+      <Quantity>1500</Quantity>
+      <SellPrice>150</SellPrice>
+      <BuyPrice>50</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_SeedItem</TypeId>
+      <SubtypeName>Mushrooms</SubtypeName>
+      <Quantity>2000</Quantity>
+      <SellPrice>200</SellPrice>
+      <BuyPrice>61</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_SeedItem</TypeId>
+      <SubtypeName>Vegetables</SubtypeName>
+      <Quantity>1000</Quantity>
+      <SellPrice>250</SellPrice>
+      <BuyPrice>70</BuyPrice>
+    <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_ConsumableItem</TypeId>
       <SubtypeName>Powerkit</SubtypeName>
       <Quantity>10000</Quantity>
       <SellPrice>11.4</SellPrice>
@@ -382,16 +606,16 @@
       <TypeId>MyObjectBuilder_Ore</TypeId>
       <SubtypeName>Platinum</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>0.05</SellPrice>
-      <BuyPrice>0.04</BuyPrice>
+      <SellPrice>0.15</SellPrice>
+      <BuyPrice>0.14</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_Ore</TypeId>
       <SubtypeName>Uranium</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>0.07</SellPrice>
-      <BuyPrice>0.06</BuyPrice>
+      <SellPrice>0.17</SellPrice>
+      <BuyPrice>0.16</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
@@ -446,32 +670,32 @@
       <TypeId>MyObjectBuilder_Ingot</TypeId>
       <SubtypeName>Silver</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>9.10</SellPrice>
-      <BuyPrice>8.09</BuyPrice>
+      <SellPrice>19.10</SellPrice>
+      <BuyPrice>18.09</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_Ingot</TypeId>
       <SubtypeName>Gold</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>9.87</SellPrice>
-      <BuyPrice>8.77</BuyPrice>
+      <SellPrice>29.87</SellPrice>
+      <BuyPrice>28.77</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_Ingot</TypeId>
       <SubtypeName>Platinum</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>12.37</SellPrice>
-      <BuyPrice>11</BuyPrice>
+      <SellPrice>52.37</SellPrice>
+      <BuyPrice>51</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_Ingot</TypeId>
       <SubtypeName>Uranium</SubtypeName>
       <Quantity>1000</Quantity>
-      <SellPrice>12.36</SellPrice>
-      <BuyPrice>10.99</BuyPrice>
+      <SellPrice>52.36</SellPrice>
+      <BuyPrice>50.99</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
@@ -482,29 +706,116 @@
       <BuyPrice>0.65</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
-
+    <MarketItem>
+      <TypeId>MyObjectBuilder_Component</TypeId>
+      <SubtypeName>EngineerPlushie</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1000</SellPrice>
+      <BuyPrice>900</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_Ingot</TypeId>
+      <SubtypeName>EngineerPlushie</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1000</SellPrice>
+      <BuyPrice>900</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_Component</TypeId>
+      <SubtypeName>SabiroidPlushie</SubtypeName>
+      <Quantity>0</Quantity>
+      <SellPrice>1000</SellPrice>
+      <BuyPrice>900</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
+      <SubtypeName>FlareClip</SubtypeName>
+      <Quantity>10000</Quantity>
+      <SellPrice>10</SellPrice>
+      <BuyPrice>5</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
+      <SubtypeName>FireworksBoxBlue</SubtypeName>
+      <Quantity>500</Quantity>
+      <SellPrice>50</SellPrice>
+      <BuyPrice>45</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
+      <SubtypeName>FireworksBoxGreen</SubtypeName>
+      <Quantity>500</Quantity>
+      <SellPrice>50</SellPrice>
+      <BuyPrice>45</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
+      <SubtypeName>FireworksBoxRed</SubtypeName>
+      <Quantity>500</Quantity>
+      <SellPrice>50</SellPrice>
+      <BuyPrice>45</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
+      <SubtypeName>FireworksBoxPink</SubtypeName>
+      <Quantity>500</Quantity>
+      <SellPrice>50</SellPrice>
+      <BuyPrice>45</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
+      <SubtypeName>FireworksBoxYellow</SubtypeName>
+      <Quantity>500</Quantity>
+      <SellPrice>50</SellPrice>
+      <BuyPrice>45</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_AmmoMagazine</TypeId>
+      <SubtypeName>FireworksBoxRainbow</SubtypeName>
+      <Quantity>500</Quantity>
+      <SellPrice>50</SellPrice>
+      <BuyPrice>45</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
+    <MarketItem>
+      <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
+      <SubtypeName>FlareGunItem</SubtypeName>
+      <Quantity>1000</Quantity>
+      <SellPrice>80</SellPrice>
+      <BuyPrice>60</BuyPrice>
+      <IsBlacklisted>false</IsBlacklisted>
+    </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>PreciseAutomaticRifleItem</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>12.84</SellPrice>
-      <BuyPrice>2.52</BuyPrice>
+      <SellPrice>120.84</SellPrice>
+      <BuyPrice>20.52</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>RapidFireAutomaticRifleItem</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>13.43</SellPrice>
-      <BuyPrice>3.05</BuyPrice>
+      <SellPrice>130.43</SellPrice>
+      <BuyPrice>30.05</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>UltimateAutomaticRifleItem</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>15.94</SellPrice>
-      <BuyPrice>5.28</BuyPrice>
+      <SellPrice>150.94</SellPrice>
+      <BuyPrice>50.28</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
@@ -559,24 +870,24 @@
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>AngleGrinder2Item</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>13.55</SellPrice>
-      <BuyPrice>3.15</BuyPrice>
+      <SellPrice>130.55</SellPrice>
+      <BuyPrice>30.15</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>AngleGrinder3Item</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>12.83</SellPrice>
-      <BuyPrice>2.47</BuyPrice>
+      <SellPrice>140.83</SellPrice>
+      <BuyPrice>20.47</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
       <TypeId>MyObjectBuilder_PhysicalGunObject</TypeId>
       <SubtypeName>AngleGrinder4Item</SubtypeName>
       <Quantity>100</Quantity>
-      <SellPrice>13.16</SellPrice>
-      <BuyPrice>2.76</BuyPrice>
+      <SellPrice>130.16</SellPrice>
+      <BuyPrice>32.76</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
     </MarketItem>
     <MarketItem>
@@ -630,7 +941,7 @@
     <MarketItem>
       <TypeId>MyObjectBuilder_Ore</TypeId>
       <SubtypeName>Ice</SubtypeName>
-      <Quantity>10000</Quantity>
+      <Quantity>10000000</Quantity>
       <SellPrice>0.337</SellPrice>
       <BuyPrice>0.299</BuyPrice>
       <IsBlacklisted>false</IsBlacklisted>
