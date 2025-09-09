@@ -25,7 +25,7 @@
       <Loopable>false</Loopable>
       <Waves>
         <Wave Type="D2">
-          <Start>Audio\tzd.xwm</Start>
+          <Start>Data\Sounds\tzd.xwm</Start>
         </Wave>
       </Waves>
     </Sound>
@@ -40,7 +40,7 @@
       <Loopable>false</Loopable>
       <Waves>
         <Wave Type="D2">
-          <Start>Audio\hud.xwm</Start>
+          <Start>Data\Sounds\hud.xwm</Start>
         </Wave>
       </Waves>
     </Sound>
