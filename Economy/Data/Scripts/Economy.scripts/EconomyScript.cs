@@ -193,6 +193,20 @@ namespace Economy.scripts
 
         #region attaching events and wiring up
 
+        /// <summary>
+        ///     Quick dirty check to see if the script is trying to run server side.
+        /// </summary>
+        bool AmIaDedicated()
+        {
+            // Am I a Dedicated Server or running offline?.
+            if (MyAPIGateway.Utilities != null && MyAPIGateway.Utilities.IsDedicated)
+            {
+                return true; //definately am a server and im not running it locally, dont do anything!
+            }
+            //not offline or running dedicated server side, I might be a player on a server
+            return false;
+        }
+
         public override void UpdateAfterSimulation()
         {
             Instance = this;
@@ -225,6 +239,7 @@ namespace Economy.scripts
                 MessageConnectionRequest.SendMessage(EconomyConsts.ModCommunicationVersion);
             }
 
+
             //Client side kill switch if player is not spawned in yet or dead halt all problematic execution for few seconds
             //after they respawn until everything updates. Any sus code that has potential for an uncontrolled
             //null reference crash to desktop due to losing track of player entity should pass through here.
@@ -235,28 +250,32 @@ namespace Economy.scripts
             //if the server, client or sim has lag (likely its running extra checks to avoid problematic entities being assigned which 
             //is fair enough but they seem to take longer than a tick within ModAPI so best to add some mostly harmless paranoia checks
             //to avoid stale player entities trying to pass anywhere.)
-            var player = MyAPIGateway.Session.Player;   //ok lets get what should be the player entity.  
-            if (player == null || player.Character == null || player.Character.IsDead) //is it in limbo or has a deathflag?
+            if (!AmIaDedicated() && MyAPIGateway.Session?.Player != null && IsReady) //are we a client/offline/self hosted, is init finished, and not a dedicated server?
             {
-                //ok in this tick something happened to the player entity, hit the killswitch
-                killswitch = true;
-                //if the hud was on, turn it off while killswitch active to avoid incidental attempts to pass entitys to events
-                if (ClientConfig.ClientHudSettings.ShowHud) {  MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
-              
-                //base.UpdateAfterSimulation();
-                //return;
-            }
-            else if (killswitch)
-            {
-                if (counter >= 1100)
+                var player = MyAPIGateway.Session.Player;   //ok lets get what should be the player entity.  
+                if (player == null || player.Character == null || player.Character.IsDead) //is it in limbo or has a deathflag?
                 {
-                    counter = 0;
-                    killswitch = false;
-                    //if the hud is meant to be on, turn it back on again once the kill switch expires
-                    if (ClientConfig.ClientHudSettings.ShowHud) { MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
+                    //ok in this tick something happened to the player entity, hit the killswitch
+                    killswitch = true;
+                    //if the hud was on, turn it off while killswitch active to avoid incidental attempts to pass entitys to events
+                    //if (ClientConfig.ClientHudSettings.ShowHud) { MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
+
+                    //base.UpdateAfterSimulation();
+                    //return;
                 }
-                counter++;
-            } else HudManager.UpdateAfterSimulation(); //if no timers or kill switches active business as usual.
+                else if (killswitch)
+                {
+                    if (counter >= 1100)
+                    {
+                        counter = 0;
+                        killswitch = false;
+                        //if the hud is meant to be on, turn it back on again once the kill switch expires
+                        //if (ClientConfig.ClientHudSettings.ShowHud) { MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
+                    }
+                    counter++;
+                }
+                else HudManager.UpdateAfterSimulation(); //if no timers or kill switches active business as usual.
+            }
 
             IsReady = true;
             base.UpdateAfterSimulation();
@@ -589,7 +608,7 @@ namespace Economy.scripts
                 if (split.Length == 2 && split[1].Equals("add", StringComparison.InvariantCultureIgnoreCase))
                 {
                     MessageClientSound.PlaySound("HudClick");
-                    HudManager.GPS(location.X, location.Y, location.Z, playername, ("Quick GPS Point"+location.X + location.Y + location.Z), true);
+                    HudManager.GPS(location.X, location.Y, location.Z, playername, ("Quick GPS Point" + location.X + location.Y + location.Z), true);
                 }
 
                 //ie /gps add gold
@@ -697,7 +716,7 @@ namespace Economy.scripts
             //used to test whatever crazy stuff im trying to work out
             if (split[0].Equals("/debug", StringComparison.InvariantCultureIgnoreCase) && MyAPIGateway.Session.Player.IsAdmin())
             {
-    	        // Samples...
+                // Samples...
                 //MessageClientSound.SendMessage(MyAPIGateway.Session.Player.SteamUserId, "SoundBlockLightsOn");
                 //MessageClientSound.SendMessage(MyAPIGateway.Session.Player.SteamUserId, "tradezonedetA");
                 //MessageClientSound.PlaySoundFrom("tradezonedetA", Vector3D.Zero, 1);
@@ -783,7 +802,7 @@ namespace Economy.scripts
                     decimal size = Convert.ToDecimal(match.Groups["Size"].Value, CultureInfo.InvariantCulture);
 
                     var selectedBlock = Support.FindLookAtEntity(MyAPIGateway.Session.ControlledObject, false, true, false, false, false, false, false) as IMyCubeBlock;
-                    if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof (MyObjectBuilder_Beacon))
+                    if (selectedBlock == null || selectedBlock.BlockDefinition.TypeId != typeof(MyObjectBuilder_Beacon))
                     {
                         MyAPIGateway.Utilities.ShowMessage("TZ", "You need to target a beacon to register a trade zone.");
                         return true;
@@ -962,35 +981,35 @@ namespace Economy.scripts
 
                 MyAPIGateway.Utilities.ShowMessage("TradeZone", "Nothing to do? Valid Options register, unregister, open, close, factionmode, buy/sell|blacklist/restrict/limit,");
 
-                
-                 //everything else goes here - note this doesnt allow for spaces in names
-                    //ill probably have to either get a regex from midspace or split by "" to extract names
-                    //backup command evaluation matrix - not used replaced by regex logix - delete later.
-                    /* if (split.Length == 3)
-                    {
-                        if (split[1].Equals("unregister", StringComparison.InvariantCultureIgnoreCase)) { }
-                        if (split[1].Equals("move", StringComparison.InvariantCultureIgnoreCase)) { }
-                        if (split[1].Equals("close", StringComparison.InvariantCultureIgnoreCase)) { }
-                        if (split[1].Equals("open", StringComparison.InvariantCultureIgnoreCase)) { }
-                        if (split[1].Equals("factionmode", StringComparison.InvariantCultureIgnoreCase)) { }
-                        if (split[1].Equals("blacklist", StringComparison.InvariantCultureIgnoreCase)) { }
-                    }
-                    if (split.Length == 5)
-                    {
-                        if (split[1].Equals("restrict", StringComparison.InvariantCultureIgnoreCase)) { }
-                        if (split[1].Equals("limit", StringComparison.InvariantCultureIgnoreCase)) { }
 
-                    }
-                    if (split.Length >= 4 && split.Length <= 5)
-                    {
-                        if (split[1].Equals("load", StringComparison.InvariantCultureIgnoreCase)) { }
-                        if (split[1].Equals("unload", StringComparison.InvariantCultureIgnoreCase)) { }
-                    }
-                    if (split.Length >= 4 && split.Length <= 6)
-                    {
-                        if (split[1].Equals("buyprice", StringComparison.InvariantCultureIgnoreCase)) { }
-                        if (split[1].Equals("sellprice", StringComparison.InvariantCultureIgnoreCase)) { }
-                    } */
+                //everything else goes here - note this doesnt allow for spaces in names
+                //ill probably have to either get a regex from midspace or split by "" to extract names
+                //backup command evaluation matrix - not used replaced by regex logix - delete later.
+                /* if (split.Length == 3)
+                {
+                    if (split[1].Equals("unregister", StringComparison.InvariantCultureIgnoreCase)) { }
+                    if (split[1].Equals("move", StringComparison.InvariantCultureIgnoreCase)) { }
+                    if (split[1].Equals("close", StringComparison.InvariantCultureIgnoreCase)) { }
+                    if (split[1].Equals("open", StringComparison.InvariantCultureIgnoreCase)) { }
+                    if (split[1].Equals("factionmode", StringComparison.InvariantCultureIgnoreCase)) { }
+                    if (split[1].Equals("blacklist", StringComparison.InvariantCultureIgnoreCase)) { }
+                }
+                if (split.Length == 5)
+                {
+                    if (split[1].Equals("restrict", StringComparison.InvariantCultureIgnoreCase)) { }
+                    if (split[1].Equals("limit", StringComparison.InvariantCultureIgnoreCase)) { }
+
+                }
+                if (split.Length >= 4 && split.Length <= 5)
+                {
+                    if (split[1].Equals("load", StringComparison.InvariantCultureIgnoreCase)) { }
+                    if (split[1].Equals("unload", StringComparison.InvariantCultureIgnoreCase)) { }
+                }
+                if (split.Length >= 4 && split.Length <= 6)
+                {
+                    if (split[1].Equals("buyprice", StringComparison.InvariantCultureIgnoreCase)) { }
+                    if (split[1].Equals("sellprice", StringComparison.InvariantCultureIgnoreCase)) { }
+                } */
                 //something slipped through the cracks lets get out of here before something odd happens.
                 return true;
             }
@@ -1005,7 +1024,7 @@ namespace Economy.scripts
             {
                 //MyAPIGateway.Utilities.ShowMessage("debug", "You are here: {0}", messageText + " No Reason Given");
                 if (split.Length <= 3) //Default reason to "no reason given" if a player forgets a reason because nobody reads manuals apparently
-                { match = Regex.Match(messageText+" Some reason?", PayPattern, RegexOptions.IgnoreCase); } 
+                { match = Regex.Match(messageText + " Some reason?", PayPattern, RegexOptions.IgnoreCase); }
                 //might need to add a check here preventing normal players paying NPC but not critical since they would be silly to try
                 else { match = Regex.Match(messageText, PayPattern, RegexOptions.IgnoreCase); }
                 if (match.Success)
@@ -1204,8 +1223,8 @@ namespace Economy.scripts
             #region collect
             if (split[0].Equals("/collect", StringComparison.InvariantCultureIgnoreCase))
             {
-                    MessageSell.SendCollectMessage();
-                    return true;
+                MessageSell.SendCollectMessage();
+                return true;
             }
             #endregion collect
 
@@ -1228,7 +1247,7 @@ namespace Economy.scripts
 
                 match = Regex.Match(messageText, SellPattern, RegexOptions.IgnoreCase);
 
-                 //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
+                //ok we need to catch the target (player/faction) at [4] or set it to NPC if its null
                 //then populate the other fields.  
                 //string reply = "match " + match.Groups["qty"].Value + match.Groups["item"].Value + match.Groups["user"].Value + match.Groups["price"].Value;
                 if (match.Success)
@@ -1656,7 +1675,7 @@ namespace Economy.scripts
                         MessageShipSale.SendMessage(selectedShip.EntityId, "buy", amount);
                         return true;
                     }
-                    
+
                     MessageWorth.SendMessage(selectedShip.EntityId);
                 }
                 else
@@ -1680,60 +1699,63 @@ namespace Economy.scripts
                 // uses- default size and shape sphere like the 0,0,0 default market, and up to 4 words in name
                 if (split.Length >= 3 && split[1].Equals("addhere", StringComparison.InvariantCultureIgnoreCase))
                 {
-                        Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
-                    
-                        //add support for names with more than one word, default to 2500 if they forget to specify size
-                        decimal size = 2500; //here is our default size - probably should pull this from globals
-                        size = Convert.ToDecimal(EconomyConsts.DefaultTradeRange);
-                        //size=Convert.ToDecimal(ClientConfig.DefaultTradeRange);
-                        decimal sizetest = 2500;
+                    Vector3D position = MyAPIGateway.Session.Player.Controller.ControlledEntity.Entity.GetPosition();
 
-                        //MyAPIGateway.Utilities.ShowMessage("debug", "I saw {0} {1} {2} {3} {4} {5}", size, split.Length, split[0], split[1], split[2] );
+                    //add support for names with more than one word, default to 2500 if they forget to specify size
+                    decimal size = 2500; //here is our default size - probably should pull this from globals
+                    size = Convert.ToDecimal(EconomyConsts.DefaultTradeRange);
+                    //size=Convert.ToDecimal(ClientConfig.DefaultTradeRange);
+                    decimal sizetest = 2500;
 
-                        if (split.Length == 3) { // /npczone addhere name, also allows a number for a zone name :/
-                            MessageMarketManageNpc.SendAddMessage(split[2], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), size, MarketZoneType.FixedSphere);
+                    //MyAPIGateway.Utilities.ShowMessage("debug", "I saw {0} {1} {2} {3} {4} {5}", size, split.Length, split[0], split[1], split[2] );
+
+                    if (split.Length == 3)
+                    { // /npczone addhere name, also allows a number for a zone name :/
+                        MessageMarketManageNpc.SendAddMessage(split[2], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), size, MarketZoneType.FixedSphere);
+                        return true;
+                    }
+                    if (split.Length == 4)
+                    {
+                        if (decimal.TryParse(split[3], NumberStyles.Any, CultureInfo.InvariantCulture, out sizetest))
+                        { //its a number, only 1 word in zone name /npczone addhere blah 1234
+                            MessageMarketManageNpc.SendAddMessage(split[2], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), sizetest, MarketZoneType.FixedSphere);
                             return true;
                         }
-                        if (split.Length == 4)
-                        {
-                            if (decimal.TryParse(split[3], NumberStyles.Any, CultureInfo.InvariantCulture, out sizetest))
-                            { //its a number, only 1 word in zone name /npczone addhere blah 1234
-                                MessageMarketManageNpc.SendAddMessage(split[2], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), sizetest, MarketZoneType.FixedSphere);
-                                return true;
-                            } 
-                            else { //its not a number at end /npczone addhere blah blah
- 
-                                MessageMarketManageNpc.SendAddMessage(split[2] + " " + split[3], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), size, MarketZoneType.FixedSphere);
-                                return true;
-                            }
+                        else
+                        { //its not a number at end /npczone addhere blah blah
+
+                            MessageMarketManageNpc.SendAddMessage(split[2] + " " + split[3], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), size, MarketZoneType.FixedSphere);
+                            return true;
                         }
-                        if (split.Length == 5)
+                    }
+                    if (split.Length == 5)
+                    {
+                        if (decimal.TryParse(split[4], NumberStyles.Any, CultureInfo.InvariantCulture, out sizetest))
                         {
-                            if (decimal.TryParse(split[4], NumberStyles.Any, CultureInfo.InvariantCulture, out sizetest))
-                            {
-                                //its a number, 2 words in zone name /npczone addhere blah blah 1234
-                                MessageMarketManageNpc.SendAddMessage(split[2] + " " + split[3], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), sizetest, MarketZoneType.FixedSphere);
-                                return true;
-                            }
-                            else
-                            { //its not a number at end /npczone addhere blah blah blah
-                                MessageMarketManageNpc.SendAddMessage(split[2] + " " + split[3] + " " + split[4], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), size, MarketZoneType.FixedSphere);
-                                return true;
-                            }
+                            //its a number, 2 words in zone name /npczone addhere blah blah 1234
+                            MessageMarketManageNpc.SendAddMessage(split[2] + " " + split[3], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), sizetest, MarketZoneType.FixedSphere);
+                            return true;
                         }
-                        if (split.Length == 6)
+                        else
+                        { //its not a number at end /npczone addhere blah blah blah
+                            MessageMarketManageNpc.SendAddMessage(split[2] + " " + split[3] + " " + split[4], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), size, MarketZoneType.FixedSphere);
+                            return true;
+                        }
+                    }
+                    if (split.Length == 6)
+                    {
+                        if (decimal.TryParse(split[5], NumberStyles.Any, CultureInfo.InvariantCulture, out sizetest))
                         {
-                            if (decimal.TryParse(split[5], NumberStyles.Any, CultureInfo.InvariantCulture, out sizetest))
-                            {
-                                //its a number, 3 words in zone name /npczone addhere blah blah blah 1234
-                                MessageMarketManageNpc.SendAddMessage(split[2] + " " + split[3] + " " + split[4], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), sizetest, MarketZoneType.FixedSphere);
-                                return true;
-                            }
-                            else { //its not a number /npczone addhere blah blah blah blah
-                                MessageMarketManageNpc.SendAddMessage(split[2] + " " + split[3] + " " + split[4] + " " + split[5], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), size, MarketZoneType.FixedSphere);
-                                return true;
-                            }
+                            //its a number, 3 words in zone name /npczone addhere blah blah blah 1234
+                            MessageMarketManageNpc.SendAddMessage(split[2] + " " + split[3] + " " + split[4], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), sizetest, MarketZoneType.FixedSphere);
+                            return true;
                         }
+                        else
+                        { //its not a number /npczone addhere blah blah blah blah
+                            MessageMarketManageNpc.SendAddMessage(split[2] + " " + split[3] + " " + split[4] + " " + split[5], Convert.ToDecimal(position.X), Convert.ToDecimal(position.Y), Convert.ToDecimal(position.Z), size, MarketZoneType.FixedSphere);
+                            return true;
+                        }
+                    }
                     MyAPIGateway.Utilities.ShowMessage("/npczone addhere zone [radius]", "Invalid option or name too long!");
                     return true;
                 }
@@ -1780,7 +1802,7 @@ namespace Economy.scripts
                         return true;
                     }
                     MessageMarketManageNpc.SendAddMessage(marketName, selectedBlock.EntityId, size, MarketZoneType.EntitySphere);
-                    
+
                     return true;
                 }
 
@@ -1877,7 +1899,8 @@ namespace Economy.scripts
             {
                 //add a day/week/month filter to accounts   OR just sort accounts list by date? OR accept a integer for number of days to filter by?
                 if (split.Length <= 1) { MessageListAccounts.SendMessage(); }
-                else {
+                else
+                {
                     switch (split[1].ToLowerInvariant())
                     {
                         case "date":
@@ -2025,18 +2048,18 @@ namespace Economy.scripts
                             }
                             return true;
                         case "buy":
-                              helpreply = "Buy components, tools, weapons, ammo, ingots or ore from a trade zone.\r\n" +
-                                "Multi word item names should be enclosed in double quotes \"\"\r\n" +
-                                "Partial unique names are accepted, ie \"gold in\" for \"gold ingot\"\r\n" +
-                                "\r\nExamples:\r\n" +
-                                "/buy 20.54 Ice\r\n" +
-                                "/buy 10 \"gold ingot\"\r\n" +
-                                "/buy 40 \"silicon wafer\"\r\n" +
-                                "/buy 14.5 \"silicon ore\"\r\n" +
-                                "/buy 100 \"uranium in\" 20 \"Screaming Angels\"\r\n" +
-                                "/buy 1 steel\r\n" +
-                                "/buy 22 5.56\r\n" +
-                                "\r\n";
+                            helpreply = "Buy components, tools, weapons, ammo, ingots or ore from a trade zone.\r\n" +
+                              "Multi word item names should be enclosed in double quotes \"\"\r\n" +
+                              "Partial unique names are accepted, ie \"gold in\" for \"gold ingot\"\r\n" +
+                              "\r\nExamples:\r\n" +
+                              "/buy 20.54 Ice\r\n" +
+                              "/buy 10 \"gold ingot\"\r\n" +
+                              "/buy 40 \"silicon wafer\"\r\n" +
+                              "/buy 14.5 \"silicon ore\"\r\n" +
+                              "/buy 100 \"uranium in\" 20 \"Screaming Angels\"\r\n" +
+                              "/buy 1 steel\r\n" +
+                              "/buy 22 5.56\r\n" +
+                              "\r\n";
                             MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /buy W X Y Z - Purchases a quantity [W] of item [X] [at price Y] [from player Z]");
                             MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Buy", helpreply, null, "Close");
                             return true;
@@ -2058,32 +2081,32 @@ namespace Economy.scripts
                             MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "LCD Usage", helpreply, null, "Cool");
                             return true;
                         case "econfig":
-                            if (MyAPIGateway.Session.Player.IsAdmin()) 
-                                {  
-                                    helpreply = "Controls economy behavior settings\r\n" +
-                                    "\r\n" +
-                                    "Language  -  Sets language used on LCD pricelists.\r\n" +
-                                    "TradeNetworkName  -  Sets name of your Economy Networ.k\r\n" +
-                                    "CurrencyName  -  Name of the currency.\r\n" +
-                                    "LimitedRange  -  Require players to be near each other to trade.\r\n" +
-                                    "LimitedSupply  -  Limited or unlimited supply of NPC items.\r\n" +
-                                    "EnableLcds  -  Allow [Economy] LCDs to display pricing. \r\n" +
-                                    "EnableNpcTradezones  -  NPC trade zones are enabled or not.\r\n" +
-                                    "EnablePlayerTradezones  -  Can players own trade zones.\r\n" +
-                                    "EnablePlayerPayments  -  Allow players to pay each other directly.\r\n" +
-                                    "TradeTimeout  -  How long to wait until we cancel a trade\r\n." +
-                                    "AccountExpiry  -  How long before a player is purged from bank.\r\n" +
-                                    "StartingBalance  -  How much money to give new players.\r\n" +
-                                    "LicenceMin | LicenceMax  -  The minimum and maximum Trade License price.\r\n" +
-                                    "RelinkRatio  -  The price ratio for relinking to a beacon.\r\n" +
-                                    "MaximumPlayerZones  -  Number of trade zones a player can own.\r\n" +
-                                    "PriceScaling  -  This sets if prices should react to available supply.\r\n" +
-                                    "ShipTrading  -  This set if players can buy and sell ships.\r\n" +
-                                    "LcdDisplayInterval  -  This restricts the minimum LCD display refresh interval.";
+                            if (MyAPIGateway.Session.Player.IsAdmin())
+                            {
+                                helpreply = "Controls economy behavior settings\r\n" +
+                                "\r\n" +
+                                "Language  -  Sets language used on LCD pricelists.\r\n" +
+                                "TradeNetworkName  -  Sets name of your Economy Networ.k\r\n" +
+                                "CurrencyName  -  Name of the currency.\r\n" +
+                                "LimitedRange  -  Require players to be near each other to trade.\r\n" +
+                                "LimitedSupply  -  Limited or unlimited supply of NPC items.\r\n" +
+                                "EnableLcds  -  Allow [Economy] LCDs to display pricing. \r\n" +
+                                "EnableNpcTradezones  -  NPC trade zones are enabled or not.\r\n" +
+                                "EnablePlayerTradezones  -  Can players own trade zones.\r\n" +
+                                "EnablePlayerPayments  -  Allow players to pay each other directly.\r\n" +
+                                "TradeTimeout  -  How long to wait until we cancel a trade\r\n." +
+                                "AccountExpiry  -  How long before a player is purged from bank.\r\n" +
+                                "StartingBalance  -  How much money to give new players.\r\n" +
+                                "LicenceMin | LicenceMax  -  The minimum and maximum Trade License price.\r\n" +
+                                "RelinkRatio  -  The price ratio for relinking to a beacon.\r\n" +
+                                "MaximumPlayerZones  -  Number of trade zones a player can own.\r\n" +
+                                "PriceScaling  -  This sets if prices should react to available supply.\r\n" +
+                                "ShipTrading  -  This set if players can buy and sell ships.\r\n" +
+                                "LcdDisplayInterval  -  This restricts the minimum LCD display refresh interval.";
                                 MyAPIGateway.Utilities.ShowMessage("eHelp", "Usage: /econfig SETTING  VALUE");
-                                    MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Economy Config", helpreply, null, "Close");
-                                    return true;
-                                }
+                                MyAPIGateway.Utilities.ShowMissionScreen("Economy Help", "", "Economy Config", helpreply, null, "Close");
+                                return true;
+                            }
                             else { return false; }
                         case "tz":
                             helpreply = "Controls a players trade zone\r\n" +
