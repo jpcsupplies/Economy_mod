@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.36617.4
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy.scripts", "Economy\Data\Scripts\Economy.scripts\Economy.scripts.csproj", "{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}.Debug|x64.ActiveCfg = Debug|x64
+		{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}.Debug|x64.Build.0 = Debug|x64
+		{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}.Release|x64.ActiveCfg = Release|x64
+		{8D0777A9-C983-4DA0-BFC7-CC5BE2109966}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {86A0C82F-5CB8-4AEA-AEC0-558D0F623F2B}
+	EndGlobalSection
+EndGlobal

@@ -27,20 +27,25 @@
 
         public static void UpdateAfterSimulation()
         {
-            _hudCounter++;
-            _missionCounter++;
-
-            if (_hudCounter > 10) // only update hud details every Xth frame.
+            //probably not needed here but just in case a respawn occurs just on a tick and it slips through
+            //or modAPI ever changes to allow multiple UpdateAfter's
+            if (!EconomyScript.Instance.killswitch)  //killswitch check to halt hud after respawn
             {
-                DisplayHud();
-                _hudCounter = 0;
-            }
+                _hudCounter++;
+                _missionCounter++;
 
-            if (_missionCounter > 200)
-            {
-                UpdateMission();
-                DisplayHud100();
-                _missionCounter = 0;
+                if (_hudCounter > 10) // only update hud details every Xth frame.
+                {
+                    DisplayHud();
+                    _hudCounter = 0;
+                }
+
+                if (_missionCounter > 200)
+                {
+                    UpdateMission();
+                    DisplayHud100();
+                    _missionCounter = 0;
+                }
             }
         }
 
@@ -113,7 +118,7 @@
 
                 if (objective.Title != readout)
                 {
-                    objective.Title = readout;
+                    objective.Title = readout + "";  //Paranoia check, add an empty string just in case a null slips by.
                 }
             }
             //MyAPIGateway.Utilities.GetObjectiveLine().Objectives[0] = readout;  //using title not mission text now
@@ -181,6 +186,7 @@
         /// <returns></returns>
         public static bool UpdateHud()
         {
+
             ClientConfig clientConfig = EconomyScript.Instance.ClientConfig;
 
             // client config has not been received from server yet.

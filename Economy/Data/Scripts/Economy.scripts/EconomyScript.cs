@@ -181,6 +181,14 @@ namespace Economy.scripts
         /// </summary>
         public bool IsReady;
 
+        /// <summary>
+        /// Killswitch Condition to detect if a player recently respawned, died or otherwise became a non entity
+        /// recently.
+        /// </summary>
+        public bool killswitch = false;
+        public int counter = 0;
+
+
         #endregion
 
         #region attaching events and wiring up
@@ -217,9 +225,40 @@ namespace Economy.scripts
                 MessageConnectionRequest.SendMessage(EconomyConsts.ModCommunicationVersion);
             }
 
-            HudManager.UpdateAfterSimulation();
-            IsReady = true;
+            //Client side kill switch if player is not spawned in yet or dead halt all problematic execution for few seconds
+            //after they respawn until everything updates. Any sus code that has potential for an uncontrolled
+            //null reference crash to desktop due to losing track of player entity should pass through here.
+            //These are just paranoia work arounds due to the intermittent cached/persistence/stale entity  glitch introduced
+            //in the coresystems / apex updates to prevent NPCs being assigned existing player or space master entity ids.
+            //issue only ever seems to occur within first few ticks after player respawning at a med bay - as the NPC fix
+            //somehow seems to add a few ticks of lag to populating the current player entity id which is multiplied many times worse
+            //if the server, client or sim has lag (likely its running extra checks to avoid problematic entities being assigned which 
+            //is fair enough but they seem to take longer than a tick within ModAPI so best to add some mostly harmless paranoia checks
+            //to avoid stale player entities trying to pass anywhere.)
+            var player = MyAPIGateway.Session.Player;   //ok lets get what should be the player entity.  
+            if (player == null || player.Character == null || player.Character.IsDead) //is it in limbo or has a deathflag?
+            {
+                //ok in this tick something happened to the player entity, hit the killswitch
+                killswitch = true;
+                //if the hud was on, turn it off while killswitch active to avoid incidental attempts to pass entitys to events
+                if (ClientConfig.ClientHudSettings.ShowHud) {  MyAPIGateway.Utilities.GetObjectiveLine().Hide(); }
+              
+                //base.UpdateAfterSimulation();
+                //return;
+            }
+            else if (killswitch)
+            {
+                if (counter >= 1100)
+                {
+                    counter = 0;
+                    killswitch = false;
+                    //if the hud is meant to be on, turn it back on again once the kill switch expires
+                    if (ClientConfig.ClientHudSettings.ShowHud) { MyAPIGateway.Utilities.GetObjectiveLine().Show(); }
+                }
+                counter++;
+            } else HudManager.UpdateAfterSimulation(); //if no timers or kill switches active business as usual.
 
+            IsReady = true;
             base.UpdateAfterSimulation();
         }
 
